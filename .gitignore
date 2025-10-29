@@ -24,6 +24,8 @@ coverage
 *.sln
 *.sw?
 
+
+
 *.tsbuildinfo
 
 .eslintcache
@@ -34,3 +36,6 @@ coverage
 
 # Vitest
 __screenshots__/
+
+# Lockfiles
+package-lock.json
