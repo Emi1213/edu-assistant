@@ -13,7 +13,6 @@ export class HttpClient implements IHttpHandler {
       headers: {
         'Content-Type': 'application/json',
       },
-      withCredentials: true,
       ...config,
     })
 
@@ -30,6 +29,12 @@ export class HttpClient implements IHttpHandler {
 
         if (responseData?.message?.displayable && Array.isArray(responseData.message.content)) {
           error.message = responseData.message.content.join(', ')
+        } else if (responseData?.message && typeof responseData.message === 'string') {
+          error.message = responseData.message
+        } else if (error.response?.data?.message) {
+          error.message = String(error.response.data.message)
+        } else if (error.message) {
+          error.message = error.message
         } else {
           error.message = 'Ocurrió un error inesperado'
         }

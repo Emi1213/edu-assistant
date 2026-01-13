@@ -1,4 +1,5 @@
 import './index.css'
+import 'vue-toastification/dist/index.css'
 
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
@@ -6,9 +7,10 @@ import Toast from 'vue-toastification'
 import piniaPluginPersistedstate from "pinia-plugin-persistedstate";
 import App from './App.vue'
 import router from './router'
+import { useAuth } from './features/auth/composables/use-auth'
 
 const toastOptions = {
-  position: 'top-left',
+  position: 'top-right',
   timeout: 4000,
   closeOnClick: true,
   pauseOnFocusLoss: true,
@@ -29,4 +31,7 @@ app.use(pinia)
 app.use(router)
 app.use(Toast, toastOptions)
 
-app.mount('#app')
+const { initialize } = useAuth()
+initialize().then(() => {
+  app.mount('#app')
+})

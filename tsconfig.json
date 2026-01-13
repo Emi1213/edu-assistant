@@ -9,9 +9,15 @@
     }
   ],
   "compilerOptions": {
+    "preserveSymlinks": true,
     "baseUrl": ".",
+    "noEmit": true,
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@shared": ["./src/shared"],
+      "@features": ["/src/features"],
+      "@core": ["./src/core"],
+      "@components/*": ["./src/components/*"]
     }
   }
 }
