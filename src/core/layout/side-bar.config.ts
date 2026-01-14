@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Home } from 'lucide-vue-next'
+import { BookOpen, Home } from 'lucide-vue-next'
 
 export interface SidebarItem {
   label: string
@@ -9,8 +9,13 @@ export interface SidebarItem {
 
 export const SIDEBAR_ITEMS: SidebarItem[] = [
   {
-    label: 'Inicio',
+    label: 'Dashboard',
     route: '/',
     icon: Home,
+  },
+  {
+    label: 'Modulos',
+    route: '/modules',
+    icon: BookOpen,
   },
 ]

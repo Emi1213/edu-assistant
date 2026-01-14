@@ -9,6 +9,24 @@ import App from './App.vue'
 import router from './router'
 import { useAuth } from './features/auth/composables/use-auth'
 
+function initTheme() {
+  const stored = localStorage.getItem('theme')
+  const theme = stored && ['light', 'dark', 'system'].includes(stored) ? stored : 'system'
+  
+  const root = document.documentElement
+  const actualTheme = theme === 'system' 
+    ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+    : theme
+
+  if (actualTheme === 'dark') {
+    root.classList.add('dark')
+  } else {
+    root.classList.remove('dark')
+  }
+}
+
+initTheme()
+
 const toastOptions = {
   position: 'top-right',
   timeout: 4000,
