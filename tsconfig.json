@@ -7,5 +7,17 @@
     {
       "path": "./tsconfig.app.json"
     }
-  ]
+  ],
+  "compilerOptions": {
+    "preserveSymlinks": true,
+    "baseUrl": ".",
+    "noEmit": true,
+    "paths": {
+      "@/*": ["./src/*"],
+      "@shared": ["./src/shared"],
+      "@features": ["/src/features"],
+      "@core": ["./src/core"],
+      "@components/*": ["./src/components/*"]
+    }
+  }
 }
