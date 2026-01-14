@@ -1,24 +1,7 @@
 <template>
-  <div class="min-h-screen flex flex-col relative login-background">
+  <div class="min-h-screen flex flex-col relative login-background login-font">
     <!-- Overlay for background image -->
     <div class="absolute inset-0 bg-black opacity-30"></div>
-
-    <!-- Header Institucional -->
-    <header class="bg-[#C8102E] text-white shadow-md relative z-10">
-      <div class="container mx-auto px-4 py-3">
-        <div class="flex items-center">
-          <div class="flex items-center gap-3">
-            <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center">
-              <span class="text-[#C8102E] font-bold text-xl">UTA</span>
-            </div>
-            <div>
-              <h1 class="text-lg font-bold leading-tight">UNIVERSIDAD TÉCNICA DE AMBATO</h1>
-              <p class="text-xs opacity-90">Sistema de Asistencia Educativa</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </header>
 
     <div class="flex-1 flex items-center justify-center p-4 relative z-10">
       <div
@@ -35,9 +18,11 @@
           <div
             class="absolute hidden md:flex flex-col top-0 left-0 w-full h-full bg-[#C8102E] bg-opacity-90 text-white p-10 justify-center space-y-6"
           >
-            <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto">
-              <span class="text-[#C8102E] font-bold text-3xl">UTA</span>
-            </div>
+            <img
+              src="/images/logo.jpg"
+              alt="Logo"
+              class="w-32 h-32 mx-auto rounded-full object-cover"
+            />
             <div class="space-y-4 text-center">
               <h2 class="text-4xl font-extrabold leading-tight">
                 Sistema de Asistencia Educativa
@@ -148,6 +133,12 @@ function handleMicrosoftLogin() {
 </script>
 
 <style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
+.login-font {
+  font-family: 'Roboto', sans-serif;
+}
+
 .login-background {
   background-image: url('/images/login-hero.jpg');
   background-size: cover;
