@@ -65,7 +65,7 @@ export function useAuth() {
       toast.success('Sesión iniciada correctamente')
       
       const redirect = router.currentRoute.value.query.redirect as string | undefined
-      await router.replace(redirect || { name: 'dashboard' })
+      await router.push(redirect || '/dashboard')
     } catch (err: unknown) {
       const errorMsg = err instanceof Error ? err.message : 'Error al iniciar sesión'
       error.value = errorMsg

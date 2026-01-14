@@ -1,27 +1,20 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { authRoutes } from '@/features/auth/routes/auth-routes'
 import { authGuard } from '@/features/auth/guards/auth-guard'
+import { dashboardRoutes } from '@/features/dashboard/routes/dashboard.routes'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    ...authRoutes,
     {
       path: '/',
-      name: 'dashboard',
-      component: () => import('../views/HomeView.vue'),
-      meta: {
-        requiresAuth: true,
+      redirect: () => {
+        return { name: 'dashboard' }
       },
+      meta: { requiresAuth: true },
     },
-    {
-      path: '/about',
-      name: 'about',
-      component: () => import('../views/AboutView.vue'),
-      meta: {
-        requiresAuth: true,
-      },
-    },
+    ...authRoutes,
+    ...dashboardRoutes,
   ],
 })
 
