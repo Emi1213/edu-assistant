@@ -23,6 +23,11 @@ TypeScript cannot handle type information for `.vue` imports by default, so we r
 
 See [Vite Configuration Reference](https://vite.dev/config/).
 
+## Requisitos
+
+- Node 22.21
+
+
 ## Project Setup
 
 ```sh

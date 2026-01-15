@@ -1,23 +1,23 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
+import { authRoutes } from '@/features/auth/routes/auth-routes'
+import { authGuard } from '@/features/auth/guards/auth-guard'
+import { dashboardRoutes } from '@/features/dashboard/routes/dashboard.routes'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: '/',
-      name: 'home',
-      component: HomeView,
+      redirect: () => {
+        return { name: 'dashboard' }
+      },
+      meta: { requiresAuth: true },
     },
-    {
-      path: '/about',
-      name: 'about',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
-      component: () => import('../views/AboutView.vue'),
-    },
+    ...authRoutes,
+    ...dashboardRoutes,
   ],
 })
+
+router.beforeEach(authGuard)
 
 export default router
