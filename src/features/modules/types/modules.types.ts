@@ -1,0 +1,22 @@
+import type { AiConfiguration } from './ai-configuration.types'
+
+export interface Module {
+  id: number
+  title: string
+  description: string | null
+  teacherId: number
+  isPublic: boolean
+  allowSelfEnroll: boolean
+  logoUrl: string | null
+  isActive: boolean
+  createdAt: Date
+  updatedAt: Date
+  aiConfiguration?: AiConfiguration | null
+}
+
+export interface ModuleQueryParams {
+    page?: number
+    limit?: number
+    search?: string
+    isPublic?: boolean
+}

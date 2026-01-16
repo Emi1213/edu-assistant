@@ -1,6 +1,6 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { AuthDataSource } from '../services/auth-datasource'
+import { AuthDataSource } from '../services/auth.service'
 import { useAuthStore } from '../context/auth-store'
 import { useToast } from '@/shared/composables/use-toast'
 
@@ -65,7 +65,7 @@ export function useAuth() {
       toast.success('Sesión iniciada correctamente')
       
       const redirect = router.currentRoute.value.query.redirect as string | undefined
-      await router.push(redirect || '/dashboard')
+      await router.replace(redirect || { name: 'dashboard' })
     } catch (err: unknown) {
       const errorMsg = err instanceof Error ? err.message : 'Error al iniciar sesión'
       error.value = errorMsg
