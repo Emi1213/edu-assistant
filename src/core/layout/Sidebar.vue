@@ -27,7 +27,7 @@ function isActiveRoute(itemRoute: string): boolean {
 <template>
   <Sidebar class="border-r border-sidebar-border">
     <SidebarHeader class="bg-gradient-to-br from-[#C8102E] to-[#E63946] text-white border-b border-[#B00E26]">
-      <div class="px-4 py-4">
+      <div class="px-4 py-2">
         <div class="flex items-center gap-3">
           <div class="w-12 h-12 bg-white rounded-lg flex items-center justify-center shadow-md p-1.5">
             <img 
@@ -44,7 +44,7 @@ function isActiveRoute(itemRoute: string): boolean {
       </div>
     </SidebarHeader>
 
-    <SidebarContent class="py-4">
+    <SidebarContent class="py-4 sidebar-scrollable-content">
       <SidebarMenu class="space-y-1">
         <SidebarMenuItem
           v-for="item in SIDEBAR_ITEMS"
@@ -56,10 +56,10 @@ function isActiveRoute(itemRoute: string): boolean {
           >
             <RouterLink 
               :to="item.route"
-              class="flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 mx-2"
+              class="flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-300 ease-in-out mx-2 group"
               :class="isActiveRoute(item.route)
                 ? 'bg-sidebar-accent text-[#C8102E] dark:text-red-400 font-semibold border-l-4 border-[#C8102E] dark:border-red-500' 
-                : 'hover:bg-sidebar-accent hover:text-sidebar-accent-foreground text-sidebar-foreground'"
+                : 'hover:bg-sidebar-accent hover:text-[#C8102E] dark:hover:text-red-400 text-sidebar-foreground hover:translate-x-1'"
             >
               <component 
                 v-if="item.icon" 
@@ -67,7 +67,7 @@ function isActiveRoute(itemRoute: string): boolean {
                 class="size-5 transition-transform flex-shrink-0"
                 :class="isActiveRoute(item.route) 
                   ? 'text-[#C8102E] dark:text-red-400' 
-                  : 'text-sidebar-foreground/70 group-hover:text-sidebar-foreground'"
+                  : 'text-sidebar-foreground/70 group-hover:text-[#C8102E] dark:group-hover:text-red-400'"
               />
               <span class="text-sm">{{ item.label }}</span>
             </RouterLink>
