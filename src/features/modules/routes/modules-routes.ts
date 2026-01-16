@@ -16,4 +16,19 @@ export const modulesRoutes: RouteRecordRaw[] = [
       }
     ]
   },
+  {
+    path: '/all-modules',
+    component: () => import('@/core/layout/DashboardLayout.vue'),
+    children: [
+      {
+        path: '',
+        name: 'all-modules',
+        component: () => import('../presentation/views/available-modules-list-view.vue'),
+        meta: {
+          layout: 'dashboard',
+          requiresAuth: true,
+        },
+      }
+    ]
+  }
 ]

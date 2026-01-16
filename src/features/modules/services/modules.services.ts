@@ -17,4 +17,11 @@ export class ModulesDataSource {
     })
     return response.data
   }
+
+  async getAvailable(query?: ModuleQueryParams): Promise<IHttpPaginatedResponse<Module> | null> {
+    const response = await this.httpClient.get<IHttpPaginatedResponse<Module>>(API_ROUTES.MODULES.GET_AVAILABLE, {
+      params: query,
+    })
+    return response.data
+  }
 }
