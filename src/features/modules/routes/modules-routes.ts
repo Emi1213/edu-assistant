@@ -13,6 +13,24 @@ export const modulesRoutes: RouteRecordRaw[] = [
           layout: 'dashboard',
           requiresAuth: true,
         },
+      },
+      {
+        path: ':id/wiki',
+        name: 'module-wiki',
+        component: () => import('../presentation/views/module-wiki-view.vue'),
+        meta: {
+          layout: 'dashboard',
+          requiresAuth: true,
+        },
+      },
+      {
+        path: ':id/pages/:pageId',
+        name: 'page-detail',
+        component: () => import('@/features/pages/presentation/views/page-detail-view.vue'),
+        meta: {
+          layout: 'dashboard',
+          requiresAuth: true,
+        },
       }
     ]
   },

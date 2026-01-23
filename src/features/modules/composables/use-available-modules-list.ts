@@ -3,6 +3,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { debouncedRef } from '@vueuse/core'
 import { useAvailableModules } from './queries/use-available-modules'
 import type { ModuleQueryParams } from '../types/modules.types'
+import type { Module } from '../types/modules.types'
 
 export function useAvailableModulesList() {
   const router = useRouter()
@@ -10,12 +11,14 @@ export function useAvailableModulesList() {
   const searchQuery = ref<string>((route.query.search as string) || '')
   const debouncedSearchQuery = debouncedRef(searchQuery, 300)
 
-  const currentPage = ref(parseInt(route.query.page as string) || 0)
+  const currentPage = ref(1)
   const pageSize = ref(6)
+  const loadedModules = ref<Module[]>([])
+  const totalPages = ref(0)
 
   const queryParams = computed<ModuleQueryParams>(() => {
     const params: ModuleQueryParams = {
-      page: currentPage.value + 1,
+      page: currentPage.value,
       limit: pageSize.value,
     }
     
@@ -26,61 +29,69 @@ export function useAvailableModulesList() {
     return params
   })
 
-  const { data: paginatedResponse, isLoading, error, refetch } = useAvailableModules(queryParams)
+  const { data: paginatedResponse, isLoading, isFetching, error, refetch } = useAvailableModules(queryParams)
 
-  const modules = computed(() => paginatedResponse.value?.records || [])
-  const totalPages = computed(() => paginatedResponse.value?.pages || 0)
+  watch(paginatedResponse, (response) => {
+    if (response) {
+      totalPages.value = response.pages
+      
+      if (currentPage.value === 1) {
+        loadedModules.value = [...response.records]
+      } else {
+        loadedModules.value = [...loadedModules.value, ...response.records]
+      }
+    }
+  }, { immediate: true })
+
+  const modules = computed(() => loadedModules.value)
+
+  const hasNextPage = computed(() => {
+    return currentPage.value < totalPages.value
+  })
+
+  const isFetchingNextPage = computed(() => isFetching.value && currentPage.value > 1)
 
   const updateURL = () => {
     const query: Record<string, string> = {}
 
     if (searchQuery.value) query.search = searchQuery.value
-    if (currentPage.value > 0) query.page = currentPage.value.toString()
 
     router.replace({ query })
   }
 
-  watch([searchQuery, currentPage], updateURL, {
+  watch([searchQuery], updateURL, {
     deep: true,
+  })
+
+  watch(debouncedSearchQuery, () => {
+    currentPage.value = 1
+    loadedModules.value = []
   })
 
   const updateSearch = (query: string) => {
     searchQuery.value = query
-    currentPage.value = 0
-  }
-
-  const goToPreviousPage = () => {
-    if (currentPage.value > 0) {
-      currentPage.value--
-    }
-  }
-
-  const goToNextPage = () => {
-    if (currentPage.value < totalPages.value - 1) {
-      currentPage.value++
-    }
   }
 
   const clearFilters = () => {
     searchQuery.value = ''
-    currentPage.value = 0
   }
 
-  const hasNextPage = computed(() => {
-    return currentPage.value < totalPages.value - 1
-  })
+  const loadMore = () => {
+    if (hasNextPage.value && !isFetching.value) {
+      currentPage.value++
+    }
+  }
 
   return {
     modules,
     isLoading,
-    error,
-    searchQuery,
-    currentPage,
+    isFetchingNextPage,
     hasNextPage,
+    searchQuery,
     updateSearch,
     clearFilters,
-    goToPreviousPage,
-    goToNextPage,
+    loadMore,
     refetch,
+    error,
   }
 }

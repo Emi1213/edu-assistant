@@ -24,4 +24,9 @@ export class ModulesDataSource {
     })
     return response.data
   }
+
+  async getById(id: number): Promise<Module | null> {
+    const response = await this.httpClient.get<Module>(API_ROUTES.MODULES.GET_BY_ID(id))
+    return response.data
+  }
 }

@@ -4,11 +4,15 @@ import { Globe, Lock, BookOpen } from 'lucide-vue-next'
 
 defineProps<{
   module: Module
+  onClick?: (module: Module) => void
 }>()
 </script>
 
 <template>
-  <div class="group relative rounded-lg border border-border bg-card overflow-hidden shadow-sm hover:shadow-xl hover:border-red-700 dark:hover:border-[#600000] transition-all duration-200 cursor-pointer">
+  <div 
+    class="group relative rounded-lg border border-border bg-card overflow-hidden shadow-sm hover:shadow-xl hover:border-red-700 dark:hover:border-[#600000] transition-all duration-200 cursor-pointer"
+    @click="onClick && onClick(module)"
+  >
     <div class="absolute left-0 top-0 bottom-0 w-1 bg-[#C8102E]"></div>
     
     <div class="p-5">

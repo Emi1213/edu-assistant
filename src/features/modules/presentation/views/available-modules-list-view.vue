@@ -1,24 +1,65 @@
 <script setup lang="ts">
+import { onMounted, onUnmounted, ref, watch, nextTick } from 'vue'
 import ModulesFilters from '../components/modules-filters.vue'
 import ModuleCard from '../components/module-card.vue'
-import Button from '@/components/ui/button/Button.vue'
 import Skeleton from '@/components/ui/skeleton/Skeleton.vue'
-import { ChevronLeft, ChevronRight } from 'lucide-vue-next'
 import { useAvailableModulesList } from '../../composables/use-available-modules-list'
 
 const {
   modules,
   isLoading,
-  searchQuery,
-  currentPage,
+  isFetchingNextPage,
   hasNextPage,
+  searchQuery,
   updateSearch,
   clearFilters,
-  goToPreviousPage,
-  goToNextPage,
+  loadMore,
 } = useAvailableModulesList()
 
 const emptyMessage = 'No modules found'
+const loadMoreRef = ref<HTMLElement | null>(null)
+
+let observer: IntersectionObserver | null = null
+
+const setupObserver = () => {
+  if (observer) {
+    observer.disconnect()
+  }
+
+  if (!loadMoreRef.value) return
+
+  observer = new IntersectionObserver(
+    (entries) => {
+      const entry = entries[0]
+      if (entry && entry.isIntersecting && hasNextPage.value && !isFetchingNextPage.value) {
+        loadMore()
+      }
+    },
+    {
+      rootMargin: '100px',
+    }
+  )
+
+  observer.observe(loadMoreRef.value)
+}
+
+onMounted(() => {
+  nextTick(() => {
+    setupObserver()
+  })
+})
+
+watch([loadMoreRef, hasNextPage], () => {
+  nextTick(() => {
+    setupObserver()
+  })
+})
+
+onUnmounted(() => {
+  if (observer) {
+    observer.disconnect()
+  }
+})
 </script>
 
 <template>
@@ -33,7 +74,7 @@ const emptyMessage = 'No modules found'
       :on-clear-filters="clearFilters"
     />
 
-    <div v-if="isLoading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div v-if="isLoading && modules.length === 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       <div
         v-for="i in 6"
         :key="i"
@@ -49,7 +90,7 @@ const emptyMessage = 'No modules found'
       <p class="text-muted-foreground">{{ emptyMessage }}</p>
     </div>
 
-    <div v-else class="space-y-8">
+    <div v-else class="space-y-6">
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <ModuleCard
           v-for="module in modules"
@@ -59,32 +100,16 @@ const emptyMessage = 'No modules found'
       </div>
 
       <div
-        v-if="currentPage > 0 || hasNextPage"
-        class="flex items-center justify-center gap-4 pt-8 border-t border-border"
+        ref="loadMoreRef"
+        class="flex items-center justify-center py-8"
       >
-        <Button
-          variant="outline"
-          :disabled="currentPage === 0"
-          @click="goToPreviousPage"
-          class="min-w-[120px]"
-        >
-          <ChevronLeft class="w-4 h-4 mr-2" />
-          Anterior
-        </Button>
-        <div class="flex items-center gap-2 px-4 py-2 rounded-lg bg-muted">
-          <span class="text-sm font-medium text-foreground">
-            Página {{ currentPage + 1 }}
-          </span>
+        <div v-if="isFetchingNextPage" class="flex items-center gap-2 text-muted-foreground">
+          <div class="w-5 h-5 border-2 border-[#C8102E] border-t-transparent rounded-full animate-spin"></div>
+          <span class="text-sm">Cargando más módulos...</span>
         </div>
-        <Button
-          variant="outline"
-          :disabled="!hasNextPage"
-          @click="goToNextPage"
-          class="min-w-[120px]"
-        >
-          Siguiente
-          <ChevronRight class="w-4 h-4 ml-2" />
-        </Button>
+        <div v-else-if="!hasNextPage && modules.length > 0" class="text-sm text-muted-foreground">
+          No hay más módulos para mostrar
+        </div>
       </div>
     </div>
   </div>
