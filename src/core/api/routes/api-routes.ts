@@ -13,6 +13,8 @@ export const API_ROUTES = {
         GET_ALL: `${AR_KEYS.MODULES}`,
         GET_AVAILABLE: `${AR_KEYS.MODULES}/available`,
         GET_BY_ID: (id: number) => `${AR_KEYS.MODULES}/${id}`,
+        CREATE: `${AR_KEYS.MODULES}`,
+        UPDATE: (id: number) => `${AR_KEYS.MODULES}/${id}`,
     },
     PAGES: {
         GET_BY_MODULE_ID: (moduleId: number) => `${AR_KEYS.PAGES}/module/${moduleId}`,

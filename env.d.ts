@@ -6,6 +6,8 @@ declare module '*.vue' {
   export default component
 }
 
+declare module 'lucide-vue-next';
+
 interface ImportMetaEnv {
   readonly VITE_API_URL?: string
   readonly BASE_URL?: string

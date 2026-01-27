@@ -20,3 +20,27 @@ export interface ModuleQueryParams {
     search?: string
     isPublic?: boolean
 }
+
+export interface ICreateModule {
+  title: string
+  description: string | null
+  teacherId: number
+  isPublic: boolean
+  allowSelfEnroll: boolean
+  logoUrl: string | null
+  restrictions: string[] // Placeholder for restrictions
+  aiConfiguration?: AiConfiguration | null
+}
+
+export interface IUpdateModule {
+  id: number
+  title?: string
+  description?: string | null
+  teacherId?: number
+  isPublic?: boolean
+  allowSelfEnroll?: boolean
+  logoUrl?: string | null
+  isActive?: boolean
+  restrictions?: string[] // Placeholder for restrictions
+  aiConfiguration?: AiConfiguration | null
+}

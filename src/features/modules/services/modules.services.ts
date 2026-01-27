@@ -1,6 +1,6 @@
 import { httpClient } from '@/core/infraestructure/http'
 import type { IHttpHandler } from '@/core/interfaces/IHttpHandler'
-import type { Module, ModuleQueryParams } from '../types/modules.types'
+import type { Module, ModuleQueryParams, ICreateModule, IUpdateModule } from '../types/modules.types'
 import type { IHttpPaginatedResponse } from '@/shared/types/http-response.types'
 import { API_ROUTES } from '@/core/api/routes/api-routes'
 
@@ -27,6 +27,16 @@ export class ModulesDataSource {
 
   async getById(id: number): Promise<Module | null> {
     const response = await this.httpClient.get<Module>(API_ROUTES.MODULES.GET_BY_ID(id))
+    return response.data
+  }
+
+  async create(data: ICreateModule): Promise<Module | null> {
+    const response = await this.httpClient.post<Module>(API_ROUTES.MODULES.CREATE, data)
+    return response.data
+  }
+
+  async update(id: number, data: IUpdateModule): Promise<Module | null> {
+    const response = await this.httpClient.patch<Module>(API_ROUTES.MODULES.UPDATE(id), data)
     return response.data
   }
 }
