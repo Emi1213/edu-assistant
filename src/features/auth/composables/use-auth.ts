@@ -1,6 +1,6 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { AuthDataSource } from '../services/auth-datasource'
+import { AuthDataSource } from '../services/auth.service'
 import { useAuthStore } from '../context/auth-store'
 import { useToast } from '@/shared/composables/use-toast'
 

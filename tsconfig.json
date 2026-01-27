@@ -15,7 +15,7 @@
     "paths": {
       "@/*": ["./src/*"],
       "@shared": ["./src/shared"],
-      "@features": ["/src/features"],
+      "@features": ["./src/features"],
       "@core": ["./src/core"],
       "@components/*": ["./src/components/*"]
     }
