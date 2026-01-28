@@ -11,7 +11,7 @@ export function useGetModuleEnrollments(moduleId: Ref<number>) {
     queryKey: [QUERY_KEYS.MODULE_ENROLLMENTS(moduleId.value)],
     queryFn: () => enrollmentsDataSource.getModuleEnrollments(moduleId.value),
     enabled: moduleId.value !== null && moduleId.value !== undefined,
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 1000 * 60 * 5,
     refetchOnWindowFocus: false,
   })
   return query

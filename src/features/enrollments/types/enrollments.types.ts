@@ -1,7 +1,6 @@
 import type { UserProfile } from '../../auth/types/auth.types'
 import type { Role } from '../../auth/types/roles.enum'
 
-// Interfaces for Request Payloads
 export interface CreateEnrollmentPayload {
   moduleId: number
 }
@@ -16,7 +15,6 @@ export interface UpdateEnrollmentPayload {
   completedAt?: Date | null
 }
 
-// Interfaces for Responses
 export interface Enrollment {
   id: number
   userId: number
@@ -28,7 +26,7 @@ export interface Enrollment {
 
 export interface EnrollmentStudent {
   id: number
-  user: UserProfile // Assuming UserProfile is sufficient, otherwise create a more specific type
+  user: UserProfile
   enrolledAt: Date
   completedAt: Date | null
   isActive: boolean
