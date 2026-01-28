@@ -5,4 +5,6 @@ export const QUERY_KEYS = {
     MODULES: (params?: ModuleQueryParams) => ['modules', params],
     AVAILABLE_MODULES: (params?: ModuleQueryParams) => ['available-modules', params],
     PAGES: (params?: PagesQueryParams) => ['pages', params],
+    ENROLLMENTS: () => ['enrollments'],
+    MODULE_ENROLLMENTS: (moduleId: number) => ['module-enrollments', moduleId],
 }

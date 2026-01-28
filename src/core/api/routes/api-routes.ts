@@ -2,6 +2,7 @@ const AR_KEYS = {
     AUTH: '/auth',
     MODULES: '/modules',
     PAGES: '/pages',
+    ENROLLMENTS: '/enrollments',
 }
 
 export const API_ROUTES = {
@@ -17,5 +18,13 @@ export const API_ROUTES = {
     PAGES: {
         GET_BY_MODULE_ID: (moduleId: number) => `${AR_KEYS.PAGES}/module/${moduleId}`,
         GET_BY_ID: (id: number) => `${AR_KEYS.PAGES}/${id}`,
+    },
+    ENROLLMENTS: {
+        SELF_ENROLL: `${AR_KEYS.ENROLLMENTS}/self`,
+        BULK_ENROLL: `${AR_KEYS.ENROLLMENTS}/bulk`,
+        GET_MODULE_ENROLLMENTS: (moduleId: number) => `${AR_KEYS.ENROLLMENTS}/module/${moduleId}`,
+        UPDATE: (id: number) => `${AR_KEYS.ENROLLMENTS}/${id}`,
+        SELF_UNENROLL: (moduleId: number) => `${AR_KEYS.ENROLLMENTS}/self/${moduleId}`,
+        REMOVE: (id: number) => `${AR_KEYS.ENROLLMENTS}/${id}`,
     }
 }
