@@ -28,7 +28,7 @@ export interface ICreateModule {
   isPublic: boolean
   allowSelfEnroll: boolean
   logoUrl: string | null
-  restrictions: string[] // Placeholder for restrictions
+  restrictions: string[]
   aiConfiguration?: AiConfiguration | null
 }
 
@@ -41,6 +41,6 @@ export interface IUpdateModule {
   allowSelfEnroll?: boolean
   logoUrl?: string | null
   isActive?: boolean
-  restrictions?: string[] // Placeholder for restrictions
+  restrictions?: string[] 
   aiConfiguration?: AiConfiguration | null
 }

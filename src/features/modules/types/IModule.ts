@@ -1,8 +1,5 @@
-import { IAiConfiguration } from './IAiConfiguration';
+import type { IAiConfiguration } from './IAiConfiguration';
 
-/**
- * Representa la estructura de un módulo devuelta por la API.
- */
 export interface IModule {
   id: number;
   title: string;

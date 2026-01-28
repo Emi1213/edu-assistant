@@ -1,8 +1,6 @@
-import { IUpdateAiConfiguration } from './IUpdateAiConfiguration';
+import type { IUpdateAiConfiguration } from './IUpdateAiConfiguration';
 
-/**
- * Representa la estructura de datos para actualizar un módulo existente.
- */
+
 export interface IUpdateModule {
   title?: string;
   description?: string;

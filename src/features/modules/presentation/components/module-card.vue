@@ -42,7 +42,6 @@ defineProps<{
         </div>
       </div>
 
-      <!-- Description -->
       <div class="mb-4">
         <p v-if="module.description" class="text-sm text-muted-foreground/80 line-clamp-2 leading-relaxed">
           {{ module.description }}
@@ -52,7 +51,7 @@ defineProps<{
         </p>
       </div>
 
-      <!-- Footer with badges -->
+
       <div class="flex items-center justify-between pt-3 border-t border-border">
         <div class="flex items-center gap-2">
           <span

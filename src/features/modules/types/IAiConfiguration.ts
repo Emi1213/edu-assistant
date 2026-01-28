@@ -1,8 +1,6 @@
 import { AiAudience, AiLength, AiTargetLevel, AiTone } from './ai-configuration-enums';
 
-/**
- * Representa la configuración de IA de un módulo.
- */
+
 export interface IAiConfiguration {
   id: number;
   moduleId: number;

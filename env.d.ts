@@ -1,4 +1,4 @@
-/// <reference types="vite/client" />
+///<reference types="vite/client" />
 
 declare module '*.vue' {
   import type { DefineComponent } from 'vue'
@@ -6,7 +6,6 @@ declare module '*.vue' {
   export default component
 }
 
-declare module 'lucide-vue-next';
 
 interface ImportMetaEnv {
   readonly VITE_API_URL?: string
