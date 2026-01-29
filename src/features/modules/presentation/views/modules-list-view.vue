@@ -5,7 +5,7 @@ import ModulesFilters from '../components/modules-filters.vue'
 import ModuleCard from '../components/module-card.vue'
 import Skeleton from '@/components/ui/skeleton/Skeleton.vue'
 import { useModulesList } from '../../composables/use-modules-list'
-import type { Module } from '../../types/modules.types'
+import type { IModule } from '../../types/modules.types'
 
 const router = useRouter()
 
@@ -23,7 +23,7 @@ const {
 const emptyMessage = 'No modules found'
 const loadMoreRef = ref<HTMLElement | null>(null)
 
-const handleModuleClick = (module: Module) => {
+const handleModuleClick = (module: IModule) => {
   router.push(`/modules/${module.id}/wiki`)
 }
 

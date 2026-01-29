@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import type { Module } from '../../types/modules.types'
+import type { IModule } from '../../types/modules.types'
 import { Globe, Lock, BookOpen } from 'lucide-vue-next'
 
 defineProps<{
-  module: Module
-  onClick?: (module: Module) => void
+  module: IModule
+  onClick?: (module: IModule) => void
 }>()
 </script>
 

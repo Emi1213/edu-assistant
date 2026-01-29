@@ -6,7 +6,7 @@ import { useModule } from '../../composables/queries/use-module'
 import { usePages } from '@/features/pages/composables/queries/use-pages'
 import PageCard from '@/features/pages/presentation/components/page-card.vue'
 import Skeleton from '@/components/ui/skeleton/Skeleton.vue'
-import type { Page } from '@/features/pages/types/pages.types'
+import type { IPage } from '@/features/pages/types/pages.types'
 
 const route = useRoute()
 const router = useRouter()
@@ -28,7 +28,7 @@ const goBack = () => {
   router.push('/modules')
 }
 
-const handlePageClick = (page: Page) => {
+const handlePageClick = (page: IPage) => {
   router.push(`/modules/${moduleId.value}/pages/${page.id}`)
 }
 </script>
