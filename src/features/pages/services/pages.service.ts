@@ -1,48 +1,69 @@
-import { httpClient } from '@/core/infraestructure/http';
-import { IPage } from '../interfaces/IPage';
-import { ICreatePage } from '../interfaces/ICreatePage';
-import { IUpdatePage } from '../interfaces/IUpdatePage';
-import { IReorderPagePayload } from '../interfaces/IReorderPage';
-import { IHttpResponse } from '@/core/interfaces/IHttpHandler'; // Corrected import path for IHttpResponse
+import { httpClient } from '@/core/infraestructure/http'
+import type {
+  ICreatePage,
+  IUpdatePage,
+  IPage,
+  IPageQueryParams,
+  IReorderPages,
+} from '../types/pages.types'
+import type { IHttpPaginatedResponse } from '@/shared/types/http-response.types'
 
-const BASE_URL = '/pages';
+class PagesService {
+  private readonly API_URL = 'pages'
 
-export const pagesService = {
-  /**
-   * Obtiene una lista de páginas filtradas por ID de módulo.
-   * @param moduleId El ID del módulo para filtrar las páginas.
-   * @returns Una promesa que resuelve con la respuesta de la API que contiene las páginas.
-   */
-  async getPages(moduleId: number): Promise<IHttpResponse<IPage[]>> {
-    return await httpClient.get<IPage[]>(`${BASE_URL}?moduleId=${moduleId}`);
-  },
+  async createPage(payload: ICreatePage): Promise<IPage> {
+    const response = await httpClient.post<IPage>(`${this.API_URL}`, payload)
+    if (!response.data) {
+      throw new Error('La creación de la página falló o devolvió datos vacíos.')
+    }
+    return response.data
+  }
 
-  /**
-   * Crea una nueva página.
-   * @param payload Los datos para crear la página.
-   * @returns Una promesa que resuelve con la respuesta de la API que contiene la página creada.
-   */
-  async createPage(payload: ICreatePage): Promise<IHttpResponse<IPage>> {
-    return await httpClient.post<IPage>(BASE_URL, payload);
-  },
+  async updatePage(
+    id: IPage['id'],
+    payload: IUpdatePage,
+  ): Promise<IPage> {
+    const response = await httpClient.patch<IPage>(`${this.API_URL}/${id}`, payload)
+    if (!response.data) {
+      throw new Error('La actualización de la página falló o devolvió datos vacíos.')
+    }
+    return response.data
+  }
 
-  /**
-   * Actualiza una página existente.
-   * @param id El ID de la página a actualizar.
-   * @param payload Los datos para actualizar la página.
-   * @returns Una promesa que resuelve con la respuesta de la API que contiene la página actualizada.
-   */
-  async updatePage(id: number, payload: IUpdatePage): Promise<IHttpResponse<IPage>> {
-    return await httpClient.patch<IPage>(`${BASE_URL}/${id}`, payload);
-  },
+  async getAllPages(
+    params?: IPageQueryParams,
+  ): Promise<IHttpPaginatedResponse<IPage>> {
+    const response = await httpClient.get<IHttpPaginatedResponse<IPage>>(
+      `${this.API_URL}`,
+      { params },
+    )
+    if (!response.data) {
+      throw new Error('La obtención de páginas paginadas falló o devolvió datos vacíos.')
+    }
+    if (!response.data.records) {
+      throw new Error('La respuesta de páginas paginadas no contiene el array de registros.')
+    }
+    return response.data
+  }
 
-  /**
-   * Reordena las páginas.
-   * @param payload Un array de objetos con el ID de la página y su nuevo índice de orden.
-   * @returns Una promesa que resuelve con la respuesta de la API.
-   */
-  async reorderPages(payload: IReorderPagePayload[]): Promise<IHttpResponse<void>> {
-    // Assuming the reorder endpoint is a PUT to /pages/reorder that takes an array of { id, orderIndex }
-    return await httpClient.put<void>(`${BASE_URL}/reorder`, payload);
-  },
-};
+  async getPageById(id: IPage['id']): Promise<IPage> {
+    const response = await httpClient.get<IPage>(`${this.API_URL}/${id}`)
+    if (!response.data) {
+      throw new Error('La obtención de la página por ID falló o devolvió datos vacíos.')
+    }
+    return response.data
+  }
+
+  async reorderPages(pages: IReorderPages[]): Promise<IPage[]> {
+    const response = await httpClient.patch<IPage[]>(
+      `${this.API_URL}/reorder`,
+      pages,
+    )
+    if (!response.data) {
+      throw new Error('El reordenamiento de páginas falló o devolvió datos vacíos.')
+    }
+    return response.data
+  }
+}
+
+export const pagesService = new PagesService()

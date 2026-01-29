@@ -1,12 +1,12 @@
 import type { ComputedRef } from 'vue'
-import type { PageQueryParams } from '../../types/pages.types'
+import type { IPageQueryParams } from '../../types/pages.types'
 import { useQuery } from '@tanstack/vue-query'
 import { QUERY_KEYS } from '@/shared/composables/query-key'
 import { PagesDataSource } from '../../services/pages.services'
 
 const pagesDataSource = new PagesDataSource()
 
-export interface PagesQueryParams extends PageQueryParams {
+export interface PagesQueryParams extends IPageQueryParams {
   moduleId: number
 }
 

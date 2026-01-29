@@ -1,46 +1,113 @@
-import type { AiConfiguration } from './ai-configuration.types'
+export const AiTargetLevel = {
+  BEGINNER: 'BEGINNER',
+  INTERMEDIATE: 'INTERMEDIATE',
+  ADVANCED: 'ADVANCED',
+  EXPERT: 'EXPERT',
+} as const
+export type AiTargetLevel = typeof AiTargetLevel[keyof typeof AiTargetLevel]
 
-export interface Module {
-  id: number
-  title: string
-  description: string | null
-  teacherId: number
-  isPublic: boolean
-  allowSelfEnroll: boolean
-  logoUrl: string | null
-  isActive: boolean
-  createdAt: Date
-  updatedAt: Date
-  aiConfiguration?: AiConfiguration | null
+export const AiAudience = {
+  HIGH_SCHOOL: 'HIGH_SCHOOL',
+  UNIVERSITY: 'UNIVERSITY',
+  PROFESSIONAL: 'PROFESSIONAL',
+  GENERAL: 'GENERAL',
+} as const
+export type AiAudience = typeof AiAudience[keyof typeof AiAudience]
+
+export const AiLength = {
+  SHORT: 'SHORT',
+  MEDIUM: 'MEDIUM',
+  LONG: 'LONG',
+} as const
+export type AiLength = typeof AiLength[keyof typeof AiLength]
+
+export const AiTone = {
+  FORMAL: 'FORMAL',
+  INFORMAL: 'INFORMAL',
+  EDUCATIONAL: 'EDUCATIONAL',
+  HUMOROUS: 'HUMOROUS',
+  TECHNICAL: 'TECHNICAL',
+  FRIENDLY: 'FRIENDLY',
+} as const
+export type AiTone = typeof AiTone[keyof typeof AiTone]
+
+export interface ICreateAiConfiguration {
+  language?: string
+  contextPrompt?: string | null
+  targetLevel?: AiTargetLevel
+  audience?: AiAudience
+  learningObjectives?: string[]
+  contentLength?: AiLength
+  tone?: AiTone
 }
 
-export interface ModuleQueryParams {
-    page?: number
-    limit?: number
-    search?: string
-    isPublic?: boolean
+export interface IUpdateAiConfiguration {
+  language?: string
+  contextPrompt?: string | null
+  targetLevel?: AiTargetLevel
+  audience?: AiAudience
+  learningObjectives?: string[]
+  contentLength?: AiLength
+  tone?: AiTone
+}
+
+export interface IModuleAiConfiguration {
+  id: number
+  moduleId: number
+  language: string
+  contextPrompt: string | null
+  createdAt: Date
+  updatedAt: Date
+  targetLevel?: AiTargetLevel
+  audience?: AiAudience
+  learningObjectives?: string[]
+  contentLength?: AiLength
+  tone?: AiTone
 }
 
 export interface ICreateModule {
   title: string
+  description?: string | null
+  isPublic?: boolean
+  allowSelfEnroll?: boolean
+  allowSelfUnenroll?: boolean
+  logoUrl?: string | null
+  aiConfiguration?: ICreateAiConfiguration
+}
+
+export interface IUpdateModule {
+  title?: string
+  description?: string | null
+  isPublic?: boolean
+  allowSelfEnroll?: boolean
+  allowSelfUnenroll?: boolean
+  logoUrl?: string | null
+  isActive?: boolean
+  aiConfiguration?: IUpdateAiConfiguration
+}
+
+export interface IModule {
+  id: number
+  title: string
   description: string | null
   teacherId: number
   isPublic: boolean
   allowSelfEnroll: boolean
+  allowSelfUnenroll: boolean
   logoUrl: string | null
-  restrictions: string[]
-  aiConfiguration?: AiConfiguration | null
+  isActive: boolean
+  createdAt: Date
+  updatedAt: Date
+  aiConfiguration?: IModuleAiConfiguration | null
 }
 
-export interface IUpdateModule {
-  id: number
-  title?: string
-  description?: string | null
-  teacherId?: number
+export interface IModuleQueryParams {
+  page?: number
+  limit?: number
+  search?: string
   isPublic?: boolean
   allowSelfEnroll?: boolean
-  logoUrl?: string | null
+  allowSelfUnenroll?: boolean
   isActive?: boolean
-  restrictions?: string[] 
-  aiConfiguration?: AiConfiguration | null
+  teacherId?: number
 }
