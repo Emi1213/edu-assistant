@@ -12,11 +12,11 @@ export const moduleFormSchema = z.object({
   logoUrl: z.string().optional().default(''),
   aiConfiguration: z.object({
     language: z.string().min(1, 'El idioma es requerido').default('es'),
-    targetLevel: z.nativeEnum(TargetLevel).default('BEGINNER'),
-    audience: z.nativeEnum(Audience).default('UNIVERSITY'),
+    targetLevel: z.nativeEnum(TargetLevel).default(TargetLevel.BASIC),
+    audience: z.nativeEnum(Audience).default(Audience.UNIVERSITY),
     learningObjectives: z.array(z.string()).default([]),
-    contentLength: z.nativeEnum(ContentLength).default('MEDIUM'),
-    tone: z.nativeEnum(Tone).default('EDUCATIONAL'),
+    contentLength: z.nativeEnum(ContentLength).default(ContentLength.MEDIUM),
+    tone: z.nativeEnum(Tone).default(Tone.EDUCATIONAL),
   }).default(defaultAiConfiguration),
 })
 
