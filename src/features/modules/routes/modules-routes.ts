@@ -8,10 +8,11 @@ export const modulesRoutes: RouteRecordRaw[] = [
       {
         path: '',
         name: 'modules',
-        component: () => import('../presentation/views/modules-list-view.vue'),
+        component: () => import('../presentation/containers/modules-list-container.vue'),
         meta: {
           layout: 'dashboard',
           requiresAuth: true,
+          roles: ['TEACHER', 'ADMIN', 'STUDENT'],   
         },
       },
       {
@@ -21,6 +22,7 @@ export const modulesRoutes: RouteRecordRaw[] = [
         meta: {
           layout: 'dashboard',
           requiresAuth: true,
+          roles: ['TEACHER', 'ADMIN', 'STUDENT'], 
         },
       },
       {
@@ -30,6 +32,7 @@ export const modulesRoutes: RouteRecordRaw[] = [
         meta: {
           layout: 'dashboard',
           requiresAuth: true,
+          roles: ['TEACHER', 'ADMIN', 'STUDENT'], 
         },
       }
     ]
@@ -45,6 +48,7 @@ export const modulesRoutes: RouteRecordRaw[] = [
         meta: {
           layout: 'dashboard',
           requiresAuth: true,
+          roles: ['STUDENT'], 
         },
       }
     ]

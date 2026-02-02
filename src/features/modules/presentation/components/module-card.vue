@@ -1,17 +1,33 @@
 <script setup lang="ts">
 import type { Module } from '../../types/modules.types'
 import { Globe, Lock, BookOpen } from 'lucide-vue-next'
+import ModulesActionsMenu from './modules-actions-menu.vue'
 
-defineProps<{
+const props = defineProps<{
   module: Module
   onClick?: (module: Module) => void
+  onEdit?: (module: Module) => void
+  onDelete?: (module: Module) => void
 }>()
+
+const handleEdit = () => {
+  if (props.onEdit) {
+    props.onEdit(props.module)
+  }
+}
+
+const handleDelete = () => {
+  if (props.onDelete) {
+    props.onDelete(props.module)
+  }
+}
 </script>
 
 <template>
   <div 
-    class="group relative rounded-lg border border-border bg-card overflow-hidden shadow-sm hover:shadow-xl hover:border-red-700 dark:hover:border-[#600000] transition-all duration-200 cursor-pointer"
-    @click="onClick && onClick(module)"
+    class="group relative rounded-lg border border-border bg-card overflow-hidden shadow-sm hover:shadow-xl hover:border-red-700 dark:hover:border-[#600000] transition-all duration-200"
+    :class="{ 'cursor-pointer': props.onClick }"
+    @click="props.onClick && props.onClick(props.module)"
   >
     <div class="absolute left-0 top-0 bottom-0 w-1 bg-[#C8102E]"></div>
     
@@ -51,8 +67,6 @@ defineProps<{
           Sin descripción
         </p>
       </div>
-
-      <!-- Footer with badges -->
       <div class="flex items-center justify-between pt-3 border-t border-border">
         <div class="flex items-center gap-2">
           <span
@@ -63,12 +77,13 @@ defineProps<{
           >
             {{ module.isActive ? 'Activo' : 'Inactivo' }}
           </span>
-          <span
-            v-if="module.allowSelfEnroll"
-            class="inline-flex items-center text-xs font-medium px-2.5 py-1 rounded-full bg-[#C8102E]/10 text-[#C8102E] dark:bg-[#C8102E]/20 dark:text-red-400 transition-transform duration-200 hover:scale-105"
-          >
-            Auto-inscripción
-          </span>
+        </div>
+        <div @click.stop>
+          <ModulesActionsMenu
+            :module="module"
+            :on-edit="props.onEdit ? handleEdit : undefined"
+            :on-delete="props.onDelete ? handleDelete : undefined"
+          />
         </div>
       </div>
     </div>

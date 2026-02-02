@@ -8,10 +8,8 @@ const modulesDataSource = new ModulesDataSource()
 
 export function useModules(params: ComputedRef<ModuleQueryParams>) {
   const query = useQuery({
-    queryKey: [QUERY_KEYS.MODULES, params],
+    queryKey: QUERY_KEYS.MODULES(params.value),
     queryFn: () => modulesDataSource.getAll(params.value),
-    staleTime: 1000 * 60 * 5,
-    refetchOnWindowFocus: false,
   })
   return query
 }

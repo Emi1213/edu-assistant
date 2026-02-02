@@ -1,73 +1,21 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref, watch, nextTick } from 'vue'
-import { useRouter } from 'vue-router'
 import ModulesFilters from '../components/modules-filters.vue'
 import ModuleCard from '../components/module-card.vue'
 import Skeleton from '@/components/ui/skeleton/Skeleton.vue'
-import { useModulesList } from '../../composables/use-modules-list'
+import { Button } from '@/components/ui/button'
+import { Plus } from 'lucide-vue-next'
+import type { IModulesListViewProps } from '../../types/ui/modules-list-view.types'
 import type { Module } from '../../types/modules.types'
 
-const router = useRouter()
+const props = defineProps<IModulesListViewProps>()
 
-const {
-  modules,
-  isLoading,
-  isFetchingNextPage,
-  hasNextPage,
-  searchQuery,
-  updateSearch,
-  clearFilters,
-  loadMore,
-} = useModulesList()
-
-const emptyMessage = 'No modules found'
-const loadMoreRef = ref<HTMLElement | null>(null)
+const emptyMessage = 'No hay módulos registrados'
 
 const handleModuleClick = (module: Module) => {
-  router.push(`/modules/${module.id}/wiki`)
-}
-
-let observer: IntersectionObserver | null = null
-
-const setupObserver = () => {
-  if (observer) {
-    observer.disconnect()
+  if (props.onClick) {
+    props.onClick(module)
   }
-
-  if (!loadMoreRef.value) return
-
-  observer = new IntersectionObserver(
-    (entries) => {
-      const entry = entries[0]
-      if (entry && entry.isIntersecting && hasNextPage.value && !isFetchingNextPage.value) {
-        loadMore()
-      }
-    },
-    {
-      rootMargin: '100px',
-    }
-  )
-
-  observer.observe(loadMoreRef.value)
 }
-
-onMounted(() => {
-  nextTick(() => {
-    setupObserver()
-  })
-})
-
-watch([loadMoreRef, hasNextPage], () => {
-  nextTick(() => {
-    setupObserver()
-  })
-})
-
-onUnmounted(() => {
-  if (observer) {
-    observer.disconnect()
-  }
-})
 </script>
 
 <template>
@@ -76,13 +24,25 @@ onUnmounted(() => {
       <h1 class="text-3xl font-bold tracking-tight text-foreground">Mis Módulos</h1>
     </div>
 
-    <ModulesFilters
-      :search-query="searchQuery"
-      :on-update-search="updateSearch"
-      :on-clear-filters="clearFilters"
-    />
+    <div
+      class="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between"
+    >
+      <div class="flex-1 w-full lg:w-auto">
+        <ModulesFilters
+          :search-query="props.searchQuery"
+          :on-update-search="props.onUpdateSearch"
+          :on-clear-filters="props.onClearFilters"
+        />
+      </div>
+      <div class="w-full lg:w-auto">
+        <Button @click="props.onAdd" class="w-full lg:w-auto">
+          <Plus class="w-4 h-4 mr-1" />
+          Agregar
+        </Button>
+      </div>
+    </div>
 
-    <div v-if="isLoading && modules.length === 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div v-if="props.loading && props.modules.length === 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       <div
         v-for="i in 6"
         :key="i"
@@ -94,32 +54,19 @@ onUnmounted(() => {
       </div>
     </div>
 
-    <div v-else-if="!modules || modules.length === 0" class="rounded-md bg-card px-6 py-12 text-center">
+    <div v-else-if="!props.modules || props.modules.length === 0" class="rounded-md bg-card px-6 py-12 text-center">
       <p class="text-muted-foreground">{{ emptyMessage }}</p>
     </div>
 
-    <div v-else class="space-y-6">
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <ModuleCard
-          v-for="module in modules"
-          :key="module.id"
-          :module="module"
-          :on-click="handleModuleClick"
-        />
-      </div>
-
-      <div
-        ref="loadMoreRef"
-        class="flex items-center justify-center py-8"
-      >
-        <div v-if="isFetchingNextPage" class="flex items-center gap-2 text-muted-foreground">
-          <div class="w-5 h-5 border-2 border-[#C8102E] border-t-transparent rounded-full animate-spin"></div>
-          <span class="text-sm">Cargando más módulos...</span>
-        </div>
-        <div v-else-if="!hasNextPage && modules.length > 0" class="text-sm text-muted-foreground">
-          No hay más módulos para mostrar
-        </div>
-      </div>
+    <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <ModuleCard
+        v-for="module in props.modules"
+        :key="module.id"
+        :module="module"
+        :on-click="props.onClick ? (m) => handleModuleClick(m) : undefined"
+        :on-edit="() => props.onEdit(module)"
+        :on-delete="() => props.onDelete(module)"
+      />
     </div>
   </div>
 </template>

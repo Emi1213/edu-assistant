@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import {
   Sidebar,
   SidebarContent,
@@ -12,8 +13,14 @@ import {
 import { RouterLink, useRoute } from "vue-router";
 import { SIDEBAR_ITEMS } from './side-bar.config';
 import NavUser from './NavUser.vue';
+import { useRoles } from '@/features/auth/composables/use-roles';
 
 const route = useRoute()
+const { canAccess } = useRoles()
+
+const visibleSidebarItems = computed(() => {
+  return SIDEBAR_ITEMS.filter(item => canAccess(item.roles))
+})
 
 function isActiveRoute(itemRoute: string): boolean {
   if (itemRoute === '/') {
@@ -47,7 +54,7 @@ function isActiveRoute(itemRoute: string): boolean {
     <SidebarContent class="py-4 sidebar-scrollable-content">
       <SidebarMenu class="space-y-1">
         <SidebarMenuItem
-          v-for="item in SIDEBAR_ITEMS"
+          v-for="item in visibleSidebarItems"
           :key="item.route"
         >
           <SidebarMenuButton 

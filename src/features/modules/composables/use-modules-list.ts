@@ -1,97 +1,75 @@
-import { ref, computed, watch } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
-import { debouncedRef } from '@vueuse/core'
-import { useModules } from './queries/use-modules'
-import type { ModuleQueryParams } from '../types/modules.types'
-import type { Module } from '../types/modules.types'
+import { ref } from 'vue'
+import { useCreateModule } from './mutations/use-create-module'
+import { useUpdateModule } from './mutations/use-update-module'
+import { useDeleteModule } from './mutations/use-delete-module'
+import type { Module, CreateModule, UpdateModule } from '../types/modules.types'
 
 export function useModulesList() {
-  const router = useRouter()
-  const route = useRoute()
-  const searchQuery = ref<string>((route.query.search as string) || '')
-  const debouncedSearchQuery = debouncedRef(searchQuery, 300)
+  const drawerOpen = ref(false)
+  const confirmDialogOpen = ref(false)
+  const moduleToDelete = ref<Module | null>(null)
+  const initialData = ref<Partial<Module>>()
+  const createModule = useCreateModule()
+  const updateModule = useUpdateModule()
+  const deleteModule = useDeleteModule()
 
-  const currentPage = ref(1)
-  const pageSize = ref(6)
-  const loadedModules = ref<Module[]>([])
-  const totalPages = ref(0)
+  const openAddDrawer = () => {
+    initialData.value = undefined
+    drawerOpen.value = true
+  }
 
-  const queryParams = computed<ModuleQueryParams>(() => {
-    const params: ModuleQueryParams = {
-      page: currentPage.value,
-      limit: pageSize.value,
+  const openEditDrawer = (module: Module) => {
+    initialData.value = module
+    drawerOpen.value = true
+  }
+
+  const closeDrawer = () => {
+    drawerOpen.value = false
+    initialData.value = undefined
+  }
+
+  const handleDelete = (module: Module) => {
+    moduleToDelete.value = module
+    confirmDialogOpen.value = true
+  }
+
+  const confirmDelete = async () => {
+    if (moduleToDelete.value) {
+      await deleteModule.mutateAsync(moduleToDelete.value.id)
+      moduleToDelete.value = null
     }
-    
-    if (debouncedSearchQuery.value) {
-      params.search = debouncedSearchQuery.value
-    }
-    
-    return params
-  })
+    confirmDialogOpen.value = false
+  }
 
-  const { data: paginatedResponse, isLoading, isFetching, error, refetch } = useModules(queryParams)
+  const cancelDelete = () => {
+    moduleToDelete.value = null
+    confirmDialogOpen.value = false
+  }
 
-  watch(paginatedResponse, (response) => {
-    if (response) {
-      totalPages.value = response.pages
-      
-      if (currentPage.value === 1) {
-        loadedModules.value = [...response.records]
-      } else {
-        loadedModules.value = [...loadedModules.value, ...response.records]
+  const handleSubmit = async (data: CreateModule | UpdateModule) => {
+    if (initialData.value && initialData.value.id) {
+      const updateData: UpdateModule & { id: number } = {
+        ...data,
+        id: initialData.value.id,
       }
+      await updateModule.mutateAsync({ id: updateData.id, payload: data })
+    } else {
+      await createModule.mutateAsync(data as CreateModule)
     }
-  }, { immediate: true })
-
-  const modules = computed(() => loadedModules.value)
-
-  const hasNextPage = computed(() => {
-    return currentPage.value < totalPages.value
-  })
-
-  const isFetchingNextPage = computed(() => isFetching.value && currentPage.value > 1)
-
-  const updateURL = () => {
-    const query: Record<string, string> = {}
-
-    if (searchQuery.value) query.search = searchQuery.value
-
-    router.replace({ query })
-  }
-
-  watch([searchQuery], updateURL, {
-    deep: true,
-  })
-
-  watch(debouncedSearchQuery, () => {
-    currentPage.value = 1
-    loadedModules.value = []
-  })
-
-  const updateSearch = (query: string) => {
-    searchQuery.value = query
-  }
-
-  const clearFilters = () => {
-    searchQuery.value = ''
-  }
-
-  const loadMore = () => {
-    if (hasNextPage.value && !isFetching.value) {
-      currentPage.value++
-    }
+    drawerOpen.value = false
   }
 
   return {
-    modules,
-    isLoading,
-    isFetchingNextPage,
-    hasNextPage,
-    searchQuery,
-    updateSearch,
-    clearFilters,
-    loadMore,
-    refetch,
-    error,
+    drawerOpen,
+    initialData,
+    confirmDialogOpen,
+    moduleToDelete,
+    openAddDrawer,
+    openEditDrawer,
+    closeDrawer,
+    handleSubmit,
+    handleDelete,
+    confirmDelete,
+    cancelDelete,
   }
 }

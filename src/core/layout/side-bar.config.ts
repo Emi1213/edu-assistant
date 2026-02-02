@@ -1,10 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { BookOpen, Home, GraduationCap, Library } from 'lucide-vue-next'
+import { Home, GraduationCap, Library } from 'lucide-vue-next'
+import type { Role } from '@/features/auth/types/roles.enum'
 
 export interface SidebarItem {
   label: string
   route: string
   icon?: any
+  roles?: Role[] 
 }
 
 export const SIDEBAR_ITEMS: SidebarItem[] = [
@@ -22,5 +24,6 @@ export const SIDEBAR_ITEMS: SidebarItem[] = [
     label: 'Módulos',
     route: '/all-modules',
     icon: Library,
+    roles: ['STUDENT'], 
   },
 ]
