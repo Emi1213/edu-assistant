@@ -43,7 +43,6 @@ const handlePageClick = (page: Page) => {
       <span>Volver a Mis Módulos</span>
     </button>
 
-    <!-- Module Info Card -->
     <div v-if="isLoadingModule" class="rounded-lg border border-border bg-card p-6">
       <div class="flex items-start gap-4">
         <Skeleton class="w-20 h-20 rounded-lg" />

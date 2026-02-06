@@ -9,7 +9,7 @@ export class HttpClient implements IHttpHandler {
   constructor(baseURL: string, config?: AxiosRequestConfig) {
     this.instance = axios.create({
       baseURL,
-      timeout: 10000,
+      timeout: 120000, 
       headers: {
         'Content-Type': 'application/json',
       },

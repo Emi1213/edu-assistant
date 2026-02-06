@@ -34,6 +34,16 @@ export const modulesRoutes: RouteRecordRaw[] = [
           requiresAuth: true,
           roles: ['TEACHER', 'ADMIN', 'STUDENT'], 
         },
+      },
+      {
+        path: ':id/pages/:pageId/edit',
+        name: 'page-edit',
+        component: () => import('@/features/pages/presentation/views/page-editor-view.vue'),
+        meta: {
+          layout: 'minimal',
+          requiresAuth: true,
+          roles: ['TEACHER', 'ADMIN'], 
+        },
       }
     ]
   },

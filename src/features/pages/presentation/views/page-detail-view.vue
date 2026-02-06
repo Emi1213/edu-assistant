@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ArrowLeft } from 'lucide-vue-next'
+import { ArrowLeft, Edit3 } from 'lucide-vue-next'
 import { usePage } from '../../composables/queries/use-page'
 import Skeleton from '@/components/ui/skeleton/Skeleton.vue'
 
@@ -15,17 +15,32 @@ const { data: page, isLoading } = usePage(pageId.value)
 const goBack = () => {
   router.push(`/modules/${moduleId.value}/wiki`)
 }
+
+const goToEditor = () => {
+  router.push(`/modules/${moduleId.value}/pages/${pageId.value}/edit`)
+}
 </script>
 
 <template>
   <div class="space-y-6">
-    <button
-      @click="goBack"
-      class="flex items-center gap-2 text-muted-foreground hover:text-card-foreground transition-colors"
-    >
-      <ArrowLeft class="size-4" />
-      <span>Volver al Módulo</span>
-    </button>
+    <div class="flex items-center justify-between">
+      <button
+        @click="goBack"
+        class="flex items-center gap-2 text-muted-foreground hover:text-card-foreground transition-colors"
+      >
+        <ArrowLeft class="size-4" />
+        <span>Volver al Módulo</span>
+      </button>
+
+      <button
+        v-if="!isLoading && page"
+        @click="goToEditor"
+        class="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md font-medium transition-colors hover:bg-primary/90"
+      >
+        <Edit3 class="size-4" />
+        <span>Editar con IA</span>
+      </button>
+    </div>
 
     <div v-if="isLoading" class="space-y-4">
       <Skeleton class="h-10 w-3/4" />
@@ -52,7 +67,7 @@ const goBack = () => {
 
       <div class="prose prose-slate dark:prose-invert max-w-none">
         <div 
-          class="page-content"
+          class="page-content rounded-lg border border-border bg-card p-6"
           v-html="page.content"
         />
       </div>

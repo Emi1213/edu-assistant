@@ -3,6 +3,7 @@ const AR_KEYS = {
     MODULES: '/modules',
     PAGES: '/pages',
     ENROLLMENTS: '/enrollments',
+    CONTENT_GENERATION: '/content',
 }
 
 export const API_ROUTES = {
@@ -29,5 +30,8 @@ export const API_ROUTES = {
         UPDATE: (id: number) => `${AR_KEYS.ENROLLMENTS}/${id}`,
         SELF_UNENROLL: (moduleId: number) => `${AR_KEYS.ENROLLMENTS}/self/${moduleId}`,
         REMOVE: (id: number) => `${AR_KEYS.ENROLLMENTS}/${id}`,
-    }
+    },
+    CONTENT_GENERATION: {
+        GENERATE: `${AR_KEYS.CONTENT_GENERATION}/generate-content`,
+    },
 }
