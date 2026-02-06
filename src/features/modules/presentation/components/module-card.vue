@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { Module } from '../../types/modules.types'
 import { Globe, Lock, BookOpen } from 'lucide-vue-next'
+import { useRoles } from '@/features/auth/composables/use-roles'
 import ModulesActionsMenu from './modules-actions-menu.vue'
 
 const props = defineProps<{
@@ -9,6 +10,10 @@ const props = defineProps<{
   onEdit?: (module: Module) => void
   onDelete?: (module: Module) => void
 }>()
+
+const { canEdit, canDelete } = useRoles()
+
+const showActions = canEdit() || canDelete()
 
 const handleEdit = () => {
   if (props.onEdit) {
@@ -78,11 +83,11 @@ const handleDelete = () => {
             {{ module.isActive ? 'Activo' : 'Inactivo' }}
           </span>
         </div>
-        <div @click.stop>
+        <div v-if="showActions" @click.stop>
           <ModulesActionsMenu
             :module="module"
-            :on-edit="props.onEdit ? handleEdit : undefined"
-            :on-delete="props.onDelete ? handleDelete : undefined"
+            :on-edit="props.onEdit && canEdit() ? handleEdit : undefined"
+            :on-delete="props.onDelete && canDelete() ? handleDelete : undefined"
           />
         </div>
       </div>

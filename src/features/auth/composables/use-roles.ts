@@ -30,11 +30,33 @@ export function useRoles() {
     return hasAnyRole(allowedRoles)
   }
 
+  function canEdit(): boolean {
+    return hasAnyRole(['ADMIN', 'TEACHER'])
+  }
+
+  function canCreate(): boolean {
+    return hasAnyRole(['ADMIN', 'TEACHER'])
+  }
+
+  function canDelete(): boolean {
+    return hasAnyRole(['ADMIN', 'TEACHER'])
+  }
+
+  const isStudent = computed(() => hasRole('STUDENT'))
+  const isTeacher = computed(() => hasRole('TEACHER'))
+  const isAdmin = computed(() => hasRole('ADMIN'))
+
   return {
     currentRole,
     hasRole,
     hasAnyRole,
     hasAllRoles,
     canAccess,
+    canEdit,
+    canCreate,
+    canDelete,
+    isStudent,
+    isTeacher,
+    isAdmin,
   }
 }

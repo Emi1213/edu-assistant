@@ -4,10 +4,13 @@ import ModuleCard from '../components/module-card.vue'
 import Skeleton from '@/components/ui/skeleton/Skeleton.vue'
 import { Button } from '@/components/ui/button'
 import { Plus } from 'lucide-vue-next'
+import { useRoles } from '@/features/auth/composables/use-roles'
 import type { IModulesListViewProps } from '../../types/ui/modules-list-view.types'
 import type { Module } from '../../types/modules.types'
 
 const props = defineProps<IModulesListViewProps>()
+
+const { canCreate } = useRoles()
 
 const emptyMessage = 'No hay módulos registrados'
 
@@ -19,7 +22,7 @@ const handleModuleClick = (module: Module) => {
 </script>
 
 <template>
-  <div class="space-y-6">
+  <div class="space-y-6 pt-8">
     <div class="flex items-center justify-between">
       <h1 class="text-3xl font-bold tracking-tight text-foreground">Mis Módulos</h1>
     </div>
@@ -34,7 +37,7 @@ const handleModuleClick = (module: Module) => {
           :on-clear-filters="props.onClearFilters"
         />
       </div>
-      <div class="w-full lg:w-auto">
+      <div v-if="canCreate()" class="w-full lg:w-auto">
         <Button @click="props.onAdd" class="w-full lg:w-auto">
           <Plus class="w-4 h-4 mr-1" />
           Agregar
@@ -64,8 +67,8 @@ const handleModuleClick = (module: Module) => {
         :key="module.id"
         :module="module"
         :on-click="props.onClick ? (m) => handleModuleClick(m) : undefined"
-        :on-edit="() => props.onEdit(module)"
-        :on-delete="() => props.onDelete(module)"
+        :on-edit="props.onEdit ? () => props.onEdit(module) : undefined"
+        :on-delete="props.onDelete ? () => props.onDelete(module) : undefined"
       />
     </div>
   </div>

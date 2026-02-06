@@ -44,3 +44,11 @@ export interface ImageSuggestionBlock{
     prompt: string
     reason: string
 }
+
+export interface GenerateImagePayload {
+    prompt: string
+}
+
+export interface GenerateImageResponse {
+    base64: string
+}

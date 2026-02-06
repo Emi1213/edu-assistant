@@ -2,8 +2,10 @@
 import { ref, watch, onBeforeUnmount, onUnmounted } from 'vue'
 import { useEditor, EditorContent } from '@tiptap/vue-3'
 import StarterKit from '@tiptap/starter-kit'
+import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
 import { Sparkles, Loader2, X, CheckCircle2, AlertCircle } from 'lucide-vue-next'
 import { useGenerateContent } from '../../composables/mutations/use-generate-content'
+import { lowlight } from '@/shared/config/lowlight.config'
 
 interface Props {
   modelValue?: string
@@ -33,7 +35,15 @@ const { mutate: generateContent, isPending: isGenerating, reset: resetMutation }
 
 const editor = useEditor({
   content: props.modelValue,
-  extensions: [StarterKit],
+  extensions: [
+    StarterKit.configure({
+      codeBlock: false,
+    }),
+    CodeBlockLowlight.configure({
+      lowlight,
+      defaultLanguage: 'plaintext',
+    }),
+  ],
   editorProps: {
     attributes: {
       class: 'prose prose-sm sm:prose lg:prose-lg focus:outline-none min-h-[400px] max-w-none p-6',
@@ -507,16 +517,23 @@ onUnmounted(() => {
 }
 
 .editor-wrapper :deep(pre) {
-  background-color: var(--muted);
-  padding: 1rem;
-  border-radius: 0.5rem;
+  background-color: #f6f8fa;
+  padding: 1.5rem;
+  border-radius: 0.75rem;
   overflow-x: auto;
-  margin-bottom: 1rem;
+  margin: 1.5rem 0;
+  border: 1px solid var(--border);
+}
+
+.dark .editor-wrapper :deep(pre) {
+  background-color: #161b22;
 }
 
 .editor-wrapper :deep(pre code) {
   background-color: transparent;
   padding: 0;
+  font-size: 0.875rem;
+  line-height: 1.6;
 }
 
 .editor-wrapper :deep(blockquote) {

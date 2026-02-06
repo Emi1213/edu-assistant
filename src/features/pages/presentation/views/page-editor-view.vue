@@ -6,6 +6,7 @@ import { ArrowLeft, Sparkles, Loader2, X, Save } from 'lucide-vue-next'
 import { usePage } from '../../composables/queries/use-page'
 import { usePageEditor } from '../../composables/use-page-editor'
 import { useAIContentGeneration } from '@/features/content-generation/composables/use-ai-content-generation'
+import { useImageGenerationHandler } from '@/features/content-generation/composables/use-image-generation-handler'
 import EditorToolbar from '../components/editor-toolbar.vue'
 import Skeleton from '@/components/ui/skeleton/Skeleton.vue'
 
@@ -19,7 +20,7 @@ const { data: page, isLoading: isLoadingPage } = usePage(pageId.value)
 const pageTitle = ref('')
 const pageKeywords = ref<string[]>([])
 
-const { editor, isMounted, setContent, insertContent } = usePageEditor()
+const { editor, isMounted, isSaving, setContentFromPage, insertContent, saveContent } = usePageEditor(pageId.value)
 
 const {
   showAIModal,
@@ -31,11 +32,26 @@ const {
   generate,
 } = useAIContentGeneration(pageId.value)
 
+
+useImageGenerationHandler(editor)
+
 watch(() => page.value, (pageData) => {
   if (pageData) {
     pageTitle.value = pageData.title
     pageKeywords.value = [...pageData.keywords]
-    setContent(pageData.content)
+    if (editor.value) {
+      setContentFromPage(pageData)
+    }
+  }
+}, { immediate: true })
+
+watch(() => editor.value, (editorInstance) => {
+  if (editorInstance && page.value) {
+    if (!pageTitle.value) {
+      pageTitle.value = page.value.title
+      pageKeywords.value = [...page.value.keywords]
+    }
+    setContentFromPage(page.value)
   }
 }, { immediate: true })
 
@@ -48,7 +64,18 @@ const handleGenerateContent = () => {
     (result) => {
       if (result.title) pageTitle.value = result.title
       if (result.keywords) pageKeywords.value = result.keywords
-      insertContent(result.content)
+      
+      // Insert text content first
+      if (result.content) {
+        insertContent(result.content)
+      }
+      
+      // Insert image suggestions as custom nodes
+      if (result.imageSuggestions && result.imageSuggestions.length > 0 && editor.value) {
+        result.imageSuggestions.forEach((suggestion) => {
+          editor.value?.commands.setImageSuggestion(suggestion.prompt, suggestion.reason)
+        })
+      }
     },
     () => isMounted.value
   )
@@ -65,22 +92,22 @@ const handleKeyDown = (e: KeyboardEvent) => {
 </script>
 
 <template>
-  <div class="page-editor-view h-screen flex flex-col bg-background">
+  <div class="page-editor-view h-screen flex flex-col bg-background pt-8">
     <div class="border-b border-border bg-card px-6 py-4">
       <div class="flex items-center justify-between max-w-7xl mx-auto">
         <button
           @click="goBack"
-          class="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+          class="flex items-center gap-2 px-4 py-2.5 text-sm font-medium bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 hover:shadow-md transition-all duration-200"
         >
           <ArrowLeft class="size-4" />
-          <span>Volver</span>
+          <span>Volver al módulo</span>
         </button>
 
         <div class="flex items-center gap-3">
           <button
             @click="openAIModal"
             :disabled="isGenerating"
-            class="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg font-medium transition-colors hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+            class="flex items-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-lg font-medium transition-all duration-200 hover:bg-primary/90 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none"
           >
             <Loader2 v-if="isGenerating" class="size-4 animate-spin" />
             <Sparkles v-else class="size-4" />
@@ -88,17 +115,20 @@ const handleKeyDown = (e: KeyboardEvent) => {
           </button>
 
           <button
-            class="flex items-center gap-2 px-4 py-2 bg-muted text-foreground rounded-lg font-medium transition-colors hover:bg-muted/80"
+            @click="saveContent"
+            :disabled="isSaving"
+            class="flex items-center gap-2 px-4 py-2.5 bg-muted text-foreground rounded-lg font-medium transition-all duration-200 hover:bg-muted/80 hover:shadow-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none"
           >
-            <Save class="size-4" />
-            <span class="hidden sm:inline">Guardar</span>
+            <Loader2 v-if="isSaving" class="size-4 animate-spin" />
+            <Save v-else class="size-4" />
+            <span class="hidden sm:inline">{{ isSaving ? 'Guardando...' : 'Guardar' }}</span>
           </button>
         </div>
       </div>
     </div>
 
     <div v-if="isLoadingPage" class="flex-1 overflow-y-auto">
-      <div class="max-w-4xl mx-auto px-6 py-8 space-y-4">
+      <div class="px-6 py-8 space-y-4">
         <Skeleton class="h-12 w-3/4" />
         <Skeleton class="h-4 w-full" />
         <Skeleton class="h-4 w-full" />
@@ -107,32 +137,39 @@ const handleKeyDown = (e: KeyboardEvent) => {
     </div>
 
     <div v-else class="flex-1 overflow-y-auto">
-      <div class="max-w-4xl mx-auto px-6 py-8">
-        <input
-          v-model="pageTitle"
-          type="text"
-          placeholder="Título de la página"
-          class="w-full text-4xl font-bold bg-transparent border-none focus:outline-none text-foreground placeholder:text-muted-foreground mb-4"
-        />
-
-        <div v-if="pageKeywords.length > 0" class="flex flex-wrap gap-2 mb-8">
-          <span
-            v-for="(keyword, index) in pageKeywords"
-            :key="index"
-            class="inline-flex items-center gap-1 text-xs font-medium px-3 py-1 rounded-full bg-primary/10 text-primary"
-          >
-            {{ keyword }}
-            <button
-              @click="pageKeywords.splice(index, 1)"
-              class="hover:text-primary/80"
-            >
-              <X class="size-3" />
-            </button>
-          </span>
+      <div class="editor-page-wrapper">
+        <div class="editor-toolbar-wrapper">
+          <EditorToolbar :editor="editor" />
         </div>
 
-        <div class="editor-container">
-          <EditorToolbar :editor="editor" />
+        <div class="editor-main-container">
+          <div class="page-header-editor">
+            <h1 class="page-title-input">
+              <input
+                v-model="pageTitle"
+                type="text"
+                placeholder="Título de la página"
+                class="w-full bg-transparent border-none focus:outline-none text-foreground placeholder:text-muted-foreground"
+              />
+            </h1>
+
+            <div v-if="pageKeywords.length > 0" class="flex flex-wrap gap-2 mt-3">
+              <span
+                v-for="(keyword, index) in pageKeywords"
+                :key="index"
+                class="inline-flex items-center gap-1 text-xs font-medium px-3 py-1 rounded-full bg-primary/10 text-primary"
+              >
+                {{ keyword }}
+                <button
+                  @click="pageKeywords.splice(index, 1)"
+                  class="hover:text-primary/80"
+                >
+                  <X class="size-3" />
+                </button>
+              </span>
+            </div>
+          </div>
+
           <div class="editor-content">
             <EditorContent :editor="editor" />
           </div>
@@ -206,14 +243,14 @@ const handleKeyDown = (e: KeyboardEvent) => {
               <button
                 @click="closeAIModal"
                 :disabled="isGenerating"
-                class="px-5 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                class="px-5 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/30 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Cancelar
               </button>
               <button
                 @click="handleGenerateContent"
                 :disabled="!aiInstructions.trim() || isGenerating"
-                class="px-5 py-2.5 text-sm font-medium rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+                class="px-5 py-2.5 text-sm font-medium rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none transition-all duration-200 flex items-center gap-2"
               >
                 <Loader2 v-if="isGenerating" class="size-4 animate-spin" />
                 <Sparkles v-else class="size-4" />
@@ -228,15 +265,43 @@ const handleKeyDown = (e: KeyboardEvent) => {
 </template>
 
 <style scoped>
-.editor-container {
-  border: 1px solid var(--border);
-  border-radius: 0.5rem;
-  overflow: hidden;
+.editor-page-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+.editor-toolbar-wrapper {
+  background-color: var(--card);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  padding: 0.75rem 0;
+}
+
+.editor-main-container {
   background-color: var(--card);
 }
 
+.page-header-editor {
+  padding: 2rem 0 1.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.page-title-input {
+  margin-bottom: 0;
+}
+
+.page-title-input input {
+  font-size: 3rem;
+  line-height: 1.2;
+  font-weight: 700;
+}
+
 .editor-content {
-  padding: 1.5rem;
+  padding: 2rem 0;
+  min-height: 60vh;
 }
 
 .editor-content :deep(.ProseMirror) {
@@ -255,37 +320,62 @@ const handleKeyDown = (e: KeyboardEvent) => {
 }
 
 .editor-content :deep(h1) {
-  font-size: 2.25rem;
-  line-height: 2.5rem;
+  font-size: 2.5rem;
+  line-height: 1.3;
   font-weight: 700;
   margin-top: 2rem;
   margin-bottom: 1rem;
+  color: var(--foreground);
+}
+
+.editor-content :deep(h1:first-child) {
+  margin-top: 0;
 }
 
 .editor-content :deep(h2) {
-  font-size: 1.875rem;
-  line-height: 2.25rem;
+  font-size: 2rem;
+  line-height: 1.3;
   font-weight: 700;
-  margin-top: 1.75rem;
-  margin-bottom: 0.875rem;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+  color: var(--foreground);
 }
 
 .editor-content :deep(h3) {
-  font-size: 1.5rem;
-  line-height: 2rem;
+  font-size: 1.625rem;
+  line-height: 1.4;
   font-weight: 600;
-  margin-top: 1.5rem;
-  margin-bottom: 0.75rem;
+  margin-top: 1.25rem;
+  margin-bottom: 0.625rem;
+  color: var(--foreground);
+}
+
+.editor-content :deep(h4) {
+  font-size: 1.375rem;
+  line-height: 1.5;
+  font-weight: 600;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+  color: var(--foreground);
 }
 
 .editor-content :deep(p) {
-  margin-bottom: 1rem;
+  font-size: 1.0625rem;
+  line-height: 1.75;
+  margin-bottom: 0.75rem;
+  color: var(--foreground);
+}
+
+.editor-content :deep(p:empty) {
+  margin-bottom: 0.25rem;
 }
 
 .editor-content :deep(ul),
 .editor-content :deep(ol) {
-  margin-bottom: 1rem;
-  margin-left: 1.5rem;
+  padding-left: 2rem;
+  margin-bottom: 0.75rem;
+  margin-top: 0.5rem;
+  line-height: 1.75;
 }
 
 .editor-content :deep(ul) {
@@ -297,46 +387,170 @@ const handleKeyDown = (e: KeyboardEvent) => {
 }
 
 .editor-content :deep(li) {
+  font-size: 1.0625rem;
+  color: var(--foreground);
+  margin-bottom: 0.5rem;
+  padding-left: 0.5rem;
+  line-height: 1.75;
+}
+
+.editor-content :deep(li p) {
   margin-bottom: 0.5rem;
 }
 
 .editor-content :deep(code) {
   background-color: var(--muted);
-  padding: 0.125rem 0.375rem;
+  padding: 0.25rem 0.5rem;
   border-radius: 0.375rem;
-  font-size: 0.875rem;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 0.9375rem;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  color: var(--foreground);
+  border: 1px solid var(--border);
 }
 
 .editor-content :deep(pre) {
-  background-color: var(--muted);
-  padding: 1rem;
-  border-radius: 0.5rem;
+  position: relative;
+  background-color: #f6f8fa;
+  padding: 3rem 1.5rem 1.5rem;
+  border-radius: 0.75rem;
   overflow-x: auto;
-  margin: 1.5rem 0;
+  margin: 1rem 0;
+  border: 1px solid var(--border);
+}
+
+.dark .editor-content :deep(pre) {
+  background-color: #161b22;
 }
 
 .editor-content :deep(pre code) {
   background-color: transparent;
   padding: 0;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.editor-content :deep(pre)::before {
+  content: attr(data-language);
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 0.5rem 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+  background-color: var(--muted);
+  border-bottom: 1px solid var(--border);
+  border-radius: 0.75rem 0.75rem 0 0;
+  font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
 }
 
 .editor-content :deep(blockquote) {
-  border-left-width: 4px;
-  border-color: var(--primary);
-  padding-left: 1rem;
+  border-left: 3px solid var(--border);
+  padding: 1rem 1.5rem;
+  margin: 0.75rem 0;
+  background-color: var(--muted);
+  border-radius: 0.5rem;
   font-style: italic;
-  margin: 1.5rem 0;
   color: var(--muted-foreground);
 }
 
 .editor-content :deep(blockquote p) {
-  margin: 0.5rem 0;
+  margin-bottom: 0.5rem;
+}
+
+.editor-content :deep(blockquote p:last-child) {
+  margin-bottom: 0;
+}
+
+.editor-content :deep(strong) {
+  font-weight: 700;
+  color: var(--foreground);
+}
+
+.editor-content :deep(em) {
+  font-style: italic;
+  color: var(--foreground);
+}
+
+.editor-content :deep(a) {
+  color: #C8102E;
+  text-decoration: underline;
+  transition: opacity 0.2s ease;
+}
+
+.editor-content :deep(a:hover) {
+  opacity: 0.7;
 }
 
 .editor-content :deep(hr) {
-  margin: 2rem 0;
-  border-color: var(--border);
+  margin: 1rem 0;
+  border: none;
+  height: 1px;
+  background-color: var(--border);
+}
+
+.editor-content :deep(.image-suggestion-block) {
+  border: 1px solid var(--border);
+  border-left: 4px solid #C8102E;
+  background: linear-gradient(to right, rgba(200, 16, 46, 0.05), var(--muted));
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  margin: 1rem 0;
+}
+
+.editor-content :deep(.image-suggestion-title) {
+  font-weight: 700;
+  font-size: 1rem;
+  color: #C8102E;
+  margin-bottom: 0.75rem;
+}
+
+.editor-content :deep(.image-suggestion-prompt) {
+  font-size: 0.9375rem;
+  color: var(--foreground);
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.editor-content :deep(.image-suggestion-reason) {
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+  font-style: italic;
+  margin-bottom: 0.75rem;
+}
+
+.editor-content :deep(.image-suggestion-actions) {
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+
+.editor-content :deep(.generate-image-btn) {
+  background-color: #C8102E;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  border: none;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.editor-content :deep(.generate-image-btn:hover:not([disabled])) {
+  background-color: #B00E26;
+  box-shadow: 0 2px 8px rgba(200, 16, 46, 0.3);
+  transform: translateY(-1px);
+}
+
+.editor-content :deep(.generate-image-btn[disabled]) {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 @keyframes scale-in {

@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ArrowLeft, BookOpen, Users, FileText } from 'lucide-vue-next'
+import { ArrowLeft, BookOpen, Users, FileText, Plus } from 'lucide-vue-next'
 import { useModule } from '../../composables/queries/use-module'
 import { usePages } from '@/features/pages/composables/queries/use-pages'
+import { useRoles } from '@/features/auth/composables/use-roles'
+import { usePageCreator } from '@/features/pages/composables/use-page-creator'
 import PageCard from '@/features/pages/presentation/components/page-card.vue'
+import CreatePageDialog from '@/features/pages/presentation/components/create-page-dialog.vue'
 import Skeleton from '@/components/ui/skeleton/Skeleton.vue'
 import type { Page } from '@/features/pages/types/pages.types'
 
@@ -13,6 +16,7 @@ const router = useRouter()
 const moduleId = computed(() => Number(route.params.id))
 
 const { data: module, isLoading: isLoadingModule } = useModule(moduleId.value)
+const { canEdit } = useRoles()
 
 const pageParams = computed(() => ({
   moduleId: moduleId.value,
@@ -24,6 +28,16 @@ const { data: pagesResponse, isLoading: isLoadingPages } = usePages(pageParams)
 
 const pages = computed(() => pagesResponse.value?.records || [])
 
+const {
+  isDialogOpen,
+  pageTitle,
+  isPublished,
+  isCreating,
+  openDialog,
+  closeDialog,
+  handleCreate,
+} = usePageCreator(moduleId.value)
+
 const goBack = () => {
   router.push('/modules')
 }
@@ -34,10 +48,10 @@ const handlePageClick = (page: Page) => {
 </script>
 
 <template>
-  <div class="space-y-6">
+  <div class="space-y-6 pt-8">
     <button
       @click="goBack"
-      class="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+      class="flex items-center gap-2 px-4 py-2.5 text-sm font-medium bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 hover:shadow-md transition-all duration-200"
     >
       <ArrowLeft class="size-4" />
       <span>Volver a Mis Módulos</span>
@@ -88,7 +102,17 @@ const handlePageClick = (page: Page) => {
 
     <!-- Pages Section -->
     <div class="space-y-4">
-      <h2 class="text-xl font-bold text-foreground">Páginas del Módulo</h2>
+      <div class="flex items-center justify-between">
+        <h2 class="text-xl font-bold text-foreground">Páginas del Módulo</h2>
+        <button
+          v-if="canEdit()"
+          @click="openDialog"
+          class="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 hover:shadow-md transition-all duration-200"
+        >
+          <Plus class="size-4" />
+          <span>Nueva Página</span>
+        </button>
+      </div>
 
       <div v-if="isLoadingPages" class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div
@@ -115,6 +139,18 @@ const handlePageClick = (page: Page) => {
         />
       </div>
     </div>
+
+    <!-- Create Page Dialog -->
+    <CreatePageDialog
+      :visible="isDialogOpen"
+      :title="pageTitle"
+      :is-published="isPublished"
+      :is-creating="isCreating"
+      @update:title="pageTitle = $event"
+      @update:is-published="isPublished = $event"
+      @close="closeDialog"
+      @create="handleCreate"
+    />
   </div>
 </template>
 

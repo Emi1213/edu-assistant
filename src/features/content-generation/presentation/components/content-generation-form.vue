@@ -33,7 +33,6 @@ const handleGenerateContent = () => {
       onSuccess: (data) => {
         if (data) {
           emit('contentGenerated', data)
-          // Limpiar el editor después de generar
           instructions.value = ''
         }
       },

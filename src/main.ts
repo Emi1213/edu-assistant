@@ -1,5 +1,6 @@
 import './index.css'
 import 'vue-toastification/dist/index.css'
+import './assets/styles/highlight.css'
 
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'

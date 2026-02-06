@@ -1,8 +1,13 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ArrowLeft, Edit3 } from 'lucide-vue-next'
+import { ArrowLeft, Edit3, MessageSquare } from 'lucide-vue-next'
 import { usePage } from '../../composables/queries/use-page'
+import { useRoles } from '@/features/auth/composables/use-roles'
+import { useAuthStore } from '@/features/auth/context/auth-store'
+import PageContentRenderer from '../components/page-content-renderer.vue'
+import NotesPanel from '@/features/notes/presentation/components/notes-panel.vue'
+import PageFeedbackSection from '@/features/page-feedbacks/presentation/components/page-feedback-section.vue'
 import Skeleton from '@/components/ui/skeleton/Skeleton.vue'
 
 const route = useRoute()
@@ -11,6 +16,24 @@ const pageId = computed(() => Number(route.params.pageId))
 const moduleId = computed(() => Number(route.params.id))
 
 const { data: page, isLoading } = usePage(pageId.value)
+const { canEdit, isStudent } = useRoles()
+const authStore = useAuthStore()
+
+const pageNotes = computed(() => {
+  if (!page.value) return []
+  return page.value.notes ?? []
+})
+
+const pageFeedbacks = computed(() => {
+  if (!page.value) return []
+  return page.value.pageFeedbacks ?? []
+})
+
+const userFeedback = computed(() => {
+  const feedbacksValue = pageFeedbacks.value
+  if (!feedbacksValue || !Array.isArray(feedbacksValue)) return null
+  return feedbacksValue.find(f => f.user?.id === authStore.user?.id) || null
+})
 
 const goBack = () => {
   router.push(`/modules/${moduleId.value}/wiki`)
@@ -19,23 +42,30 @@ const goBack = () => {
 const goToEditor = () => {
   router.push(`/modules/${moduleId.value}/pages/${pageId.value}/edit`)
 }
+
+const scrollToFeedback = () => {
+  const feedbackSection = document.getElementById('feedback-section')
+  if (feedbackSection) {
+    feedbackSection.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+}
 </script>
 
 <template>
-  <div class="space-y-6">
+  <div class="space-y-6 pt-8">
     <div class="flex items-center justify-between">
       <button
         @click="goBack"
-        class="flex items-center gap-2 text-muted-foreground hover:text-card-foreground transition-colors"
+        class="flex items-center gap-2 px-4 py-2.5 text-sm font-medium bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 hover:shadow-md transition-all duration-200"
       >
         <ArrowLeft class="size-4" />
-        <span>Volver al Módulo</span>
+        <span>Volver al módulo</span>
       </button>
 
       <button
-        v-if="!isLoading && page"
+        v-if="!isLoading && page && canEdit()"
         @click="goToEditor"
-        class="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md font-medium transition-colors hover:bg-primary/90"
+        class="flex items-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-lg font-medium transition-all duration-200 hover:bg-primary/90 hover:shadow-md"
       >
         <Edit3 class="size-4" />
         <span>Editar con IA</span>
@@ -49,27 +79,45 @@ const goToEditor = () => {
       <Skeleton class="h-4 w-2/3" />
     </div>
 
-    <div v-else-if="page" class="space-y-6">
-      <div>
-        <h1 class="text-3xl font-bold text-card-foreground mb-4">
-          {{ page.title }}
-        </h1>
-        <div v-if="page.keywords && page.keywords.length > 0" class="flex flex-wrap gap-2 mb-6">
-          <span
-            v-for="keyword in page.keywords"
-            :key="keyword"
-            class="inline-flex items-center text-xs font-medium px-2.5 py-1 rounded-full bg-muted text-muted-foreground"
-          >
-            {{ keyword }}
-          </span>
+    <div v-else-if="page" class="flex flex-col lg:flex-row gap-0">
+      <div class="flex-1 min-w-0">
+        <div class="wiki-page">
+          <div class="page-header">
+            <h1 class="page-title">
+              {{ page.title }}
+            </h1>
+            <div v-if="page.keywords && page.keywords.length > 0" class="flex flex-wrap gap-2 mt-3">
+              <span
+                v-for="keyword in page.keywords"
+                :key="keyword"
+                class="keyword-badge"
+              >
+                {{ keyword }}
+              </span>
+            </div>
+            
+            <button
+              @click="scrollToFeedback"
+              class="mt-4 inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-primary hover:text-primary/80 hover:bg-primary/10 rounded-lg transition-all duration-200"
+            >
+              <MessageSquare class="size-4" />
+              <span v-if="isStudent">{{ userFeedback ? 'Ver tu feedback' : 'Agregar feedback' }}</span>
+              <span v-else>Ver feedbacks</span>
+            </button>
+          </div>
+
+          <div class="page-content-wrapper">
+            <PageContentRenderer :page="page" />
+          </div>
+
+          <div v-if="page" id="feedback-section" class="mt-6 pt-6 border-t border-border">
+            <PageFeedbackSection :page-id="page.id" :feedbacks="page.pageFeedbacks || []" />
+          </div>
         </div>
       </div>
 
-      <div class="prose prose-slate dark:prose-invert max-w-none">
-        <div 
-          class="page-content rounded-lg border border-border bg-card p-6"
-          v-html="page.content"
-        />
+      <div v-if="isStudent && page" class="notes-sidebar-wrapper">
+        <NotesPanel :page-id="page.id" :notes="page.notes || []" />
       </div>
     </div>
 
@@ -80,6 +128,111 @@ const goToEditor = () => {
 </template>
 
 <style scoped>
+.page-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.page-content-area {
+  flex: 1;
+  min-width: 0;
+}
+
+.notes-sidebar-wrapper {
+  width: 100%;
+  order: 2;
+  margin-top: 1rem;
+}
+
+@media (min-width: 1024px) {
+  .page-layout {
+    flex-direction: row;
+    gap: 0;
+  }
+  
+  .page-content-area {
+    order: 1;
+  }
+  
+  .notes-sidebar-wrapper {
+    flex-shrink: 0;
+    width: 400px;
+    max-height: calc(100vh - 120px);
+    overflow-y: auto;
+    position: sticky;
+    top: 100px;
+    transition: width 0.3s ease, min-width 0.3s ease;
+    order: 2;
+    margin-top: 0;
+  }
+  
+  .notes-sidebar-wrapper:has(.collapsed) {
+    width: 70px;
+    min-width: 70px;
+  }
+}
+
+.wiki-page {
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 0;
+}
+
+@media (min-width: 768px) {
+  .wiki-page {
+    padding: 0 1rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .wiki-page {
+    max-width: 100%;
+    padding: 0 2rem;
+  }
+  
+  .wiki-page.with-sidebar {
+    max-width: 900px;
+  }
+}
+
+.page-header {
+  background-color: var(--card);
+  padding: 2rem 2rem 1.5rem;
+  border-radius: 0;
+  margin-bottom: 2rem;
+}
+
+.page-title {
+  font-size: 3rem;
+  line-height: 1.2;
+  font-weight: 700;
+  color: var(--foreground);
+  margin-bottom: 0;
+  letter-spacing: -0.02em;
+}
+
+.keyword-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  background-color: var(--muted);
+  color: var(--muted-foreground);
+  transition: all 0.2s ease;
+}
+
+.keyword-badge:hover {
+  background-color: var(--accent);
+}
+
+.page-content-wrapper {
+  background-color: transparent;
+  padding: 0 1rem 0.5rem;
+}
+
 .page-content {
   color: var(--foreground);
 }

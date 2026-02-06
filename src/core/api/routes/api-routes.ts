@@ -20,8 +20,20 @@ export const API_ROUTES = {
         DELETE: (id: number) => `${AR_KEYS.MODULES}/${id}`,
     },
     PAGES: {
+        CREATE: `${AR_KEYS.PAGES}`,
         GET_BY_MODULE_ID: (moduleId: number) => `${AR_KEYS.PAGES}/module/${moduleId}`,
         GET_BY_ID: (id: number) => `${AR_KEYS.PAGES}/${id}`,
+        UPDATE_CONTENT: (id: number) => `${AR_KEYS.PAGES}/${id}/content`,
+        NOTES: {
+            CREATE: `${AR_KEYS.PAGES}/notes`,
+            UPDATE: (noteId: number) => `${AR_KEYS.PAGES}/notes/${noteId}`,
+            DELETE: (noteId: number) => `${AR_KEYS.PAGES}/notes/${noteId}`,
+        },
+        FEEDBACKS: {
+            CREATE: `page-feedbacks`,
+            UPDATE: (feedbackId: number) => `page-feedbacks/${feedbackId}`,
+            DELETE: (feedbackId: number) => `page-feedbacks/${feedbackId}`,
+        },
     },
     ENROLLMENTS: {
         SELF_ENROLL: `${AR_KEYS.ENROLLMENTS}/self`,
@@ -33,5 +45,6 @@ export const API_ROUTES = {
     },
     CONTENT_GENERATION: {
         GENERATE: `${AR_KEYS.CONTENT_GENERATION}/generate-content`,
+        GENERATE_IMAGE: `${AR_KEYS.CONTENT_GENERATION}/generate-image`,
     },
 }

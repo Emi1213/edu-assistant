@@ -12,7 +12,7 @@ export interface PagesQueryParams extends PageQueryParams {
 
 export function usePages(params: ComputedRef<PagesQueryParams>) {
   const query = useQuery({
-    queryKey: [QUERY_KEYS.PAGES, params],
+    queryKey: QUERY_KEYS.PAGES(params.value),
     queryFn: () => {
       const { moduleId, ...queryParams } = params.value
       return pagesDataSource.getByModuleId(moduleId, queryParams)

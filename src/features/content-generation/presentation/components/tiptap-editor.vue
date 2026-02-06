@@ -2,6 +2,8 @@
 import { watch, onBeforeUnmount } from 'vue'
 import { useEditor, EditorContent } from '@tiptap/vue-3'
 import StarterKit from '@tiptap/starter-kit'
+import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
+import { lowlight } from '@/shared/config/lowlight.config'
 
 interface Props {
   modelValue?: string
@@ -23,7 +25,15 @@ const emit = defineEmits<Emits>()
 
 const editor = useEditor({
   content: props.modelValue,
-  extensions: [StarterKit],
+  extensions: [
+    StarterKit.configure({
+      codeBlock: false,
+    }),
+    CodeBlockLowlight.configure({
+      lowlight,
+      defaultLanguage: 'plaintext',
+    }),
+  ],
   editable: props.editable,
   editorProps: {
     attributes: {
@@ -295,16 +305,23 @@ onBeforeUnmount(() => {
 }
 
 .editor-content :deep(pre) {
-  background-color: var(--muted);
-  padding: 1rem;
-  border-radius: 0.5rem;
+  background-color: #f6f8fa;
+  padding: 1.5rem;
+  border-radius: 0.75rem;
   overflow-x: auto;
-  margin-bottom: 1rem;
+  margin: 1.5rem 0;
+  border: 1px solid var(--border);
+}
+
+.dark .editor-content :deep(pre) {
+  background-color: #161b22;
 }
 
 .editor-content :deep(pre code) {
   background-color: transparent;
   padding: 0;
+  font-size: 0.875rem;
+  line-height: 1.6;
 }
 
 .editor-content :deep(blockquote) {

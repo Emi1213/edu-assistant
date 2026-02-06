@@ -1,5 +1,5 @@
 import type { IHttpHandler } from "@/core/interfaces/IHttpHandler";
-import type { ContentGeneration, ContentGenerationResponse, CreateContentGeneration } from "../types/content-generation.types";
+import type { ContentGeneration, ContentGenerationResponse, CreateContentGeneration, GenerateImagePayload, GenerateImageResponse } from "../types/content-generation.types";
 import { API_ROUTES } from "@/core/api/routes/api-routes";
 import { httpClient } from "@/core/infraestructure/http";
 
@@ -16,5 +16,18 @@ export class ContentGenerationDataSource {
         if (!response.data) return null
         
         return response.data.content
+    }
+
+    async generateImage(payload: GenerateImagePayload): Promise<string> {
+        const response = await this.httpClient.post<GenerateImageResponse>(
+            API_ROUTES.CONTENT_GENERATION.GENERATE_IMAGE,
+            payload
+        )
+        
+        if (!response.data?.base64) {
+            throw new Error('No se pudo generar la imagen')
+        }
+        
+        return response.data.base64
     }
 }

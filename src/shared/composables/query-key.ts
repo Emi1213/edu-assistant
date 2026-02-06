@@ -3,8 +3,10 @@ import type { PagesQueryParams } from "@/features/pages/composables/queries/use-
 
 export const QUERY_KEYS = {
     MODULES: (params?: ModuleQueryParams) => ['modules', params],
+    MODULE: (id: number) => ['modules', id],
     AVAILABLE_MODULES: (params?: ModuleQueryParams) => ['available-modules', params],
     PAGES: (params?: PagesQueryParams) => ['pages', params],
+    PAGE: (id: number) => ['pages', id],
     ENROLLMENTS: () => ['enrollments'],
     MODULE_ENROLLMENTS: (moduleId: number) => ['module-enrollments', moduleId],
 }

@@ -24,8 +24,9 @@ export function useAIContentGeneration(pageId: number) {
     generationError.value = ''
   }
 
-  const processBlocks = (blocks: any[]): string => {
+  const processBlocks = (blocks: any[]): { content: string; imageSuggestions: Array<{ prompt: string; reason: string }> } => {
     let contentToInsert = ''
+    const imageSuggestions: Array<{ prompt: string; reason: string }> = []
 
     blocks.forEach((block) => {
       switch (block.type) {
@@ -46,17 +47,20 @@ export function useAIContentGeneration(pageId: number) {
           break
         case 'IMAGE_SUGGESTION':
           if ('prompt' in block.content && 'reason' in block.content) {
-            contentToInsert += `<blockquote><p><strong>💡 Sugerencia de Imagen:</strong></p><p>${block.content.prompt}</p><p><em>${block.content.reason}</em></p></blockquote>\n\n`
+            imageSuggestions.push({
+              prompt: block.content.prompt,
+              reason: block.content.reason,
+            })
           }
           break
       }
     })
 
-    return contentToInsert
+    return { content: contentToInsert, imageSuggestions }
   }
 
   const generate = (
-    onSuccess: (data: { title?: string; keywords?: string[]; content: string }) => void,
+    onSuccess: (data: { title?: string; keywords?: string[]; content: string; imageSuggestions?: Array<{ prompt: string; reason: string }> }) => void,
     isMounted: () => boolean
   ) => {
     if (!aiInstructions.value.trim() || isGenerating.value) return
@@ -76,13 +80,14 @@ export function useAIContentGeneration(pageId: number) {
             return
           }
 
-          const contentToInsert = processBlocks(data.blocks || [])
+          const result = processBlocks(data.blocks || [])
 
-          if (contentToInsert.trim()) {
+          if (result.content.trim() || result.imageSuggestions.length > 0) {
             onSuccess({
               title: data.title,
               keywords: data.keywords,
-              content: contentToInsert,
+              content: result.content,
+              imageSuggestions: result.imageSuggestions,
             })
             setTimeout(() => closeAIModal(), 500)
           } else {

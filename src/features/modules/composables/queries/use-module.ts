@@ -6,7 +6,7 @@ const modulesDataSource = new ModulesDataSource()
 
 export function useModule(id: number) {
   const query = useQuery({
-    queryKey: [QUERY_KEYS.MODULES, String(id)],
+    queryKey: QUERY_KEYS.MODULE(id),
     queryFn: () => modulesDataSource.getById(id),
   })
   return query
