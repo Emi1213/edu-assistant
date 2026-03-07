@@ -14,6 +14,7 @@ export const SIDEBAR_ITEMS: SidebarItem[] = [
     label: 'Mis Módulos',
     route: '/modules',
     icon: GraduationCap,
+    roles: ['TEACHER', 'STUDENT'],
   },
   {
     label: 'Módulos disponibles',
