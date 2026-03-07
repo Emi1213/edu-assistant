@@ -86,6 +86,72 @@
               </div>
             </button>
 
+            <!-- Development Login Form -->
+            <div
+              class="mt-6 p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border-2 border-yellow-300 dark:border-yellow-700"
+            >
+              <div class="flex items-center gap-2 mb-3">
+                <svg
+                  class="h-5 w-5 text-yellow-600 dark:text-yellow-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"
+                  ></path>
+                </svg>
+                <h3 class="text-sm font-semibold text-yellow-800 dark:text-yellow-300">
+                  Modo Desarrollo
+                </h3>
+              </div>
+              <div class="space-y-3">
+                <div>
+                  <label
+                    for="dev-token"
+                    class="block text-xs font-medium text-yellow-800 dark:text-yellow-300 mb-1"
+                  >
+                    Token
+                  </label>
+                  <input
+                    id="dev-token"
+                    v-model="devToken"
+                    type="text"
+                    placeholder="Ingresa el token"
+                    class="w-full px-3 py-2 text-sm border border-yellow-300 dark:border-yellow-700 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                  />
+                </div>
+                <div>
+                  <label
+                    for="dev-role"
+                    class="block text-xs font-medium text-yellow-800 dark:text-yellow-300 mb-1"
+                  >
+                    Rol
+                  </label>
+                  <select
+                    id="dev-role"
+                    v-model="devRole"
+                    class="w-full px-3 py-2 text-sm border border-yellow-300 dark:border-yellow-700 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                  >
+                    <option value="">Selecciona un rol</option>
+                    <option value="STUDENT">Estudiante</option>
+                    <option value="TEACHER">Profesor</option>
+                    <option value="ADMIN">Administrador</option>
+                  </select>
+                </div>
+                <button
+                  @click="handleDevLogin"
+                  :disabled="loading || !devToken || !devRole"
+                  class="w-full px-4 py-2 text-sm font-medium text-yellow-900 bg-yellow-400 hover:bg-yellow-500 dark:bg-yellow-600 dark:hover:bg-yellow-700 rounded-md transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Ingresar con Token
+                </button>
+              </div>
+            </div>
+
             <!-- Info Box -->
             <div
               class="mt-8 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600"
@@ -123,12 +189,23 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
 import { useAuth } from "../../composables/use-auth"
+import type { Role } from '../../types/roles.enum'
 
-const { login, loading } = useAuth()
+const { login, loginWithToken, loading } = useAuth()
+const devToken = ref('')
+const devRole = ref<Role | ''>('')
 
 function handleMicrosoftLogin() {
   login()
+}
+
+async function handleDevLogin() {
+  if (!devToken.value || !devRole.value) {
+    return
+  }
+  await loginWithToken(devToken.value, devRole.value as Role)
 }
 </script>
 
