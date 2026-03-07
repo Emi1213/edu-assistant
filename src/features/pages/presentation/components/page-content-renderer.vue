@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { EditorContent } from '@tiptap/vue-3'
+import { TooltipProvider } from '@/components/ui/tooltip'
 import { usePageContentViewer } from '../../composables/use-page-content-viewer'
 import type { Page } from '../../types/pages.types'
 
@@ -9,6 +11,24 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+const router = useRouter()
+
+function onContentClick(event: MouseEvent) {
+  const clicked = event.target as Node
+  const el = clicked?.nodeType === Node.ELEMENT_NODE ? (clicked as HTMLElement) : clicked?.parentElement
+  const link = el?.closest?.('[data-type="page-link"]')
+  if (!link) return
+  const pageId = link.getAttribute('data-target-page-id')
+  if (!pageId || !props.page.moduleId) return
+  event.preventDefault()
+  event.stopPropagation()
+  const url = `/modules/${props.page.moduleId}/pages/${pageId}`
+  if (event.metaKey || event.ctrlKey) {
+    window.open(url, '_blank', 'noopener,noreferrer')
+  } else {
+    router.push(url)
+  }
+}
 
 const editorContent = computed(() => {
   if (props.page.blocks && props.page.blocks.length > 0) {
@@ -19,10 +39,18 @@ const editorContent = computed(() => {
 
     props.page.blocks.forEach((block) => {
       if (block.tipTapContent && block.tipTapContent.content) {
-        const filteredContent = block.tipTapContent.content.filter((node: any) => 
+        const filteredContent = block.tipTapContent.content.filter((node: any) =>
           node.type !== 'imageSuggestion'
         )
         combinedContent.content.push(...filteredContent)
+      } else if (block.type === 'IMAGE' && block.content && 'src' in block.content) {
+        combinedContent.content.push({
+          type: 'image',
+          attrs: {
+            src: (block.content as { src: string; alt?: string }).src,
+            alt: (block.content as { src: string; alt?: string }).alt,
+          },
+        })
       }
     })
 
@@ -36,12 +64,14 @@ const { editor } = usePageContentViewer(editorContent)
 </script>
 
 <template>
-  <div class="page-content-renderer">
-    <EditorContent v-if="editor" :editor="editor" />
-    <div v-else class="text-muted-foreground">
-      No hay contenido disponible
+  <TooltipProvider>
+    <div class="page-content-renderer" @click.capture="onContentClick">
+      <EditorContent v-if="editor" :editor="editor" />
+      <div v-else class="text-muted-foreground">
+        No hay contenido disponible
+      </div>
     </div>
-  </div>
+  </TooltipProvider>
 </template>
 
 <style scoped>
@@ -226,5 +256,31 @@ const { editor } = usePageContentViewer(editorContent)
   border: none;
   height: 1px;
   background-color: var(--border);
+}
+
+.page-content-renderer :deep(.concept-term) {
+  border-bottom: 1px dotted var(--primary);
+  cursor: help;
+}
+
+.page-content-renderer :deep(.page-link-term) {
+  border-bottom: 1px dotted var(--primary);
+  color: var(--primary);
+  cursor: pointer;
+}
+
+.page-content-renderer :deep(.page-link-term:hover) {
+  text-decoration: underline;
+}
+
+.page-content-renderer :deep(img) {
+  max-width: 100%;
+  width: auto;
+  height: auto;
+  max-height: 360px;
+  object-fit: contain;
+  border-radius: 8px;
+  margin: 1rem auto;
+  display: block;
 }
 </style>

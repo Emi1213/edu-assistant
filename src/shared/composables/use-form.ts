@@ -81,11 +81,39 @@ export function useForm<T extends Record<string, any>>(
     }
   };
 
+  const FIELD_LABELS: Record<string, string> = {
+    title: 'título',
+    description: 'descripción',
+    name: 'nombre',
+    term: 'término',
+    question: 'pregunta',
+    language: 'idioma',
+    definition: 'definición',
+    targetLevel: 'nivel',
+    audience: 'audiencia',
+    contentLength: 'longitud del contenido',
+    tone: 'tono',
+  };
+
+  function toFriendlyMessage(message: string, fieldPath: unknown[], code?: string): string {
+    const isRequiredError =
+      code === 'invalid_type' ||
+      /expected .+ received undefined/i.test(message) ||
+      /required/i.test(message);
+    if (isRequiredError) {
+      const key = fieldPath.length > 0 ? String(fieldPath[fieldPath.length - 1]) : '';
+      const label = FIELD_LABELS[key] ?? key;
+      return label ? `Campo ${label} es requerido` : 'Este campo es requerido';
+    }
+    return message;
+  }
+
   const updateErrorsFromZod = (error: ZodError<T>) => {
     resetErrors();
     for (const err of error.issues) {
       const field = err.path[0] as keyof T;
-      errors.value[field] = err.message;
+      const code = (err as { code?: string }).code;
+      errors.value[field] = toFriendlyMessage(err.message, err.path, code);
     }
   };
 
@@ -111,7 +139,9 @@ export function useForm<T extends Record<string, any>>(
     } catch (error) {
       if (error instanceof ZodError) {
         const fieldError = error.issues.find((err) => err.path[0] === field);
-        errors.value[field] = fieldError?.message ?? null;
+        const msg = fieldError?.message ?? null;
+        const code = fieldError ? (fieldError as { code?: string }).code : undefined;
+        errors.value[field] = msg ? toFriendlyMessage(msg, fieldError!.path, code) : null;
       }
     }
   };

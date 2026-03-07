@@ -23,9 +23,6 @@ const visibleSidebarItems = computed(() => {
 })
 
 function isActiveRoute(itemRoute: string): boolean {
-  if (itemRoute === '/') {
-    return route.path === '/' || route.path === '/dashboard'
-  }
   return route.path === itemRoute || route.path.startsWith(itemRoute + '/')
 }
 

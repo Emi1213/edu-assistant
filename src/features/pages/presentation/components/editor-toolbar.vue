@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import type { Editor } from '@tiptap/vue-3'
-import { Bold, Italic, Strikethrough, List, ListOrdered, Code, Quote, Minus, Undo, Redo } from 'lucide-vue-next'
+import { Bold, Italic, Strikethrough, List, ListOrdered, Code, Quote, Minus, Undo, Redo, BookOpen, Link2, Image } from 'lucide-vue-next'
 
 interface Props {
   editor: Editor | undefined
+  onInsertConcept?: () => void
+  onInsertPageLink?: () => void
+  onInsertImage?: () => void
 }
 
 defineProps<Props>()
@@ -40,16 +43,6 @@ defineProps<Props>()
         title="Tachado"
       >
         <Strikethrough class="size-4" />
-      </button>
-
-      <button
-        @click="editor.chain().focus().toggleCode().run()"
-        :class="{ 'is-active': editor.isActive('code') }"
-        class="toolbar-btn"
-        type="button"
-        title="Código inline"
-      >
-        <Code class="size-4" />
       </button>
     </div>
 
@@ -128,6 +121,38 @@ defineProps<Props>()
         title="Bloque de código"
       >
         <Code class="size-4" />
+      </button>
+    </div>
+
+    <div class="toolbar-divider"></div>
+
+    <div v-if="onInsertConcept || onInsertPageLink || onInsertImage" class="toolbar-group">
+      <button
+        v-if="onInsertConcept"
+        type="button"
+        class="toolbar-btn"
+        title="Insertar concepto"
+        @click="onInsertConcept()"
+      >
+        <BookOpen class="size-4" />
+      </button>
+      <button
+        v-if="onInsertPageLink"
+        type="button"
+        class="toolbar-btn"
+        title="Enlace a otra página"
+        @click="onInsertPageLink()"
+      >
+        <Link2 class="size-4" />
+      </button>
+      <button
+        v-if="onInsertImage"
+        type="button"
+        class="toolbar-btn"
+        title="Generar imagen con IA"
+        @click="onInsertImage()"
+      >
+        <Image class="size-4" />
       </button>
     </div>
 

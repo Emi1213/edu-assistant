@@ -50,7 +50,7 @@ const handleOpenChange = (open: boolean) => {
           <Input
             id="page-title"
             :model-value="title"
-            @update:model-value="emit('update:title', $event)"
+            @update:model-value="(e: string | number) => emit('update:title', typeof e === 'string' ? e : String(e))"
             placeholder="Ej: Introducción a la Programación"
             :disabled="isCreating"
             @keyup.enter="emit('create')"
@@ -66,8 +66,8 @@ const handleOpenChange = (open: boolean) => {
           </div>
           <Switch
             id="is-published"
-            :checked="isPublished"
-            @update:checked="emit('update:isPublished', $event)"
+            :model-value="isPublished"
+            @update:model-value="(v: boolean) => emit('update:isPublished', v)"
             :disabled="isCreating"
           />
         </div>

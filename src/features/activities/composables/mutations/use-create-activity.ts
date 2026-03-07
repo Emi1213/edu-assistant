@@ -1,0 +1,17 @@
+import { useMutation, useQueryClient } from '@tanstack/vue-query'
+import { ActivitiesDataSource } from '../../services/activities.services'
+import { QUERY_KEYS } from '@/shared/composables/query-key'
+import type { CreateActivityPayload } from '../../types'
+
+const dataSource = new ActivitiesDataSource()
+
+export function useCreateActivity(pageId: number) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (payload: CreateActivityPayload) =>
+      dataSource.create(pageId, payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.ACTIVITIES(pageId) })
+    },
+  })
+}

@@ -22,9 +22,9 @@ const handleModuleClick = (module: Module) => {
 </script>
 
 <template>
-  <div class="space-y-6 pt-8">
-    <div class="flex items-center justify-between">
-      <h1 class="text-3xl font-bold tracking-tight text-foreground">Mis Módulos</h1>
+  <div class="space-y-6 pt-4 sm:pt-8 min-w-0">
+    <div class="flex items-center justify-between min-w-0">
+      <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-foreground truncate">Mis Módulos</h1>
     </div>
 
     <div

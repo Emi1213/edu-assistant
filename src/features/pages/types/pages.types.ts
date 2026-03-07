@@ -13,6 +13,16 @@ export interface User {
   updatedAt: string
 }
 
+export interface QuestionReply {
+  id: number
+  questionId: number
+  user: User
+  replyText: string
+  isFromTeacher: boolean
+  createdAt: string
+  updatedAt?: string
+}
+
 export interface StudentQuestion {
   id: number
   user: User
@@ -22,7 +32,15 @@ export interface StudentQuestion {
   upvotes: number
   createdAt: string
   updatedAt: string
+  replies?: QuestionReply[]
 }
+
+export type CreateStudentQuestionPayload = Pick<StudentQuestion, 'pageId' | 'question' | 'isPublic'>
+
+export type UpdateStudentQuestionPayload = Partial<Pick<StudentQuestion, 'question' | 'isPublic'>>
+
+export type CreateQuestionReplyPayload = { questionId: number; replyText: string }
+export type UpdateQuestionReplyPayload = { replyText: string }
 
 export interface PageFeedback {
   id: number
@@ -64,6 +82,11 @@ export interface PageQueryParams {
   search?: string
 }
 
+/** Campos actualizables de la página (metadata) */
+export type UpdatePagePayload = Partial<Pick<Page, 'title' | 'keywords' | 'isPublished'>> & {
+  hasManualEdits?: boolean
+}
+
 export interface PageContentBlock {
   id?: number
   type: 'TEXT' | 'CODE' | 'IMAGE' | 'IMAGE_SUGGESTION'
@@ -76,7 +99,12 @@ export interface TipTapDocument {
   content?: any[]
 }
 
-export type PageBlockContent = TextBlockContent | CodeBlockContent | ImageSuggestionContent
+export interface ImageBlockContent {
+  src: string
+  alt?: string
+}
+
+export type PageBlockContent = TextBlockContent | CodeBlockContent | ImageSuggestionContent | ImageBlockContent
 
 export interface TextBlockContent {
   text?: string
@@ -97,8 +125,34 @@ export interface UpdatePageContentPayload {
   blocks: PageContentBlock[]
 }
 
-export interface CreatePagePayload {
-  moduleId: number
-  title: string
-  isPublished: boolean
+/** Payload para crear página (solo campos enviados al backend) */
+export type CreatePagePayload = Pick<Page, 'moduleId' | 'title' | 'isPublished'>
+
+export interface CreateConceptPayload {
+  term: string
+  definition: string
 }
+
+export interface PageConcept {
+  id: number
+  pageId: number
+  term: string
+  definition: string
+  createdAt: string
+  updatedAt: string
+}
+
+
+export type {
+  ActivityType,
+  ActivityOptionsByType,
+  MultipleChoiceActivityOptions,
+  TrueFalseActivityOptions,
+  FillBlankActivityOptions,
+  MatchActivityOptions,
+  Activity,
+  CreateActivityPayload,
+  UpdateActivityPayload,
+  CreateActivityAttemptPayload,
+  ActivityAttemptResponse,
+} from '@/features/activities/types'

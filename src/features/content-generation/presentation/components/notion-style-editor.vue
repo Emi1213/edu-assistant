@@ -5,6 +5,7 @@ import StarterKit from '@tiptap/starter-kit'
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
 import { Sparkles, Loader2, X, CheckCircle2, AlertCircle } from 'lucide-vue-next'
 import { useGenerateContent } from '../../composables/mutations/use-generate-content'
+import { normalizeConceptMarkersInMarkdown } from '../../utils/normalize-concept-markers'
 import { lowlight } from '@/shared/config/lowlight.config'
 
 interface Props {
@@ -119,7 +120,7 @@ const handleGenerateContent = () => {
           switch (block.type) {
             case 'TEXT':
               if ('markdown' in block.content) {
-                contentToInsert += block.content.markdown
+                contentToInsert += normalizeConceptMarkersInMarkdown(block.content.markdown as string)
               }
               break
             case 'CODE':

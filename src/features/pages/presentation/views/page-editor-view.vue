@@ -1,109 +1,77 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
 import { EditorContent } from '@tiptap/vue-3'
-import { ArrowLeft, Sparkles, Loader2, X, Save } from 'lucide-vue-next'
-import { usePage } from '../../composables/queries/use-page'
-import { usePageEditor } from '../../composables/use-page-editor'
-import { useAIContentGeneration } from '@/features/content-generation/composables/use-ai-content-generation'
-import { useImageGenerationHandler } from '@/features/content-generation/composables/use-image-generation-handler'
+import { ArrowLeft, Sparkles, Loader2, X, Save, BookOpen, Link2, Image } from 'lucide-vue-next'
+import { usePageEditorView } from '../../composables/use-page-editor-view'
+import { usePageEditorConceptModal } from '../../composables/use-page-editor-concept-modal'
+import { usePageEditorPageLinkModal } from '../../composables/use-page-editor-page-link-modal'
+import { usePageEditorImageModal } from '../../composables/use-page-editor-image-modal'
+import { TooltipProvider } from '@/components/ui/tooltip'
 import EditorToolbar from '../components/editor-toolbar.vue'
 import Skeleton from '@/components/ui/skeleton/Skeleton.vue'
 
-const route = useRoute()
-const router = useRouter()
-const pageId = computed(() => Number(route.params.pageId))
-const moduleId = computed(() => Number(route.params.id))
-
-const { data: page, isLoading: isLoadingPage } = usePage(pageId.value)
-
-const pageTitle = ref('')
-const pageKeywords = ref<string[]>([])
-
-const { editor, isMounted, isSaving, setContentFromPage, insertContent, saveContent } = usePageEditor(pageId.value)
-
 const {
+  pageId,
+  moduleId,
+  isLoadingPage,
+  editor,
+  isSaving,
+  pageTitle,
+  pageKeywords,
+  goBack,
+  saveContent,
   showAIModal,
   aiInstructions,
-  isGenerating,
-  generationError,
   openAIModal,
   closeAIModal,
-  generate,
-} = useAIContentGeneration(pageId.value)
+  handleGenerateContent,
+  handleKeyDown,
+  isGenerating,
+  generationError,
+  handleGenerateConcepts,
+  isExtractingConcepts,
+} = usePageEditorView()
 
+const {
+  showConceptModal,
+  conceptForm,
+  openConceptModal,
+  closeConceptModal,
+  submitConcept,
+  isCreatingConcept,
+} = usePageEditorConceptModal(pageId.value, editor)
 
-useImageGenerationHandler(editor)
+const {
+  showPageLinkModal,
+  pageLinkForm,
+  modulePages,
+  openPageLinkModal,
+  closePageLinkModal,
+  submitPageLink,
+} = usePageEditorPageLinkModal(editor, pageId, moduleId)
 
-watch(() => page.value, (pageData) => {
-  if (pageData) {
-    pageTitle.value = pageData.title
-    pageKeywords.value = [...pageData.keywords]
-    if (editor.value) {
-      setContentFromPage(pageData)
-    }
-  }
-}, { immediate: true })
-
-watch(() => editor.value, (editorInstance) => {
-  if (editorInstance && page.value) {
-    if (!pageTitle.value) {
-      pageTitle.value = page.value.title
-      pageKeywords.value = [...page.value.keywords]
-    }
-    setContentFromPage(page.value)
-  }
-}, { immediate: true })
-
-const goBack = () => {
-  router.push(`/modules/${moduleId.value}/pages/${pageId.value}`)
-}
-
-const handleGenerateContent = () => {
-  generate(
-    (result) => {
-      if (result.title) pageTitle.value = result.title
-      if (result.keywords) pageKeywords.value = result.keywords
-      
-      // Insert text content first
-      if (result.content) {
-        insertContent(result.content)
-      }
-      
-      // Insert image suggestions as custom nodes
-      if (result.imageSuggestions && result.imageSuggestions.length > 0 && editor.value) {
-        result.imageSuggestions.forEach((suggestion) => {
-          editor.value?.commands.setImageSuggestion(suggestion.prompt, suggestion.reason)
-        })
-      }
-    },
-    () => isMounted.value
-  )
-}
-
-const handleKeyDown = (e: KeyboardEvent) => {
-  if (e.key === 'Enter' && !e.shiftKey) {
-    e.preventDefault()
-    handleGenerateContent()
-  } else if (e.key === 'Escape') {
-    closeAIModal()
-  }
-}
+const {
+  showImagePromptModal,
+  imagePrompt,
+  openImagePromptModal,
+  closeImagePromptModal,
+  handleGenerateImageFromPrompt,
+  isGeneratingImage,
+} = usePageEditorImageModal(editor)
 </script>
 
 <template>
-  <div class="page-editor-view h-screen flex flex-col bg-background pt-8">
-    <div class="border-b border-border bg-card px-6 py-4">
-      <div class="flex items-center justify-between max-w-7xl mx-auto">
+  <div class="page-editor-view h-screen flex flex-col bg-background pt-4 sm:pt-8 min-w-0">
+    <div class="border-b border-border bg-card px-4 sm:px-6 py-3 sm:py-4">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 max-w-7xl mx-auto">
         <button
           @click="goBack"
-          class="flex items-center gap-2 px-4 py-2.5 text-sm font-medium bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 hover:shadow-md transition-all duration-200"
+          class="flex items-center justify-center sm:justify-start gap-2 px-4 py-2.5 text-sm font-medium bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 hover:shadow-md transition-all duration-200 w-full sm:w-auto order-2 sm:order-1"
         >
-          <ArrowLeft class="size-4" />
+          <ArrowLeft class="size-4 shrink-0" />
           <span>Volver al módulo</span>
         </button>
 
-        <div class="flex items-center gap-3">
+        <div class="flex flex-wrap items-center justify-center sm:justify-end gap-2 sm:gap-3 order-1 sm:order-2">
           <button
             @click="openAIModal"
             :disabled="isGenerating"
@@ -112,6 +80,17 @@ const handleKeyDown = (e: KeyboardEvent) => {
             <Loader2 v-if="isGenerating" class="size-4 animate-spin" />
             <Sparkles v-else class="size-4" />
             <span>{{ isGenerating ? 'Generando...' : 'Generar con IA' }}</span>
+          </button>
+
+          <button
+            @click="handleGenerateConcepts"
+            :disabled="isExtractingConcepts"
+            type="button"
+            class="flex items-center gap-2 px-4 py-2.5 bg-muted text-foreground rounded-lg font-medium transition-all duration-200 hover:bg-muted/80 hover:shadow-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none"
+          >
+            <Loader2 v-if="isExtractingConcepts" class="size-4 animate-spin" />
+            <BookOpen v-else class="size-4" />
+            <span>{{ isExtractingConcepts ? 'Generando...' : 'Generar conceptos' }}</span>
           </button>
 
           <button
@@ -127,8 +106,8 @@ const handleKeyDown = (e: KeyboardEvent) => {
       </div>
     </div>
 
-    <div v-if="isLoadingPage" class="flex-1 overflow-y-auto">
-      <div class="px-6 py-8 space-y-4">
+    <div v-if="isLoadingPage" class="flex-1 overflow-y-auto min-w-0">
+      <div class="px-4 sm:px-6 py-6 sm:py-8 space-y-4">
         <Skeleton class="h-12 w-3/4" />
         <Skeleton class="h-4 w-full" />
         <Skeleton class="h-4 w-full" />
@@ -136,10 +115,16 @@ const handleKeyDown = (e: KeyboardEvent) => {
       </div>
     </div>
 
-    <div v-else class="flex-1 overflow-y-auto">
-      <div class="editor-page-wrapper">
-        <div class="editor-toolbar-wrapper">
-          <EditorToolbar :editor="editor" />
+    <div v-else class="flex-1 overflow-y-auto overflow-x-hidden min-w-0">
+      <TooltipProvider>
+        <div class="editor-page-wrapper min-w-0">
+          <div class="editor-toolbar-wrapper">
+          <EditorToolbar
+            :editor="editor"
+            :on-insert-concept="openConceptModal"
+            :on-insert-page-link="openPageLinkModal"
+            :on-insert-image="openImagePromptModal"
+          />
         </div>
 
         <div class="editor-main-container">
@@ -174,7 +159,8 @@ const handleKeyDown = (e: KeyboardEvent) => {
             <EditorContent :editor="editor" />
           </div>
         </div>
-      </div>
+        </div>
+      </TooltipProvider>
     </div>
 
     <Teleport to="body">
@@ -261,310 +247,217 @@ const handleKeyDown = (e: KeyboardEvent) => {
         </div>
       </div>
     </Teleport>
+
+    <!-- Modal Generar imagen con IA -->
+    <Teleport to="body">
+      <div
+        v-if="showImagePromptModal"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+        @click.self="closeImagePromptModal"
+      >
+        <div class="bg-card rounded-xl shadow-2xl w-full max-w-lg mx-4 p-6 animate-scale-in">
+          <div class="flex items-start gap-4 mb-6">
+            <div class="flex-shrink-0 w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+              <Image class="size-6 text-primary" />
+            </div>
+            <div class="flex-1">
+              <h2 class="text-xl font-bold text-foreground mb-1">Generar imagen con IA</h2>
+              <p class="text-sm text-muted-foreground">
+                Escribe cómo quieres que sea la imagen y se insertará donde está el cursor.
+              </p>
+            </div>
+            <button
+              type="button"
+              class="flex-shrink-0 text-muted-foreground hover:text-foreground disabled:opacity-50"
+              :disabled="isGeneratingImage"
+              @click="closeImagePromptModal"
+            >
+              <X class="size-6" />
+            </button>
+          </div>
+          <div class="mb-6">
+            <label for="image-prompt-input" class="block text-sm font-medium text-foreground mb-2">Descripción de la imagen</label>
+            <input
+              id="image-prompt-input"
+              v-model="imagePrompt"
+              type="text"
+              :disabled="isGeneratingImage"
+              placeholder="Ej: Un diagrama de una célula con sus partes señaladas, estilo limpio"
+              class="w-full px-4 py-2.5 rounded-lg border-2 border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary disabled:opacity-50"
+              @keydown.enter.prevent="handleGenerateImageFromPrompt"
+            />
+          </div>
+          <div v-if="isGeneratingImage" class="mb-6 p-4 rounded-lg bg-primary/10 border border-primary/20">
+            <div class="flex items-center gap-3">
+              <Loader2 class="size-5 text-primary animate-spin" />
+              <p class="text-sm font-medium text-primary">Generando imagen...</p>
+            </div>
+          </div>
+          <div class="flex justify-end gap-3">
+            <button
+              type="button"
+              @click="closeImagePromptModal"
+              :disabled="isGeneratingImage"
+              class="px-5 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/30 rounded-lg transition-all duration-200 disabled:opacity-50"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              @click="handleGenerateImageFromPrompt"
+              :disabled="!imagePrompt.trim() || isGeneratingImage"
+              class="px-5 py-2.5 text-sm font-medium rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            >
+              <Loader2 v-if="isGeneratingImage" class="size-4 animate-spin" />
+              <Image v-else class="size-4" />
+              <span>{{ isGeneratingImage ? 'Generando...' : 'Generar e insertar' }}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
+
+    <Teleport to="body">
+      <div
+        v-if="showConceptModal"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+        @click.self="closeConceptModal"
+      >
+        <div class="bg-card rounded-xl shadow-2xl w-full max-w-md mx-4 p-6 animate-scale-in">
+          <div class="flex items-start gap-4 mb-6">
+            <div class="flex-shrink-0 w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+              <BookOpen class="size-6 text-primary" />
+            </div>
+            <div class="flex-1">
+              <h2 class="text-xl font-bold text-foreground mb-1">Insertar concepto</h2>
+              <p class="text-sm text-muted-foreground">
+                Crea un concepto y se insertará en el editor. Guarda la página al finalizar.
+              </p>
+            </div>
+            <button
+              type="button"
+              class="flex-shrink-0 text-muted-foreground hover:text-foreground"
+              @click="closeConceptModal"
+            >
+              <X class="size-6" />
+            </button>
+          </div>
+          <div class="space-y-4 mb-6">
+            <div>
+              <label class="block text-sm font-medium text-foreground mb-1">Término</label>
+              <input
+                v-model="conceptForm.term"
+                type="text"
+                placeholder="Ej: variable"
+                class="w-full px-4 py-2.5 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:border-primary"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-foreground mb-1">Definición</label>
+              <textarea
+                v-model="conceptForm.definition"
+                rows="3"
+                placeholder="Definición del concepto (se mostrará en el tooltip)"
+                class="w-full px-4 py-2.5 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:border-primary resize-none"
+              />
+            </div>
+          </div>
+          <div class="flex justify-end gap-3">
+            <button
+              type="button"
+              class="px-5 py-2.5 text-sm font-medium text-muted-foreground hover:bg-muted/30 rounded-lg"
+              @click="closeConceptModal"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              :disabled="!conceptForm.term.trim() || isCreatingConcept"
+              class="px-5 py-2.5 text-sm font-medium rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 flex items-center gap-2"
+              @click="submitConcept"
+            >
+              <Loader2 v-if="isCreatingConcept" class="size-4 animate-spin" />
+              <span>{{ isCreatingConcept ? 'Creando...' : 'Insertar concepto' }}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
+
+    <!-- Modal Enlace a página -->
+    <Teleport to="body">
+      <div
+        v-if="showPageLinkModal"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+        @click.self="closePageLinkModal"
+      >
+        <div class="bg-card rounded-xl shadow-2xl w-full max-w-md mx-4 p-6 animate-scale-in">
+          <div class="flex items-start gap-4 mb-6">
+            <div class="flex-shrink-0 w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+              <Link2 class="size-6 text-primary" />
+            </div>
+            <div class="flex-1">
+              <h2 class="text-xl font-bold text-foreground mb-1">Enlace a otra página</h2>
+              <p class="text-sm text-muted-foreground">
+                Elige una página del módulo y el texto a mostrar. Guarda la página al finalizar.
+              </p>
+            </div>
+            <button
+              type="button"
+              class="flex-shrink-0 text-muted-foreground hover:text-foreground"
+              @click="closePageLinkModal"
+            >
+              <X class="size-6" />
+            </button>
+          </div>
+          <div class="space-y-4 mb-6">
+            <div>
+              <label class="block text-sm font-medium text-foreground mb-1">Página destino</label>
+              <select
+                v-model="pageLinkForm.targetPageId"
+                class="w-full px-4 py-2.5 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:border-primary"
+              >
+                <option :value="null">Selecciona una página</option>
+                <option
+                  v-for="p in modulePages"
+                  :key="p.id"
+                  :value="p.id"
+                >
+                  {{ p.title }}
+                </option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-foreground mb-1">Texto a mostrar</label>
+              <input
+                v-model="pageLinkForm.mentionText"
+                type="text"
+                placeholder="Ej: respiración celular"
+                class="w-full px-4 py-2.5 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:border-primary"
+              />
+            </div>
+          </div>
+          <div class="flex justify-end gap-3">
+            <button
+              type="button"
+              class="px-5 py-2.5 text-sm font-medium text-muted-foreground hover:bg-muted/30 rounded-lg"
+              @click="closePageLinkModal"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              :disabled="pageLinkForm.targetPageId == null || !pageLinkForm.mentionText.trim()"
+              class="px-5 py-2.5 text-sm font-medium rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+              @click="submitPageLink"
+            >
+              Insertar enlace
+            </button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>
 
-<style scoped>
-.editor-page-wrapper {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 2rem;
-}
-
-.editor-toolbar-wrapper {
-  background-color: var(--card);
-  border-bottom: 1px solid var(--border);
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  padding: 0.75rem 0;
-}
-
-.editor-main-container {
-  background-color: var(--card);
-}
-
-.page-header-editor {
-  padding: 2rem 0 1.5rem;
-  border-bottom: 1px solid var(--border);
-}
-
-.page-title-input {
-  margin-bottom: 0;
-}
-
-.page-title-input input {
-  font-size: 3rem;
-  line-height: 1.2;
-  font-weight: 700;
-}
-
-.editor-content {
-  padding: 2rem 0;
-  min-height: 60vh;
-}
-
-.editor-content :deep(.ProseMirror) {
-  outline: none;
-  color: var(--foreground);
-  line-height: 1.75;
-  min-height: 60vh;
-}
-
-.editor-content :deep(.ProseMirror p.is-editor-empty:first-child::before) {
-  content: 'Comienza a escribir o usa el botón "Generar con IA" para crear contenido...';
-  color: var(--muted-foreground);
-  float: left;
-  pointer-events: none;
-  height: 0;
-}
-
-.editor-content :deep(h1) {
-  font-size: 2.5rem;
-  line-height: 1.3;
-  font-weight: 700;
-  margin-top: 2rem;
-  margin-bottom: 1rem;
-  color: var(--foreground);
-}
-
-.editor-content :deep(h1:first-child) {
-  margin-top: 0;
-}
-
-.editor-content :deep(h2) {
-  font-size: 2rem;
-  line-height: 1.3;
-  font-weight: 700;
-  margin-top: 1.5rem;
-  margin-bottom: 0.75rem;
-  color: var(--foreground);
-}
-
-.editor-content :deep(h3) {
-  font-size: 1.625rem;
-  line-height: 1.4;
-  font-weight: 600;
-  margin-top: 1.25rem;
-  margin-bottom: 0.625rem;
-  color: var(--foreground);
-}
-
-.editor-content :deep(h4) {
-  font-size: 1.375rem;
-  line-height: 1.5;
-  font-weight: 600;
-  margin-top: 1rem;
-  margin-bottom: 0.5rem;
-  color: var(--foreground);
-}
-
-.editor-content :deep(p) {
-  font-size: 1.0625rem;
-  line-height: 1.75;
-  margin-bottom: 0.75rem;
-  color: var(--foreground);
-}
-
-.editor-content :deep(p:empty) {
-  margin-bottom: 0.25rem;
-}
-
-.editor-content :deep(ul),
-.editor-content :deep(ol) {
-  padding-left: 2rem;
-  margin-bottom: 0.75rem;
-  margin-top: 0.5rem;
-  line-height: 1.75;
-}
-
-.editor-content :deep(ul) {
-  list-style-type: disc;
-}
-
-.editor-content :deep(ol) {
-  list-style-type: decimal;
-}
-
-.editor-content :deep(li) {
-  font-size: 1.0625rem;
-  color: var(--foreground);
-  margin-bottom: 0.5rem;
-  padding-left: 0.5rem;
-  line-height: 1.75;
-}
-
-.editor-content :deep(li p) {
-  margin-bottom: 0.5rem;
-}
-
-.editor-content :deep(code) {
-  background-color: var(--muted);
-  padding: 0.25rem 0.5rem;
-  border-radius: 0.375rem;
-  font-size: 0.9375rem;
-  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
-  color: var(--foreground);
-  border: 1px solid var(--border);
-}
-
-.editor-content :deep(pre) {
-  position: relative;
-  background-color: #f6f8fa;
-  padding: 3rem 1.5rem 1.5rem;
-  border-radius: 0.75rem;
-  overflow-x: auto;
-  margin: 1rem 0;
-  border: 1px solid var(--border);
-}
-
-.dark .editor-content :deep(pre) {
-  background-color: #161b22;
-}
-
-.editor-content :deep(pre code) {
-  background-color: transparent;
-  padding: 0;
-  font-size: 0.875rem;
-  line-height: 1.6;
-}
-
-.editor-content :deep(pre)::before {
-  content: attr(data-language);
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  padding: 0.5rem 1rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  color: var(--muted-foreground);
-  background-color: var(--muted);
-  border-bottom: 1px solid var(--border);
-  border-radius: 0.75rem 0.75rem 0 0;
-  font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
-}
-
-.editor-content :deep(blockquote) {
-  border-left: 3px solid var(--border);
-  padding: 1rem 1.5rem;
-  margin: 0.75rem 0;
-  background-color: var(--muted);
-  border-radius: 0.5rem;
-  font-style: italic;
-  color: var(--muted-foreground);
-}
-
-.editor-content :deep(blockquote p) {
-  margin-bottom: 0.5rem;
-}
-
-.editor-content :deep(blockquote p:last-child) {
-  margin-bottom: 0;
-}
-
-.editor-content :deep(strong) {
-  font-weight: 700;
-  color: var(--foreground);
-}
-
-.editor-content :deep(em) {
-  font-style: italic;
-  color: var(--foreground);
-}
-
-.editor-content :deep(a) {
-  color: #C8102E;
-  text-decoration: underline;
-  transition: opacity 0.2s ease;
-}
-
-.editor-content :deep(a:hover) {
-  opacity: 0.7;
-}
-
-.editor-content :deep(hr) {
-  margin: 1rem 0;
-  border: none;
-  height: 1px;
-  background-color: var(--border);
-}
-
-.editor-content :deep(.image-suggestion-block) {
-  border: 1px solid var(--border);
-  border-left: 4px solid #C8102E;
-  background: linear-gradient(to right, rgba(200, 16, 46, 0.05), var(--muted));
-  border-radius: 0.5rem;
-  padding: 1.5rem;
-  margin: 1rem 0;
-}
-
-.editor-content :deep(.image-suggestion-title) {
-  font-weight: 700;
-  font-size: 1rem;
-  color: #C8102E;
-  margin-bottom: 0.75rem;
-}
-
-.editor-content :deep(.image-suggestion-prompt) {
-  font-size: 0.9375rem;
-  color: var(--foreground);
-  margin-bottom: 0.5rem;
-  font-weight: 500;
-}
-
-.editor-content :deep(.image-suggestion-reason) {
-  font-size: 0.875rem;
-  color: var(--muted-foreground);
-  font-style: italic;
-  margin-bottom: 0.75rem;
-}
-
-.editor-content :deep(.image-suggestion-actions) {
-  margin-top: 1rem;
-  padding-top: 0.75rem;
-  border-top: 1px solid var(--border);
-}
-
-.editor-content :deep(.generate-image-btn) {
-  background-color: #C8102E;
-  color: white;
-  padding: 0.5rem 1rem;
-  border-radius: 0.375rem;
-  border: none;
-  cursor: pointer;
-  font-size: 0.875rem;
-  font-weight: 500;
-  transition: all 0.2s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.editor-content :deep(.generate-image-btn:hover:not([disabled])) {
-  background-color: #B00E26;
-  box-shadow: 0 2px 8px rgba(200, 16, 46, 0.3);
-  transform: translateY(-1px);
-}
-
-.editor-content :deep(.generate-image-btn[disabled]) {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-@keyframes scale-in {
-  from {
-    transform: scale(0.95);
-    opacity: 0;
-  }
-  to {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-.animate-scale-in {
-  animation: scale-in 200ms ease-out;
-}
-</style>
+<style scoped src="../styles/page-editor-view.css"></style>

@@ -8,20 +8,13 @@ class NotesService {
   private readonly httpClient = httpClient
 
   async createNote(payload: CreateNote): Promise<Note> {
-    console.log('NotesService.createNote called with:', payload)
-    console.log('API Route:', API_ROUTES.PAGES.NOTES.CREATE)
-    
     const response: IHttpResponse<Note> = await this.httpClient.post(
       API_ROUTES.PAGES.NOTES.CREATE,
       payload
     )
-    
-    console.log('Response:', response)
-    
     if (!response.data) {
       throw new Error('Failed to create note')
     }
-    
     return response.data
   }
 

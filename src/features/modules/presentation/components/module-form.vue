@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { computed } from 'vue'
 import { useModuleForm } from '../../composables/use-module-form'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -11,7 +10,8 @@ import {
   TargetLevelLabels,
   AudienceLabels,
   ContentLengthLabels,
-  ToneLabels
+  ToneLabels,
+  LANGUAGE_OPTIONS,
 } from '../../constants/modules.constants'
 import type { CreateModule, Module, UpdateModule } from '../../types/modules.types'
 
@@ -23,19 +23,6 @@ const props = defineProps<{
 
 const { formData, errors, loading, handleSubmit, validateField } =
   useModuleForm(props.initialData)
-
-const learningObjectivesText = computed(() => {
-  return formData.aiConfiguration.learningObjectives?.join('\n') || ''
-})
-
-const handleLearningObjectivesInput = (e: Event) => {
-  const target = e.target as HTMLTextAreaElement
-  const value = target.value
-  formData.aiConfiguration.learningObjectives = value
-    .split('\n')
-    .map(line => line.trim())
-    .filter(line => line.length > 0)
-}
 </script>
 
 <template>
@@ -112,6 +99,30 @@ const handleLearningObjectivesInput = (e: Event) => {
       </label>
     </div>
 
+    <div class="flex items-center gap-2">
+      <input
+        id="allowSelfUnenroll"
+        v-model="formData.allowSelfUnenroll"
+        type="checkbox"
+        class="h-4 w-4 rounded border-input"
+      />
+      <label for="allowSelfUnenroll" class="text-sm font-medium text-foreground">
+        Permitir auto-baja
+      </label>
+    </div>
+
+    <div v-if="initialData" class="flex items-center gap-2">
+      <input
+        id="isActive"
+        v-model="formData.isActive"
+        type="checkbox"
+        class="h-4 w-4 rounded border-input"
+      />
+      <label for="isActive" class="text-sm font-medium text-foreground">
+        Módulo activo
+      </label>
+    </div>
+
     <div class="space-y-3 pt-4 border-t">
       <h4 class="text-sm font-semibold text-foreground">Configuración de IA</h4>
       
@@ -119,11 +130,19 @@ const handleLearningObjectivesInput = (e: Event) => {
         <label for="language" class="block text-sm font-medium mb-2 text-foreground">
           Idioma
         </label>
-        <Input
+        <select
           id="language"
           v-model="formData.aiConfiguration.language"
-          placeholder="es"
-        />
+          class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+        >
+          <option
+            v-for="opt in LANGUAGE_OPTIONS"
+            :key="opt.value"
+            :value="opt.value"
+          >
+            {{ opt.label }}
+          </option>
+        </select>
       </div>
 
       <div>
@@ -162,25 +181,6 @@ const handleLearningObjectivesInput = (e: Event) => {
             {{ label }}
           </option>
         </select>
-      </div>
-
-      <div>
-        <label for="learningObjectives" class="block text-sm font-medium mb-2 text-foreground">
-          Objetivos de Aprendizaje
-        </label>
-        <textarea
-          id="learningObjectives"
-          :value="learningObjectivesText"
-          @input="handleLearningObjectivesInput"
-          placeholder="Ingrese un objetivo por línea"
-          :class="[
-            'flex min-h-[100px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50',
-          ]"
-          rows="4"
-        />
-        <p class="text-xs text-muted-foreground mt-1">
-          Ingrese un objetivo de aprendizaje por línea
-        </p>
       </div>
 
       <div>

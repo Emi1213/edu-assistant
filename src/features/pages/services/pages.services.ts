@@ -1,6 +1,14 @@
 import { httpClient } from '@/core/infraestructure/http'
 import type { IHttpHandler } from '@/core/interfaces/IHttpHandler'
-import type { Page, PageQueryParams, UpdatePageContentPayload, CreatePagePayload } from '../types/pages.types'
+import type {
+  Page,
+  PageQueryParams,
+  UpdatePageContentPayload,
+  UpdatePagePayload,
+  CreatePagePayload,
+  CreateConceptPayload,
+  PageConcept,
+} from '../types/pages.types'
 import type { IHttpPaginatedResponse } from '@/shared/types/http-response.types'
 import { API_ROUTES } from '@/core/api/routes/api-routes'
 
@@ -26,6 +34,11 @@ export class PagesDataSource {
     return response.data
   }
 
+  async update(id: number, payload: UpdatePagePayload): Promise<Page | null> {
+    const response = await this.httpClient.patch<Page>(API_ROUTES.PAGES.UPDATE(id), payload)
+    return response.data
+  }
+
   async updateContent(id: number, payload: UpdatePageContentPayload): Promise<Page | null> {
     const response = await this.httpClient.patch<Page>(API_ROUTES.PAGES.UPDATE_CONTENT(id), payload)
     return response.data
@@ -33,6 +46,14 @@ export class PagesDataSource {
 
   async create(payload: CreatePagePayload): Promise<Page | null> {
     const response = await this.httpClient.post<Page>(API_ROUTES.PAGES.CREATE, payload)
+    return response.data
+  }
+
+  async createConcept(pageId: number, payload: CreateConceptPayload): Promise<PageConcept | null> {
+    const response = await this.httpClient.post<PageConcept>(
+      API_ROUTES.PAGES.CREATE_CONCEPT(pageId),
+      payload
+    )
     return response.data
   }
 }

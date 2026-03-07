@@ -22,7 +22,17 @@ export const modulesRoutes: RouteRecordRaw[] = [
         meta: {
           layout: 'dashboard',
           requiresAuth: true,
-          roles: ['TEACHER', 'ADMIN', 'STUDENT'], 
+          roles: ['TEACHER', 'ADMIN', 'STUDENT'],
+        },
+      },
+      {
+        path: ':id/students',
+        name: 'module-students',
+        component: () => import('@/features/enrollments/presentation/views/module-students-view.vue'),
+        meta: {
+          layout: 'dashboard',
+          requiresAuth: true,
+          roles: ['TEACHER', 'ADMIN'],
         },
       },
       {
@@ -33,6 +43,16 @@ export const modulesRoutes: RouteRecordRaw[] = [
           layout: 'dashboard',
           requiresAuth: true,
           roles: ['TEACHER', 'ADMIN', 'STUDENT'], 
+        },
+      },
+      {
+        path: ':id/pages/:pageId/activities',
+        name: 'page-activities',
+        component: () => import('@/features/activities/presentation/views/page-activities-view.vue'),
+        meta: {
+          layout: 'dashboard',
+          requiresAuth: true,
+          roles: ['TEACHER', 'ADMIN', 'STUDENT'],
         },
       },
       {

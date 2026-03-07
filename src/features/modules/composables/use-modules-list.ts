@@ -2,7 +2,30 @@ import { ref } from 'vue'
 import { useCreateModule } from './mutations/use-create-module'
 import { useUpdateModule } from './mutations/use-update-module'
 import { useDeleteModule } from './mutations/use-delete-module'
-import type { Module, CreateModule, UpdateModule } from '../types/modules.types'
+import type { Module, CreateModule, UpdateModule, UpdateModuleAiConfiguration } from '../types/modules.types'
+
+function buildUpdateModulePayload(data: CreateModule | UpdateModule | Partial<Module>): UpdateModule {
+  const ai = (data as { aiConfiguration?: UpdateModuleAiConfiguration }).aiConfiguration
+  const d = data as Partial<Module>
+  return {
+    title: data.title,
+    description: data.description ?? undefined,
+    isPublic: data.isPublic,
+    allowSelfEnroll: data.allowSelfEnroll,
+    allowSelfUnenroll: (data as { allowSelfUnenroll?: boolean }).allowSelfUnenroll,
+    logoUrl: data.logoUrl ?? undefined,
+    isActive: d.isActive,
+    aiConfiguration: ai
+      ? {
+          language: ai.language,
+          targetLevel: ai.targetLevel,
+          audience: ai.audience,
+          contentLength: ai.contentLength,
+          tone: ai.tone,
+        }
+      : undefined,
+  }
+}
 
 export function useModulesList() {
   const drawerOpen = ref(false)
@@ -48,13 +71,11 @@ export function useModulesList() {
 
   const handleSubmit = async (data: CreateModule | UpdateModule) => {
     if (initialData.value && initialData.value.id) {
-      const updateData: UpdateModule & { id: number } = {
-        ...data,
-        id: initialData.value.id,
-      }
-      await updateModule.mutateAsync({ id: updateData.id, payload: data })
+      const payload = buildUpdateModulePayload(data)
+      await updateModule.mutateAsync({ id: initialData.value.id, payload })
     } else {
-      await createModule.mutateAsync(data as CreateModule)
+      const { isActive: _, ...createPayload } = data as CreateModule & { isActive?: boolean }
+      await createModule.mutateAsync(createPayload as CreateModule)
     }
     drawerOpen.value = false
   }

@@ -1,15 +1,12 @@
 <script setup lang="ts">
-import Sidebar from './Sidebar.vue'
-import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
+import TopNav from './TopNav.vue'
 </script>
 
 <template>
-  <SidebarProvider>
-    <Sidebar />
-    <SidebarInset>
-      <div class="flex flex-1 flex-col gap-4 p-4 bg-background">
-        <RouterView />
-      </div>
-    </SidebarInset>
-  </SidebarProvider>
+  <div class="flex min-h-svh w-full flex-col bg-background">
+    <TopNav />
+    <main class="flex flex-1 flex-col gap-4 p-4 sm:p-6 lg:p-8 min-w-0 overflow-x-hidden">
+      <RouterView />
+    </main>
+  </div>
 </template>

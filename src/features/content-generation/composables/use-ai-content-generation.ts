@@ -1,6 +1,7 @@
 import { ref } from 'vue'
 import { marked } from 'marked'
 import { useGenerateContent } from './mutations/use-generate-content'
+import { normalizeConceptMarkersInMarkdown } from '../utils/normalize-concept-markers'
 
 export function useAIContentGeneration(pageId: number) {
   const showAIModal = ref(false)
@@ -32,7 +33,9 @@ export function useAIContentGeneration(pageId: number) {
       switch (block.type) {
         case 'TEXT':
           if ('markdown' in block.content) {
-            const htmlContent = marked.parse(block.content.markdown) as string
+            const raw = block.content.markdown as string
+            const normalized = normalizeConceptMarkersInMarkdown(raw)
+            const htmlContent = marked.parse(normalized) as string
             contentToInsert += htmlContent + '\n\n'
           }
           break

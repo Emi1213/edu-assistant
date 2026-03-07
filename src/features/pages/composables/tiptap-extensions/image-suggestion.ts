@@ -43,6 +43,7 @@ export const ImageSuggestion = Node.create<ImageSuggestionOptions>({
       'div',
       mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, {
         'data-type': 'image-suggestion',
+        'data-prompt': node.attrs.prompt,
         class: 'image-suggestion-block',
       }),
       [
@@ -74,6 +75,14 @@ export const ImageSuggestion = Node.create<ImageSuggestionOptions>({
               type: 'button',
             },
             '🎨 Generar Imagen',
+          ],
+          [
+            'button',
+            {
+              class: 'remove-image-suggestion-btn',
+              type: 'button',
+            },
+            '✕ Quitar sugerencia',
           ],
         ],
       ],

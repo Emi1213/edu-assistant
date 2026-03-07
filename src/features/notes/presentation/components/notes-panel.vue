@@ -1,16 +1,18 @@
 <script setup lang="ts">
+import { toRef } from 'vue'
 import { StickyNote, Plus, Edit2, Trash2, Save, X, Loader2, ChevronRight, ChevronLeft } from 'lucide-vue-next'
 import { useNotesPanel } from '../../composables/use-notes-panel'
 import ConfirmationDialog from '@/shared/components/confirmation-dialog.vue'
 import type { Note } from '../../types/notes.types'
-import type { Ref } from 'vue'
 
 interface Props {
   pageId: number
-  notes: Ref<Note[]> | Note[] | null | undefined
+  notes: Note[] | null | undefined
 }
 
 const props = defineProps<Props>()
+
+const notesRef = toRef(props, 'notes')
 
 const {
   isCollapsed,
@@ -34,7 +36,7 @@ const {
   cancelDelete,
   confirmDelete,
   formatDate,
-} = useNotesPanel(props.pageId, props.notes)
+} = useNotesPanel(props.pageId, notesRef)
 </script>
 
 <template>

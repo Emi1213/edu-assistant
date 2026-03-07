@@ -3,6 +3,7 @@ import { authRoutes } from '@/features/auth/routes/auth-routes'
 import { authGuard } from '@/features/auth/guards/auth-guard'
 import { dashboardRoutes } from '@/features/dashboard/routes/dashboard.routes'
 import { modulesRoutes } from '@/features/modules/routes/modules-routes'
+import { adminRoutes } from '@/features/admin/routes/admin.routes'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -10,13 +11,14 @@ const router = createRouter({
     {
       path: '/',
       redirect: () => {
-        return { name: 'dashboard' }
+        return { name: 'modules' }
       },
       meta: { requiresAuth: true },
     },
     ...authRoutes,
     ...dashboardRoutes,
     ...modulesRoutes,
+    ...adminRoutes,
   ],
 })
 

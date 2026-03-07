@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import type { Page } from '../../types/pages.types'
-import { FileText, Zap, Clock } from 'lucide-vue-next'
+import { FileText, Zap, Clock, Link2, Pencil } from 'lucide-vue-next'
 import { computed } from 'vue'
 
 const props = defineProps<{
   page: Page
   onClick?: (page: Page) => void
+  onGenerateRelations?: (page: Page) => void
+  onUpdatePage?: (page: Page) => void
 }>()
 
 const timeAgo = computed(() => {
@@ -57,14 +59,36 @@ const timeAgo = computed(() => {
             <span>{{ timeAgo }}</span>
           </div>
         </div>
-        <span
-          class="inline-flex items-center text-xs font-medium px-2 py-0.5 rounded"
-          :class="page.isPublished
-            ? 'bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400'
-            : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'"
-        >
-          {{ page.isPublished ? 'Publicada' : 'Borrador' }}
-        </span>
+        <div class="flex items-center gap-2">
+          <button
+            v-if="onUpdatePage"
+            type="button"
+            class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded transition-colors"
+            title="Actualizar página"
+            @click.stop="onUpdatePage(page)"
+          >
+            <Pencil class="size-3" />
+            <span>Actualizar</span>
+          </button>
+          <button
+            v-if="onGenerateRelations"
+            type="button"
+            class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-primary hover:bg-primary/10 rounded transition-colors"
+            title="Generar relaciones con otras páginas"
+            @click.stop="onGenerateRelations(page)"
+          >
+            <Link2 class="size-3" />
+            <span>Relaciones</span>
+          </button>
+          <span
+            class="inline-flex items-center text-xs font-medium px-2 py-0.5 rounded"
+            :class="page.isPublished
+              ? 'bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400'
+              : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'"
+          >
+            {{ page.isPublished ? 'Publicada' : 'Borrador' }}
+          </span>
+        </div>
       </div>
     </div>
   </div>

@@ -1,14 +1,16 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ArrowLeft, Edit3, MessageSquare } from 'lucide-vue-next'
+import { ArrowLeft, Edit3, MessageSquare, ClipboardList } from 'lucide-vue-next'
 import { usePage } from '../../composables/queries/use-page'
 import { useRoles } from '@/features/auth/composables/use-roles'
 import { useAuthStore } from '@/features/auth/context/auth-store'
 import PageContentRenderer from '../components/page-content-renderer.vue'
 import NotesPanel from '@/features/notes/presentation/components/notes-panel.vue'
 import PageFeedbackSection from '@/features/page-feedbacks/presentation/components/page-feedback-section.vue'
+import StudentQuestionsPanel from '../components/student-questions-panel.vue'
 import Skeleton from '@/components/ui/skeleton/Skeleton.vue'
+import { Button } from '@/components/ui/button'
 
 const route = useRoute()
 const router = useRouter()
@@ -23,6 +25,13 @@ const pageNotes = computed(() => {
   if (!page.value) return []
   return page.value.notes ?? []
 })
+
+const pageStudentQuestions = computed(() => {
+  if (!page.value) return []
+  return page.value.studentQuestions ?? []
+})
+
+const isProfessor = computed(() => canEdit())
 
 const pageFeedbacks = computed(() => {
   if (!page.value) return []
@@ -43,6 +52,10 @@ const goToEditor = () => {
   router.push(`/modules/${moduleId.value}/pages/${pageId.value}/edit`)
 }
 
+const goToActivities = () => {
+  router.push(`/modules/${moduleId.value}/pages/${pageId.value}/activities`)
+}
+
 const scrollToFeedback = () => {
   const feedbackSection = document.getElementById('feedback-section')
   if (feedbackSection) {
@@ -52,20 +65,20 @@ const scrollToFeedback = () => {
 </script>
 
 <template>
-  <div class="space-y-6 pt-8">
-    <div class="flex items-center justify-between">
+  <div class="space-y-6 pt-4 sm:pt-8 min-w-0">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
       <button
         @click="goBack"
-        class="flex items-center gap-2 px-4 py-2.5 text-sm font-medium bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 hover:shadow-md transition-all duration-200"
+        class="flex items-center justify-center sm:justify-start gap-2 px-4 py-2.5 text-sm font-medium bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 hover:shadow-md transition-all duration-200 w-full sm:w-auto"
       >
-        <ArrowLeft class="size-4" />
+        <ArrowLeft class="size-4 shrink-0" />
         <span>Volver al módulo</span>
       </button>
 
       <button
         v-if="!isLoading && page && canEdit()"
         @click="goToEditor"
-        class="flex items-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-lg font-medium transition-all duration-200 hover:bg-primary/90 hover:shadow-md"
+        class="flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-lg font-medium transition-all duration-200 hover:bg-primary/90 hover:shadow-md w-full sm:w-auto"
       >
         <Edit3 class="size-4" />
         <span>Editar con IA</span>
@@ -79,11 +92,11 @@ const scrollToFeedback = () => {
       <Skeleton class="h-4 w-2/3" />
     </div>
 
-    <div v-else-if="page" class="flex flex-col lg:flex-row gap-0">
-      <div class="flex-1 min-w-0">
+    <div v-else-if="page" class="flex flex-col lg:flex-row gap-0 min-w-0">
+      <div class="flex-1 min-w-0 overflow-x-auto">
         <div class="wiki-page">
           <div class="page-header">
-            <h1 class="page-title">
+            <h1 class="page-title text-xl sm:text-2xl lg:text-3xl break-words">
               {{ page.title }}
             </h1>
             <div v-if="page.keywords && page.keywords.length > 0" class="flex flex-wrap gap-2 mt-3">
@@ -110,14 +123,29 @@ const scrollToFeedback = () => {
             <PageContentRenderer :page="page" />
           </div>
 
+          <div v-if="page" class="mt-6 pt-6 border-t border-border">
+            <Button variant="outline" class="gap-2" @click="goToActivities">
+              <ClipboardList class="size-4" />
+              Ver actividades
+            </Button>
+          </div>
+
           <div v-if="page" id="feedback-section" class="mt-6 pt-6 border-t border-border">
             <PageFeedbackSection :page-id="page.id" :feedbacks="page.pageFeedbacks || []" />
+          </div>
+          <div v-if="page" id="questions-section" class="mt-6 pt-6 border-t border-border">
+            <StudentQuestionsPanel
+              :page-id="page.id"
+              :student-questions="pageStudentQuestions"
+              :is-professor="isProfessor"
+              embedded
+            />
           </div>
         </div>
       </div>
 
       <div v-if="isStudent && page" class="notes-sidebar-wrapper">
-        <NotesPanel :page-id="page.id" :notes="page.notes || []" />
+        <NotesPanel :page-id="page.id" :notes="pageNotes" />
       </div>
     </div>
 
@@ -374,8 +402,12 @@ const scrollToFeedback = () => {
 
 .page-content :deep(img) {
   max-width: 100%;
+  width: auto;
   height: auto;
+  max-height: 360px;
+  object-fit: contain;
   border-radius: 0.5rem;
-  margin: 1rem 0;
+  margin: 1rem auto;
+  display: block;
 }
 </style>

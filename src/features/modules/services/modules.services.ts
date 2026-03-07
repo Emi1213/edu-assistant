@@ -36,7 +36,7 @@ export class ModulesDataSource {
   }
 
   async update(id: number, payload: UpdateModule): Promise<IHttpResponse<Module> | null> {
-    const response = await this.httpClient.put<IHttpResponse<Module>>(API_ROUTES.MODULES.UPDATE(id), payload)
+    const response = await this.httpClient.patch<IHttpResponse<Module>>(API_ROUTES.MODULES.UPDATE(id), payload)
     return response.data
   }
 

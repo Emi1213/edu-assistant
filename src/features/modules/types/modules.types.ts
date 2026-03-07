@@ -7,6 +7,7 @@ export interface Module {
   teacherId: number
   isPublic: boolean
   allowSelfEnroll: boolean
+  allowSelfUnenroll?: boolean
   logoUrl: string | null
   isActive: boolean
   createdAt: Date
@@ -21,8 +22,25 @@ export interface ModuleQueryParams {
     isPublic?: boolean
 }
 
-export interface CreateModule extends Omit<Module, 'id' | 'createdAt' | 'updatedAt' | 'aiConfiguration'> {
+export interface CreateModule extends Omit<Module, 'id' | 'createdAt' | 'updatedAt' | 'aiConfiguration' | 'isActive'> {
   aiConfiguration: CreateAiConfiguration
 }
 
-export interface UpdateModule extends Partial<CreateModule> {}
+export interface UpdateModuleAiConfiguration {
+  language?: string
+  targetLevel?: string
+  audience?: string
+  contentLength?: string
+  tone?: string
+}
+
+export interface UpdateModule {
+  title?: string
+  description?: string
+  isPublic?: boolean
+  allowSelfEnroll?: boolean
+  allowSelfUnenroll?: boolean
+  logoUrl?: string
+  isActive?: boolean
+  aiConfiguration?: UpdateModuleAiConfiguration
+}

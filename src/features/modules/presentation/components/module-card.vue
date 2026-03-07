@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Module } from '../../types/modules.types'
-import { Globe, Lock, BookOpen } from 'lucide-vue-next'
+import { Globe, Lock, BookOpen, UserPlus, UserMinus } from 'lucide-vue-next'
 import { useRoles } from '@/features/auth/composables/use-roles'
 import ModulesActionsMenu from './modules-actions-menu.vue'
 
@@ -9,22 +9,32 @@ const props = defineProps<{
   onClick?: (module: Module) => void
   onEdit?: (module: Module) => void
   onDelete?: (module: Module) => void
+  isEnrolled?: boolean
+  onEnroll?: (module: Module) => void
+  onUnenroll?: (module: Module) => void
 }>()
 
 const { canEdit, canDelete } = useRoles()
 
 const showActions = canEdit() || canDelete()
+const showEnrollActions = (props.onEnroll != null || props.onUnenroll != null) && props.module.allowSelfEnroll
 
 const handleEdit = () => {
-  if (props.onEdit) {
-    props.onEdit(props.module)
-  }
+  if (props.onEdit) props.onEdit(props.module)
 }
 
 const handleDelete = () => {
-  if (props.onDelete) {
-    props.onDelete(props.module)
-  }
+  if (props.onDelete) props.onDelete(props.module)
+}
+
+const handleEnroll = (e: Event) => {
+  e.stopPropagation()
+  props.onEnroll?.(props.module)
+}
+
+const handleUnenroll = (e: Event) => {
+  e.stopPropagation()
+  props.onUnenroll?.(props.module)
 }
 </script>
 
@@ -72,16 +82,36 @@ const handleDelete = () => {
           Sin descripción
         </p>
       </div>
-      <div class="flex items-center justify-between pt-3 border-t border-border">
-        <div class="flex items-center gap-2">
+      <div class="flex items-center justify-between pt-3 border-t border-border gap-2">
+        <div class="flex items-center gap-2 min-w-0">
           <span
-            class="inline-flex items-center text-xs font-bold px-2.5 py-1 rounded-full transition-transform duration-200 hover:scale-105"
+            class="inline-flex items-center text-xs font-bold px-2.5 py-1 rounded-full transition-transform duration-200 hover:scale-105 shrink-0"
             :class="module.isActive
               ? 'bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400'
               : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'"
           >
             {{ module.isActive ? 'Activo' : 'Inactivo' }}
           </span>
+        </div>
+        <div v-if="showEnrollActions" class="flex items-center gap-1 shrink-0" @click.stop>
+          <button
+            v-if="!isEnrolled && onEnroll"
+            type="button"
+            class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+            @click="handleEnroll"
+          >
+            <UserPlus class="size-3.5" />
+            Inscribirse
+          </button>
+          <button
+            v-else-if="isEnrolled && onUnenroll"
+            type="button"
+            class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-border bg-muted text-muted-foreground hover:bg-muted/80 transition-colors"
+            @click="handleUnenroll"
+          >
+            <UserMinus class="size-3.5" />
+            Darse de baja
+          </button>
         </div>
         <div v-if="showActions" @click.stop>
           <ModulesActionsMenu

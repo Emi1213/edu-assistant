@@ -1,5 +1,4 @@
-import type { UserProfile } from '../../auth/types/auth.types'
-import type { Role } from '../../auth/types/roles.enum'
+import type { UserProfile } from '@/features/auth/types/auth.types'
 
 export interface CreateEnrollmentPayload {
   moduleId: number
@@ -12,7 +11,6 @@ export interface BulkEnrollStudentsPayload {
 
 export interface UpdateEnrollmentPayload {
   isActive?: boolean
-  completedAt?: Date | null
 }
 
 export interface Enrollment {

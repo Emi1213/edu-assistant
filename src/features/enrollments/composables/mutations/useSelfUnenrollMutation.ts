@@ -8,13 +8,17 @@ export function useSelfUnenrollMutation() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (moduleId: number) => enrollmentsDataSource.selfUnenroll(moduleId),
-    onSuccess: (data) => {
-      if (data && data.moduleId) {
-        queryClient.invalidateQueries({
-          queryKey: QUERY_KEYS.MODULE_ENROLLMENTS(data.moduleId),
-        })
+    onSuccess: async (data) => {
+      if (data?.moduleId != null) {
+        await Promise.all([
+          queryClient.refetchQueries({ queryKey: QUERY_KEYS.MODULE_ENROLLMENTS(data.moduleId) }),
+          queryClient.refetchQueries({ queryKey: QUERY_KEYS.MODULE(data.moduleId) }),
+        ])
       }
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.ENROLLMENTS() })
+      await Promise.all([
+        queryClient.refetchQueries({ queryKey: QUERY_KEYS.ENROLLMENTS() }),
+        queryClient.refetchQueries({ queryKey: ['available-modules'] }),
+      ])
     },
   })
 }

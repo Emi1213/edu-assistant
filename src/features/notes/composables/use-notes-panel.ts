@@ -5,7 +5,10 @@ import { useDeleteNote } from './mutations/use-delete-note'
 import { useToast } from 'vue-toastification'
 import type { Note } from '../types/notes.types'
 
-export function useNotesPanel(pageId: number, notes: Ref<Note[]> | Note[] | null | undefined) {
+export function useNotesPanel(
+  pageId: number,
+  notes: Ref<Note[] | null | undefined> | Note[] | null | undefined
+) {
   const toast = useToast()
 
   const isCollapsed = ref(true)
@@ -49,32 +52,22 @@ export function useNotesPanel(pageId: number, notes: Ref<Note[]> | Note[] | null
   }
 
   const saveNewNote = () => {
-    console.log('saveNewNote called')
-    console.log('newNoteContent:', newNoteContent.value)
-    console.log('pageId:', pageId)
-    
     if (!newNoteContent.value.trim()) {
       toast.warning('La nota no puede estar vacía')
       return
     }
 
-    const payload = {
-      pageId,
-      content: newNoteContent.value.trim(),
-    }
-    
-    console.log('Creating note with payload:', payload)
-
     createNote(
-      payload,
+      {
+        pageId,
+        content: newNoteContent.value.trim(),
+      },
       {
         onSuccess: () => {
-          console.log('Note created successfully')
           toast.success('Nota creada exitosamente')
           cancelCreating()
         },
-        onError: (error: any) => {
-          console.error('Error creating note:', error)
+        onError: (error: Error) => {
           toast.error(error.message || 'Error al crear la nota')
         },
       }

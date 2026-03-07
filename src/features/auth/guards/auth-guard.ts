@@ -22,15 +22,15 @@ export function authGuard(
 
 
   if (to.name === 'login' && isAuthenticated) {
-    next({ name: 'dashboard' })
+    next({ name: 'modules' })
     return
   }
 
   if (requiresAuth && isAuthenticated && allowedRoles && allowedRoles.length > 0) {
     const userRole = authStore.user?.role
-    
+
     if (!userRole || !allowedRoles.includes(userRole)) {
-      next({ name: 'dashboard' })
+      next({ name: 'modules' })
       return
     }
   }

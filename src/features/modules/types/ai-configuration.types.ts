@@ -4,7 +4,6 @@ export interface AiConfiguration {
   language: string
   targetLevel: TargetLevel
   audience: Audience
-  learningObjectives: string[]
   contentLength: ContentLength
   tone: Tone
   createdAt: Date

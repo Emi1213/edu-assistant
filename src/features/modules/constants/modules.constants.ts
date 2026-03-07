@@ -48,11 +48,19 @@ export const ToneLabels: Record<keyof typeof Tone, string> = {
     CASUAL: 'Casual',
 }
 
+export const LANGUAGE_OPTIONS: { value: string; label: string }[] = [
+    { value: 'es', label: 'Español' },
+    { value: 'en', label: 'English' },
+    { value: 'pt', label: 'Português' },
+    { value: 'fr', label: 'Français' },
+    { value: 'de', label: 'Deutsch' },
+    { value: 'it', label: 'Italiano' },
+]
+
 export const defaultAiConfiguration: CreateAiConfiguration = {
     language: 'es',
     targetLevel: 'BASIC',
     audience: 'UNIVERSITY',
-    learningObjectives: [],
     contentLength: 'MEDIUM',
     tone: 'EDUCATIONAL',
 }
