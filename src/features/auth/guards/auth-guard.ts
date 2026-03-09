@@ -22,7 +22,8 @@ export function authGuard(
 
 
   if (to.name === 'login' && isAuthenticated) {
-    next({ name: 'modules' })
+    const defaultName = authStore.user?.role === 'ADMIN' ? 'admin' : 'modules'
+    next({ name: defaultName })
     return
   }
 
@@ -30,7 +31,8 @@ export function authGuard(
     const userRole = authStore.user?.role
 
     if (!userRole || !allowedRoles.includes(userRole)) {
-      next({ name: 'modules' })
+      const defaultName = userRole === 'ADMIN' ? 'admin' : 'modules'
+      next({ name: defaultName })
       return
     }
   }

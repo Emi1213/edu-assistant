@@ -3,8 +3,6 @@ import { useRouter } from 'vue-router'
 import { AuthDataSource } from '../services/auth.service'
 import { useAuthStore } from '../context/auth-store'
 import { useToast } from '@/shared/composables/use-toast'
-import type { UserProfile } from '../types/auth.types'
-import type { Role } from '../types/roles.enum'
 
 export function useAuth() {
   const router = useRouter()
@@ -65,9 +63,11 @@ export function useAuth() {
       authStore.login(userProfile, tokenParam)
       
       toast.success('Sesión iniciada correctamente')
-      
+
       const redirect = router.currentRoute.value.query.redirect as string | undefined
-      await router.replace(redirect || { name: 'modules' })
+      const defaultRoute =
+        userProfile.role === 'ADMIN' ? { name: 'admin' as const } : { name: 'modules' as const }
+      await router.replace(redirect ? { path: redirect } : defaultRoute)
     } catch (err: unknown) {
       const errorMsg = err instanceof Error ? err.message : 'Error al iniciar sesión'
       error.value = errorMsg
@@ -84,53 +84,11 @@ export function useAuth() {
     await router.push({ name: 'login' })
   }
 
-  async function loginWithToken(token: string, role: Role): Promise<void> {
-    if (!token || !role) {
-      toast.error('Token y rol son requeridos')
-      error.value = 'Token y rol son requeridos'
-      return
-    }
-
-    try {
-      loading.value = true
-      error.value = null
-
-      // Crear un perfil de usuario mock con el rol especificado
-      const mockUser: UserProfile = {
-        id: 1,
-        email: role === 'TEACHER' ? 'profesor@uta.edu.ec' : 'estudiante@uta.edu.ec',
-        role: role,
-        name: role === 'TEACHER' ? 'Profesor' : 'Estudiante',
-        lastName: 'Test',
-        isActive: true,
-        microsoftId: 'mock-microsoft-id',
-        displayName: role === 'TEACHER' ? 'Profesor Test' : 'Estudiante Test',
-        profilePicture: null,
-        lastLoginAt: new Date(),
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      }
-
-      authStore.login(mockUser, token)
-      
-      toast.success(`Sesión iniciada como ${role}`)
-      
-      await router.replace({ name: 'modules' })
-    } catch (err: unknown) {
-      const errorMsg = err instanceof Error ? err.message : 'Error al iniciar sesión'
-      error.value = errorMsg
-      toast.error(errorMsg)
-    } finally {
-      loading.value = false
-    }
-  }
-
   return {
     login,
     handleCallback,
     logout,
     initialize,
-    loginWithToken,
     loading,
     error,
   }

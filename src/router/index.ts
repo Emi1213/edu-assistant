@@ -10,9 +10,7 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      redirect: () => {
-        return { name: 'modules' }
-      },
+      component: () => import('@/features/auth/presentation/views/home-redirect-view.vue'),
       meta: { requiresAuth: true },
     },
     ...authRoutes,

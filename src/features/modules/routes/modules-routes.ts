@@ -12,7 +12,7 @@ export const modulesRoutes: RouteRecordRaw[] = [
         meta: {
           layout: 'dashboard',
           requiresAuth: true,
-          roles: ['TEACHER', 'ADMIN', 'STUDENT'],   
+          roles: ['TEACHER', 'STUDENT'],
         },
       },
       {
@@ -22,7 +22,7 @@ export const modulesRoutes: RouteRecordRaw[] = [
         meta: {
           layout: 'dashboard',
           requiresAuth: true,
-          roles: ['TEACHER', 'ADMIN', 'STUDENT'],
+          roles: ['TEACHER', 'STUDENT'],
         },
       },
       {
@@ -32,7 +32,7 @@ export const modulesRoutes: RouteRecordRaw[] = [
         meta: {
           layout: 'dashboard',
           requiresAuth: true,
-          roles: ['TEACHER', 'ADMIN'],
+          roles: ['TEACHER'],
         },
       },
       {
@@ -42,7 +42,7 @@ export const modulesRoutes: RouteRecordRaw[] = [
         meta: {
           layout: 'dashboard',
           requiresAuth: true,
-          roles: ['TEACHER', 'ADMIN', 'STUDENT'], 
+          roles: ['TEACHER', 'STUDENT'],
         },
       },
       {
@@ -52,7 +52,7 @@ export const modulesRoutes: RouteRecordRaw[] = [
         meta: {
           layout: 'dashboard',
           requiresAuth: true,
-          roles: ['TEACHER', 'ADMIN', 'STUDENT'],
+          roles: ['TEACHER', 'STUDENT'],
         },
       },
       {
@@ -62,7 +62,7 @@ export const modulesRoutes: RouteRecordRaw[] = [
         meta: {
           layout: 'minimal',
           requiresAuth: true,
-          roles: ['TEACHER', 'ADMIN'], 
+          roles: ['TEACHER'], 
         },
       }
     ]
