@@ -1,0 +1,14 @@
+services:
+  edu-assistant:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        # API base URL (usado en build por Vite)
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:3000/api}
+        VITE_MICROSOFT_CLIENT_ID: ${VITE_MICROSOFT_CLIENT_ID:-}
+        VITE_MICROSOFT_TENANT_ID: ${VITE_MICROSOFT_TENANT_ID:-}
+        VITE_MICROSOFT_REDIRECT_URI: ${VITE_MICROSOFT_REDIRECT_URI:-http://localhost/auth/callback}
+    ports:
+      - "80:80"
+    restart: unless-stopped
