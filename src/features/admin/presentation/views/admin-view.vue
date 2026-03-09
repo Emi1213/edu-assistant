@@ -115,10 +115,10 @@ const saveEmails = () => {
         Modelos usados para respuestas, embeddings e imágenes. Los cambios se guardan en memoria (se pierden al reiniciar el servidor).
       </p>
 
-      <div v-if="configQuery.isLoading" class="text-sm text-muted-foreground">
+      <div v-if="configQuery.isLoading.value" class="text-sm text-muted-foreground">
         Cargando...
       </div>
-      <div v-else-if="configQuery.error" class="text-sm text-destructive">
+      <div v-else-if="configQuery.error.value" class="text-sm text-destructive">
         Error al cargar la configuración.
       </div>
       <div v-else class="space-y-4">
@@ -127,10 +127,10 @@ const saveEmails = () => {
           <select
             v-model="responsesModel"
             class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-            :disabled="modelsResponsesQuery.isLoading"
+            :disabled="modelsResponsesQuery.isLoading.value"
           >
             <option
-              v-for="m in (modelsResponsesQuery.data ?? [])"
+              v-for="m in (modelsResponsesQuery.data.value ?? [])"
               :key="m"
               :value="m"
             >
@@ -143,10 +143,10 @@ const saveEmails = () => {
           <select
             v-model="embeddingsModel"
             class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-            :disabled="modelsEmbeddingsQuery.isLoading"
+            :disabled="modelsEmbeddingsQuery.isLoading.value"
           >
             <option
-              v-for="m in (modelsEmbeddingsQuery.data ?? [])"
+              v-for="m in (modelsEmbeddingsQuery.data.value ?? [])"
               :key="m"
               :value="m"
             >
@@ -159,10 +159,10 @@ const saveEmails = () => {
           <select
             v-model="imagesModel"
             class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-            :disabled="modelsImagesQuery.isLoading"
+            :disabled="modelsImagesQuery.isLoading.value"
           >
             <option
-              v-for="m in (modelsImagesQuery.data ?? [])"
+              v-for="m in (modelsImagesQuery.data.value ?? [])"
               :key="m"
               :value="m"
             >
@@ -173,10 +173,10 @@ const saveEmails = () => {
         <button
           type="button"
           @click="saveAiConfig"
-          :disabled="!canSaveAiConfig || updateAiConfig.isPending"
+          :disabled="!canSaveAiConfig || updateAiConfig.isPending.value"
           class="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50"
         >
-          <Loader2 v-if="updateAiConfig.isPending" class="size-4 animate-spin" />
+          <Loader2 v-if="updateAiConfig.isPending.value" class="size-4 animate-spin" />
           <Save v-else class="size-4" />
           Guardar configuración IA
         </button>
@@ -193,10 +193,10 @@ const saveEmails = () => {
         Los correos que agregues aquí serán tratados con rol de profesor al autenticarse. Solo se guarda la lista de correos (no se obtienen usuarios de la app).
       </p>
 
-      <div v-if="emailsQuery.isLoading" class="text-sm text-muted-foreground">
+      <div v-if="emailsQuery.isLoading.value" class="text-sm text-muted-foreground">
         Cargando...
       </div>
-      <div v-else-if="emailsQuery.error" class="text-sm text-destructive">
+      <div v-else-if="emailsQuery.error.value" class="text-sm text-destructive">
         Error al cargar los correos.
       </div>
       <div v-else class="space-y-4">
@@ -240,10 +240,10 @@ const saveEmails = () => {
         <button
           type="button"
           @click="saveEmails"
-          :disabled="!canSaveEmails || updateEmails.isPending"
+          :disabled="!canSaveEmails || updateEmails.isPending.value"
           class="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50"
         >
-          <Loader2 v-if="updateEmails.isPending" class="size-4 animate-spin" />
+          <Loader2 v-if="updateEmails.isPending.value" class="size-4 animate-spin" />
           <Save v-else class="size-4" />
           Guardar correos de profesores
         </button>

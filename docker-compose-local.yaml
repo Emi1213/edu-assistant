@@ -1,0 +1,12 @@
+# docker compose -f docker-compose-local.yaml up -d
+services:
+  edu-assistant-front:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=${VITE_API_URL}
+    container_name: edu-assistant-front
+    ports:
+      - "80:80"
+    restart: unless-stopped
