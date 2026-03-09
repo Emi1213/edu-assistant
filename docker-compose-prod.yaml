@@ -1,0 +1,14 @@
+# docker compose -f docker-compose-prod.yaml up -d
+services:
+  edu-assistant-front:
+    image: ghcr.io/emi1213/edu-assistant-front:latest
+    container_name: edu-assistant-front
+    ports:
+      - "80:80"
+    restart: unless-stopped
+    networks:
+      - shared-network
+
+networks:
+  shared-network:
+    external: true
