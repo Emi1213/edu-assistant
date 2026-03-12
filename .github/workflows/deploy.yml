@@ -46,11 +46,11 @@ jobs:
           build-args: |
             VITE_API_URL=${{ secrets.VITE_API_URL }}
 
-  deploy:
-    needs: build-and-push
-    runs-on: ubuntu-latest
-    environment: ${{ github.ref == 'refs/heads/main' && 'production' || 'development' }}
+  # deploy:
+  #   needs: build-and-push
+  #   runs-on: ubuntu-latest
+  #   environment: ${{ github.ref == 'refs/heads/main' && 'production' || 'development' }}
 
-    steps:
-      - name: Trigger Portainer Webhook
-        run: curl -s -X POST ${{ secrets.PORTAINER_WEBHOOK_FRONTEND }}
+  #   steps:
+  #     - name: Trigger Portainer Webhook
+  #       run: curl -s -X POST ${{ secrets.PORTAINER_WEBHOOK_FRONTEND }}
