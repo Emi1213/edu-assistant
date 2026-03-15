@@ -1,22 +1,16 @@
 <script setup lang="ts">
 import type { Module } from '../../types/modules.types'
 import { Button } from '@/components/ui/button'
-import { Edit, Trash2 } from 'lucide-vue-next'
+import { Edit } from 'lucide-vue-next'
 
 const props = defineProps<{
   module: Module
   onEdit?: () => void
-  onDelete?: () => void
 }>()
 
 const handleEdit = (event: Event) => {
   event.stopPropagation()
   props.onEdit?.()
-}
-
-const handleDelete = (event: Event) => {
-  event.stopPropagation()
-  props.onDelete?.()
 }
 </script>
 
@@ -29,15 +23,6 @@ const handleDelete = (event: Event) => {
       @click="handleEdit"
     >
       <Edit class="h-4 w-4" />
-    </Button>
-
-    <Button
-      variant="ghost"
-      size="sm"
-      class="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
-      @click="handleDelete"
-    >
-      <Trash2 class="h-4 w-4" />
     </Button>
   </div>
 </template>

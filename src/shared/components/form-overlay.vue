@@ -30,7 +30,10 @@ const handleOpenChange = (open: boolean) => {
 
 <template>
   <Dialog v-if="!isMobile" :open="isOpen" @update:open="handleOpenChange">
-    <DialogContent class="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+    <DialogContent
+      class="sm:max-w-[600px] max-h-[90vh] overflow-y-auto"
+      :aria-describedby="undefined"
+    >
       <DialogHeader>
         <DialogTitle>{{ title }}</DialogTitle>
       </DialogHeader>

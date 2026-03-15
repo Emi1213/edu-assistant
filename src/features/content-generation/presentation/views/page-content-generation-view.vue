@@ -6,7 +6,7 @@ import { usePage } from '@/features/pages/composables/queries/use-page'
 import ContentGenerationForm from '../components/content-generation-form.vue'
 import GeneratedContentDisplay from '../components/generated-content-display.vue'
 import Skeleton from '@/components/ui/skeleton/Skeleton.vue'
-import type { ContentGeneration } from '../../types/content-generation.types'
+import type { ContentGeneration } from '../../types'
 
 const route = useRoute()
 const router = useRouter()

@@ -1,6 +1,6 @@
 import { ref, computed, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { debouncedRef } from '@vueuse/core'
+import { refDebounced } from '@vueuse/core'
 import { useAvailableModules } from './queries/use-available-modules'
 import type { ModuleQueryParams } from '../types/modules.types'
 import type { Module } from '../types/modules.types'
@@ -9,7 +9,7 @@ export function useAvailableModulesList() {
   const router = useRouter()
   const route = useRoute()
   const searchQuery = ref<string>((route.query.search as string) || '')
-  const debouncedSearchQuery = debouncedRef(searchQuery, 300)
+  const debouncedSearchQuery = refDebounced(searchQuery, 300)
 
   const currentPage = ref(1)
   const pageSize = ref(6)

@@ -1,4 +1,4 @@
-import type { UserProfile } from '@/features/auth/types/auth.types'
+import type { User } from '@/features/auth/types/auth.types'
 
 export interface CreateEnrollmentPayload {
   moduleId: number
@@ -24,7 +24,7 @@ export interface Enrollment {
 
 export interface EnrollmentStudent {
   id: number
-  user: UserProfile
+  user: User
   enrolledAt: Date
   completedAt: Date | null
   isActive: boolean

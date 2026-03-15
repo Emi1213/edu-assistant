@@ -1,4 +1,4 @@
-# Docker - Edu Assistant
+# Docker - Nous Ai
 
 ## Build y ejecución con Docker Compose
 

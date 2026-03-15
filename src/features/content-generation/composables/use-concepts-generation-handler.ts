@@ -2,7 +2,7 @@ import type { Ref } from 'vue'
 import type { Editor } from '@tiptap/vue-3'
 import { useExtractConcepts } from './mutations/use-extract-concepts'
 import { findFirstOccurrenceRange } from '../utils/find-first-occurrence'
-import type { ExtractConceptsTerm } from '../types/content-generation.types'
+import type { ExtractConceptsTerm } from '../types'
 
 function rangesOverlap(
   a: { from: number; to: number },

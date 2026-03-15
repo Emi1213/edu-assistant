@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/vue-query'
-import { PagesDataSource } from '../../services/pages.services'
+import { PagesDataSource } from '../../services/pages.service'
 import { QUERY_KEYS } from '@/shared/composables/query-key'
-import type { CreateConceptPayload, PageConcept } from '../../types/pages.types'
+import type { CreateConceptPayload } from '../../types'
 
 const pagesDataSource = new PagesDataSource()
 
@@ -18,5 +18,3 @@ export function useCreateConcept(pageId: number) {
 
   return mutation
 }
-
-export type { CreateConceptPayload, PageConcept }

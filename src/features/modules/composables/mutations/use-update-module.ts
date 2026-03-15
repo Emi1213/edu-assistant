@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/vue-query";
 import type { UpdateModule } from "../../types/modules.types";
-import { ModulesDataSource } from "../../services/modules.services";
+import { ModulesDataSource } from "../../services/modules.service";
 import { useToast } from "@/shared/composables/use-toast";
 import { QUERY_KEYS } from "@/shared/composables/query-key";
 
@@ -16,6 +16,7 @@ export function useUpdateModule() {
         onSuccess: () => {
             toast.success('Módulo actualizado exitosamente')
             queryClient.invalidateQueries({ queryKey: QUERY_KEYS.MODULES() })
+            queryClient.invalidateQueries({ queryKey: QUERY_KEYS.AVAILABLE_MODULES() })
         },
         onError: (error: unknown) => {
             const errorMessage = error instanceof Error ? error.message : 'Error al actualizar el módulo'

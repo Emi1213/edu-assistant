@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Code2, ImageIcon, Lightbulb } from 'lucide-vue-next'
-import type { ContentGeneration, ContentGenerationBlock, CodeBlock, ImageSuggestionBlock, TextBlock } from '../../types/content-generation.types'
+import type { ContentGeneration, ContentGenerationBlock, CodeBlock, ImageSuggestionBlock, TextBlock } from '../../types'
 
 interface Props {
   content: ContentGeneration

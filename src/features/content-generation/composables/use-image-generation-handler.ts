@@ -1,13 +1,8 @@
 import { onMounted, onBeforeUnmount, type Ref } from 'vue'
 import { useGenerateImage } from './mutations/use-generate-image'
-import { useToast } from 'vue-toastification'
+import { useToast } from '@/shared/composables/use-toast'
+import { toImageDataUrl } from '@/shared/utils/image.utils'
 import type { Editor } from '@tiptap/vue-3'
-
-function toDataUrl(base64: string): string {
-  if (!base64) return ''
-  if (base64.startsWith('data:')) return base64
-  return `data:image/png;base64,${base64}`
-}
 
 export function useImageGenerationHandler(editor: Ref<Editor | undefined>) {
   const { mutate: generateImage, isPending: isGenerating } = useGenerateImage()
@@ -44,8 +39,8 @@ export function useImageGenerationHandler(editor: Ref<Editor | undefined>) {
               }
             })
 
-            if (suggestionPos !== null) {
-              const src = toDataUrl(base64Image)
+            if (suggestionPos !== null && base64Image != null) {
+              const src = toImageDataUrl(base64Image)
               editor.value
                 .chain()
                 .focus()

@@ -1,16 +1,16 @@
 import { ref, computed, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { debouncedRef } from '@vueuse/core'
+import { refDebounced } from '@vueuse/core'
 import type { ModuleQueryParams } from '../types/modules.types'
 
 export function useModulesFiltersUrl() {
   const router = useRouter()
   const route = useRoute()
   const searchQuery = ref((route.query.search as string) || '')
-  const debouncedSearchQuery = debouncedRef(searchQuery, 300)
+  const debouncedSearchQuery = refDebounced(searchQuery, 300)
 
-  const currentPage = ref(parseInt((route.query.page as string) || '1'))
-  const pageSize = ref(6)
+  const currentPage = ref(1)
+  const pageSize = ref(12)
 
   const filters = computed(
     (): ModuleQueryParams => ({
@@ -22,16 +22,11 @@ export function useModulesFiltersUrl() {
 
   const updateURL = () => {
     const query: Record<string, string> = {}
-
     if (searchQuery.value) query.search = searchQuery.value
-    if (currentPage.value > 1) query.page = currentPage.value.toString()
-
     router.replace({ query })
   }
 
-  watch([searchQuery, currentPage], updateURL, {
-    deep: true,
-  })
+  watch(searchQuery, updateURL, { deep: true })
 
   const updateSearch = (query: string) => {
     searchQuery.value = query
@@ -49,6 +44,7 @@ export function useModulesFiltersUrl() {
 
   return {
     searchQuery,
+    debouncedSearchQuery,
     currentPage,
     pageSize,
     filters,

@@ -8,14 +8,10 @@ export function useDeleteEnrollmentMutation() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (id: number) => enrollmentsDataSource.removeEnrollment(id),
-    onSuccess: async (data) => {
-      if (data?.moduleId != null) {
-        await Promise.all([
-          queryClient.refetchQueries({ queryKey: QUERY_KEYS.MODULE_ENROLLMENTS(data.moduleId) }),
-          queryClient.refetchQueries({ queryKey: QUERY_KEYS.MODULE(data.moduleId) }),
-        ])
-      }
-      await queryClient.refetchQueries({ queryKey: QUERY_KEYS.ENROLLMENTS() })
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.MODULE_ENROLLMENTS() })
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.MODULES() })
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.ENROLLMENTS() })
     },
   })
 }

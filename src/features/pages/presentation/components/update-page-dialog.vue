@@ -14,8 +14,8 @@ import {
 } from '@/components/ui/dialog'
 import { Loader2, X } from 'lucide-vue-next'
 import { useUpdatePage } from '../../composables/mutations/use-update-page'
-import { useToast } from 'vue-toastification'
-import type { Page } from '../../types/pages.types'
+import { useToast } from '@/shared/composables/use-toast'
+import type { Page } from '../../types'
 
 const props = defineProps<{
   visible: boolean

@@ -1,7 +1,7 @@
 import { ref } from 'vue'
 import { useCreatePage } from './mutations/use-create-page'
-import { useToast } from 'vue-toastification'
-import type { CreatePagePayload } from '../types/pages.types'
+import { useToast } from '@/shared/composables/use-toast'
+import type { CreatePagePayload } from '../types'
 
 export function usePageCreator(moduleId: number) {
   const toast = useToast()

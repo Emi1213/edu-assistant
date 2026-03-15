@@ -17,7 +17,7 @@ defineProps<{
       <Input
         :model-value="searchQuery"
         @update:model-value="(val) => onUpdateSearch(String(val))"
-        placeholder="Search modules..."
+        placeholder="Buscar módulos..."
         class="pl-10"
       />
     </div>

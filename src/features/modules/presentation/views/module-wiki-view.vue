@@ -1,35 +1,29 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ArrowLeft, BookOpen, Users, Plus } from 'lucide-vue-next'
 import { useModule } from '../../composables/queries/use-module'
-import { usePages } from '@/features/pages/composables/queries/use-pages'
+import { usePagesTable } from '@/features/pages/composables/use-pages-table'
+import { usePagesList } from '@/features/pages/composables/use-pages-list'
 import { useRoles } from '@/features/auth/composables/use-roles'
-import { usePageCreator } from '@/features/pages/composables/use-page-creator'
+import { useExtractRelations } from '@/features/content-generation/composables/mutations/use-extract-relations'
+import { useToast } from '@/shared/composables/use-toast'
+import { toFullAssetUrl } from '@/shared/utils/image.utils'
 import PageCard from '@/features/pages/presentation/components/page-card.vue'
 import CreatePageDialog from '@/features/pages/presentation/components/create-page-dialog.vue'
 import UpdatePageDialog from '@/features/pages/presentation/components/update-page-dialog.vue'
 import Skeleton from '@/components/ui/skeleton/Skeleton.vue'
-import type { Page } from '@/features/pages/types/pages.types'
+import type { Page } from '@/features/pages/types'
 
 const route = useRoute()
 const router = useRouter()
+const toast = useToast()
 const moduleId = computed(() => Number(route.params.id))
 
 const { data: module, isLoading: isLoadingModule } = useModule(moduleId.value)
 const { canEdit } = useRoles()
 
-const pageParams = computed(() => ({
-  moduleId: moduleId.value,
-  page: 1,
-  limit: 100,
-}))
-
-const { data: pagesResponse, isLoading: isLoadingPages } = usePages(pageParams)
-
-const pages = computed(() => pagesResponse.value?.records || [])
-
-const pageToUpdate = ref<Page | null>(null)
+const { pages, isLoadingPages } = usePagesTable(moduleId)
 
 const {
   isDialogOpen,
@@ -39,28 +33,38 @@ const {
   openDialog,
   closeDialog,
   handleCreate,
-} = usePageCreator(moduleId.value)
+  pageToUpdate,
+  openUpdatePage,
+  closeUpdatePage,
+} = usePagesList(moduleId.value)
+
+const { mutate: extractRelations } = useExtractRelations()
+const generatingRelationsPageId = ref<number | null>(null)
 
 const goBack = () => {
   router.push('/modules')
 }
 
-const handlePageClick = (page: Page) => {
-  router.push(`/modules/${moduleId.value}/pages/${page.id}`)
-}
-
 const handleGenerateRelations = (page: Page) => {
-  router.push(`/modules/${moduleId.value}/pages/${page.id}/edit?applyRelations=1`)
+  generatingRelationsPageId.value = page.id
+  extractRelations(
+    { pageId: page.id },
+    {
+      onSuccess: (data) => {
+        generatingRelationsPageId.value = null
+        router.push({
+          path: `/modules/${moduleId.value}/pages/${page.id}/edit`,
+          query: { applyRelations: '1' },
+          state: { relations: data?.relations ?? [] } as Record<string, unknown> as import('vue-router').HistoryState,
+        })
+      },
+      onError: () => {
+        generatingRelationsPageId.value = null
+        toast.error('Error al extraer relaciones')
+      },
+    }
+  )
 }
-
-const openUpdatePage = (page: Page) => {
-  pageToUpdate.value = page
-}
-
-const closeUpdatePage = () => {
-  pageToUpdate.value = null
-}
-
 </script>
 
 <template>
@@ -86,10 +90,10 @@ const closeUpdatePage = () => {
 
     <div v-else-if="module" class="rounded-lg border border-border bg-card p-4 sm:p-6">
       <div class="flex flex-col sm:flex-row sm:items-start gap-4">
-        <div class="flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-lg bg-[#C8102E] flex items-center justify-center overflow-hidden">
+        <div class="flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-lg bg-[#233a83] flex items-center justify-center overflow-hidden">
           <img
             v-if="module.logoUrl"
-            :src="module.logoUrl"
+            :src="toFullAssetUrl(module.logoUrl)"
             :alt="module.title"
             class="w-full h-full object-cover"
           />
@@ -114,8 +118,6 @@ const closeUpdatePage = () => {
         </div>
       </div>
     </div>
-
-    <!-- Pages Section -->
     <div class="space-y-4 min-w-0">
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <h2 class="text-lg sm:text-xl font-bold text-foreground">Páginas del Módulo</h2>
@@ -150,7 +152,8 @@ const closeUpdatePage = () => {
           v-for="page in pages"
           :key="page.id"
           :page="page"
-          :on-click="handlePageClick"
+          :to="{ name: 'page-detail', params: { id: moduleId, pageId: page.id } }"
+          :generating-relations-page-id="generatingRelationsPageId"
           :on-update-page="canEdit() ? openUpdatePage : undefined"
           :on-generate-relations="canEdit() ? handleGenerateRelations : undefined"
         />

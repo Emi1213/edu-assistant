@@ -151,7 +151,6 @@ const handleGenerateContent = () => {
         
         generationStatus.value = 'error'
         errorMessage.value = error.message || 'Error al generar contenido. Por favor, intenta de nuevo.'
-        console.error('Error generando contenido:', error)
       },
     }
   )
