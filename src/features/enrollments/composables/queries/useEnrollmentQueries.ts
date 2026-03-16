@@ -3,16 +3,9 @@ import { computed } from 'vue'
 import { useQuery } from '@tanstack/vue-query'
 import { QUERY_KEYS } from '@/shared/composables/query-key'
 import { EnrollmentsDataSource } from '../../services/enrollment.service'
-import type { Enrollment, EnrollmentStudent } from '../../types/enrollments.types'
+import type { EnrollmentStudent } from '../../types/enrollments.types'
 
 const enrollmentsDataSource = new EnrollmentsDataSource()
-
-export function useMyEnrollments() {
-  return useQuery<Enrollment[] | null>({
-    queryKey: QUERY_KEYS.ENROLLMENTS(),
-    queryFn: () => enrollmentsDataSource.getMyEnrollments(),
-  })
-}
 
 export function useGetModuleEnrollments(moduleId: Ref<number>) {
   const queryKey = computed(() => QUERY_KEYS.MODULE_ENROLLMENTS(moduleId.value))
