@@ -62,8 +62,7 @@ export function useAuth() {
 
       authStore.login(userProfile, tokenParam)
       
-      toast.success('Sesión iniciada correctamente')
-
+      toast.success('Bienvenido a Nous AI ' + userProfile.displayName || "usuario")
       const redirect = router.currentRoute.value.query.redirect as string | undefined
       const defaultRoute =
         userProfile.role === 'ADMIN' ? { name: 'admin' as const } : { name: 'modules' as const }
@@ -74,7 +73,7 @@ export function useAuth() {
       toast.error(errorMsg)
       await logout()
     } finally {
-      loading.value = false
+      loading.value = false 
     }
   }
 

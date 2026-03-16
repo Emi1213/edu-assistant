@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/vue-query'
-import { notesService } from '../../services/notes.services'
+import { notesService } from '../../services/notes.service'
 import { QUERY_KEYS } from '@/shared/composables/query-key'
 import type { UpdateNote } from '../../types/notes.types'
 

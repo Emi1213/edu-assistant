@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref, computed, onBeforeUnmount } from 'vue'
 import { useModuleForm } from '../../composables/use-module-form'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -14,6 +15,10 @@ import {
   LANGUAGE_OPTIONS,
 } from '../../constants/modules.constants'
 import type { CreateModule, Module, UpdateModule } from '../../types/modules.types'
+import { uploadFile } from '@/shared/services/files.service'
+import { useToast } from '@/shared/composables/use-toast'
+import { toFullAssetUrl } from '@/shared/utils/image.utils'
+import { ImagePlus, Loader2, X } from 'lucide-vue-next'
 
 const props = defineProps<{
   onSubmit: (data: CreateModule | UpdateModule) => Promise<void>
@@ -21,8 +26,74 @@ const props = defineProps<{
   initialData?: Partial<CreateModule> | Partial<Module>
 }>()
 
+const toast = useToast()
 const { formData, errors, loading, handleSubmit, validateField } =
   useModuleForm(props.initialData)
+
+const fileInputRef = ref<HTMLInputElement | null>(null)
+const isUploadingLogo = ref(false)
+/** Vista previa local (blob URL) mientras se sube o nada más elegir el archivo */
+const logoObjectUrl = ref<string | null>(null)
+
+const logoPreviewUrl = computed(() => {
+  if (logoObjectUrl.value) return logoObjectUrl.value
+  const url = formData.logoUrl?.trim()
+  return url ? toFullAssetUrl(url) : null
+})
+
+function openFilePicker() {
+  fileInputRef.value?.click()
+}
+
+async function onFileSelected(event: Event) {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  if (!file || !file.type.startsWith('image/')) {
+    toast.error('Selecciona un archivo de imagen válido')
+    return
+  }
+  if (logoObjectUrl.value) {
+    URL.revokeObjectURL(logoObjectUrl.value)
+    logoObjectUrl.value = null
+  }
+  logoObjectUrl.value = URL.createObjectURL(file)
+  isUploadingLogo.value = true
+  input.value = ''
+  try {
+    const result = await uploadFile(file)
+    if (result?.url) {
+      formData.logoUrl = result.url
+      if (logoObjectUrl.value) {
+        URL.revokeObjectURL(logoObjectUrl.value)
+        logoObjectUrl.value = null
+      }
+    } else {
+      toast.error('No se pudo subir la imagen')
+    }
+  } catch (err) {
+    toast.error(err instanceof Error ? err.message : 'Error al subir la imagen')
+    if (logoObjectUrl.value) {
+      URL.revokeObjectURL(logoObjectUrl.value)
+      logoObjectUrl.value = null
+    }
+  } finally {
+    isUploadingLogo.value = false
+  }
+}
+
+function removeLogo() {
+  if (logoObjectUrl.value) {
+    URL.revokeObjectURL(logoObjectUrl.value)
+    logoObjectUrl.value = null
+  }
+  formData.logoUrl = ''
+}
+
+onBeforeUnmount(() => {
+  if (logoObjectUrl.value) {
+    URL.revokeObjectURL(logoObjectUrl.value)
+  }
+})
 </script>
 
 <template>
@@ -64,15 +135,55 @@ const { formData, errors, loading, handleSubmit, validateField } =
     </div>
 
     <div>
-      <label for="logoUrl" class="block text-sm font-medium mb-2 text-foreground">
-        URL del Logo
+      <label class="block text-sm font-medium mb-2 text-foreground">
+        Logo del módulo
       </label>
-      <Input
-        id="logoUrl"
-        v-model="formData.logoUrl"
-        placeholder="https://example.com/logo.png"
-        type="url"
+      <input
+        ref="fileInputRef"
+        type="file"
+        accept="image/*"
+        class="sr-only"
+        aria-label="Seleccionar imagen"
+        @change="onFileSelected"
       />
+      <div class="flex flex-wrap items-start gap-4">
+        <div
+          class="relative flex flex-col items-center justify-center w-28 h-28 rounded-lg border-2 border-dashed border-border bg-muted/50 text-muted-foreground hover:border-primary/50 hover:bg-muted transition-colors cursor-pointer overflow-hidden"
+          @click="openFilePicker"
+          @keydown.enter.space.prevent="openFilePicker"
+          role="button"
+          tabindex="0"
+          aria-label="Seleccionar imagen para el logo"
+        >
+          <ImagePlus v-if="!logoPreviewUrl && !isUploadingLogo" class="size-8 mb-1" />
+          <Loader2 v-else-if="isUploadingLogo" class="size-8 mb-1 animate-spin" />
+          <img
+            v-else-if="logoPreviewUrl"
+            :src="logoPreviewUrl"
+            alt="Vista previa del logo"
+            class="absolute inset-0 w-full h-full object-cover rounded-md"
+          />
+          <span class="relative z-10 text-xs text-center px-1">
+            {{ isUploadingLogo ? 'Subiendo...' : logoPreviewUrl ? 'Cambiar' : 'Elegir imagen' }}
+          </span>
+        </div>
+        <div v-if="logoPreviewUrl" class="flex items-center gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            class="text-muted-foreground"
+            :disabled="isUploadingLogo"
+            @click="removeLogo"
+          >
+            <X class="size-4 mr-1" />
+            Quitar logo
+          </Button>
+        </div>
+      </div>
+      <p class="text-xs text-muted-foreground mt-1">
+        Se subirá la imagen al servidor y se usará su URL al crear o actualizar el módulo.
+      </p>
     </div>
 
     <div class="flex items-center gap-2">

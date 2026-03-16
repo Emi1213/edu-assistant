@@ -1,30 +1,28 @@
 <script setup lang="ts">
+import type { RouteLocationRaw } from 'vue-router'
 import type { Module } from '../../types/modules.types'
+import { toFullAssetUrl } from '@/shared/utils/image.utils'
 import { Globe, Lock, BookOpen, UserPlus, UserMinus } from 'lucide-vue-next'
 import { useRoles } from '@/features/auth/composables/use-roles'
 import ModulesActionsMenu from './modules-actions-menu.vue'
 
 const props = defineProps<{
   module: Module
+  to?: RouteLocationRaw
   onClick?: (module: Module) => void
   onEdit?: (module: Module) => void
-  onDelete?: (module: Module) => void
   isEnrolled?: boolean
   onEnroll?: (module: Module) => void
   onUnenroll?: (module: Module) => void
 }>()
 
-const { canEdit, canDelete } = useRoles()
+const { canEdit } = useRoles()
 
-const showActions = canEdit() || canDelete()
+const showActions = canEdit()
 const showEnrollActions = (props.onEnroll != null || props.onUnenroll != null) && props.module.allowSelfEnroll
 
 const handleEdit = () => {
   if (props.onEdit) props.onEdit(props.module)
-}
-
-const handleDelete = () => {
-  if (props.onDelete) props.onDelete(props.module)
 }
 
 const handleEnroll = (e: Event) => {
@@ -39,19 +37,21 @@ const handleUnenroll = (e: Event) => {
 </script>
 
 <template>
-  <div 
-    class="group relative rounded-lg border border-border bg-card overflow-hidden shadow-sm hover:shadow-xl hover:border-red-700 dark:hover:border-[#600000] transition-all duration-200"
-    :class="{ 'cursor-pointer': props.onClick }"
-    @click="props.onClick && props.onClick(props.module)"
+  <component
+    :is="props.to ? 'router-link' : 'div'"
+    :to="props.to"
+    class="group relative rounded-lg border border-border bg-card overflow-hidden shadow-sm hover:shadow-xl hover:border-[#233a83] dark:hover:border-[#121a3d] transition-all duration-200 block no-underline text-inherit"
+    :class="{ 'cursor-pointer': props.to || props.onClick }"
+    @click="!props.to && props.onClick && props.onClick(props.module)"
   >
-    <div class="absolute left-0 top-0 bottom-0 w-1 bg-[#C8102E]"></div>
-    
+    <div class="absolute left-0 top-0 bottom-0 w-1 bg-[#233a83]"></div>
+
     <div class="p-5">
       <div class="flex items-start gap-3 mb-3">
-        <div class="flex-shrink-0 w-10 h-10 rounded-md bg-[#C8102E] flex items-center justify-center overflow-hidden transition-all duration-200 group-hover:scale-105">
+        <div class="flex-shrink-0 w-10 h-10 rounded-md bg-[#233a83] flex items-center justify-center overflow-hidden transition-all duration-200 group-hover:scale-105">
           <img
             v-if="module.logoUrl"
-            :src="module.logoUrl"
+            :src="toFullAssetUrl(module.logoUrl)"
             :alt="module.title"
             class="w-full h-full object-cover transition-transform duration-200 group-hover:rotate-3"
           />
@@ -59,7 +59,7 @@ const handleUnenroll = (e: Event) => {
         </div>
         <div class="flex-1 min-w-0">
           <div class="flex items-start justify-between gap-2">
-            <h3 class="text-lg font-bold text-card-foreground line-clamp-2 leading-snug group-hover:text-[#C8102E] dark:group-hover:text-red-400 transition-colors">
+            <h3 class="text-lg font-bold text-card-foreground line-clamp-2 leading-snug group-hover:text-[#233a83] dark:group-hover:text-[#9fb3ff] transition-colors">
               {{ module.title }}
             </h3>
             <component
@@ -117,10 +117,9 @@ const handleUnenroll = (e: Event) => {
           <ModulesActionsMenu
             :module="module"
             :on-edit="props.onEdit && canEdit() ? handleEdit : undefined"
-            :on-delete="props.onDelete && canDelete() ? handleDelete : undefined"
           />
         </div>
       </div>
     </div>
-  </div>
+  </component>
 </template>

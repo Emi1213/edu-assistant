@@ -1,8 +1,8 @@
 import { unref, type MaybeRef } from 'vue'
 import { useMutation, useQueryClient } from '@tanstack/vue-query'
-import { PagesDataSource } from '../../services/pages.services'
+import { PagesDataSource } from '../../services/pages.service'
 import { QUERY_KEYS } from '@/shared/composables/query-key'
-import type { UpdatePagePayload } from '../../types/pages.types'
+import type { UpdatePagePayload } from '../../types'
 
 const pagesDataSource = new PagesDataSource()
 

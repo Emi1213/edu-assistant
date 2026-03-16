@@ -5,7 +5,7 @@ import { useGetModuleEnrollments } from '../../composables/queries/useEnrollment
 import { useDeleteEnrollmentMutation } from '../../composables/mutations/useDeleteEnrollmentMutation'
 import { useUpdateEnrollmentMutation } from '../../composables/mutations/useUpdateEnrollmentMutation'
 import { useBulkEnrollMutation } from '../../composables/mutations/useBulkEnrollMutation'
-import { useToast } from 'vue-toastification'
+import { useToast } from '@/shared/composables/use-toast'
 import type { EnrollmentStudent } from '../../types/enrollments.types'
 import AddStudentsModal from './add-students-modal.vue'
 

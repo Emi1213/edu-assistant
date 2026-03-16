@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/vue-query'
-import { PagesDataSource } from '../../services/pages.services'
-import type { CreatePagePayload } from '../../types/pages.types'
+import { PagesDataSource } from '../../services/pages.service'
+import type { CreatePagePayload } from '../../types'
 import { QUERY_KEYS } from '@/shared/composables/query-key'
 
 const pagesDataSource = new PagesDataSource()

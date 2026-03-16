@@ -1,6 +1,6 @@
 import { useMutation } from '@tanstack/vue-query'
-import { ContentGenerationDataSource } from '../../services/content-generation.services'
-import type { ExtractRelationsPayload, ExtractRelationsResponse } from '../../types/content-generation.types'
+import { ContentGenerationDataSource } from '../../services/content-generation.service'
+import type { ExtractRelationsPayload} from '../../types'
 
 const contentGenerationDataSource = new ContentGenerationDataSource()
 
@@ -12,5 +12,3 @@ export function useExtractRelations() {
 
   return mutation
 }
-
-export type { ExtractRelationsPayload, ExtractRelationsResponse }

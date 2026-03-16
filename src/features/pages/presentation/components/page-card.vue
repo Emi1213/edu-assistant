@@ -1,14 +1,21 @@
 <script setup lang="ts">
-import type { Page } from '../../types/pages.types'
-import { FileText, Zap, Clock, Link2, Pencil } from 'lucide-vue-next'
+import type { RouteLocationRaw } from 'vue-router'
+import type { Page } from '../../types'
+import { FileText, Zap, Clock, Link2, Pencil, Loader2 } from 'lucide-vue-next'
 import { computed } from 'vue'
 
 const props = defineProps<{
   page: Page
+  to?: RouteLocationRaw
+  generatingRelationsPageId?: number | null
   onClick?: (page: Page) => void
   onGenerateRelations?: (page: Page) => void
   onUpdatePage?: (page: Page) => void
 }>()
+
+const isGeneratingRelations = computed(
+  () => props.generatingRelationsPageId != null && props.generatingRelationsPageId === props.page.id
+)
 
 const timeAgo = computed(() => {
   const now = new Date()
@@ -30,9 +37,12 @@ const timeAgo = computed(() => {
 </script>
 
 <template>
-  <div 
-    class="group relative rounded-lg border border-border bg-card overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer"
-    @click="onClick && onClick(page)"
+  <component
+    :is="props.to ? 'router-link' : 'div'"
+    :to="props.to"
+    class="group relative rounded-lg border border-border bg-card overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 block no-underline text-inherit"
+    :class="{ 'cursor-pointer': props.to || props.onClick }"
+    @click="!props.to && props.onClick && props.onClick(page)"
   >
     <div class="p-5">
       <div class="flex items-start gap-3 mb-3">
@@ -73,12 +83,14 @@ const timeAgo = computed(() => {
           <button
             v-if="onGenerateRelations"
             type="button"
-            class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-primary hover:bg-primary/10 rounded transition-colors"
+            :disabled="isGeneratingRelations"
+            class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-primary hover:bg-primary/10 rounded transition-colors disabled:opacity-50 disabled:cursor-wait"
             title="Generar relaciones con otras páginas"
             @click.stop="onGenerateRelations(page)"
           >
-            <Link2 class="size-3" />
-            <span>Relaciones</span>
+            <Loader2 v-if="isGeneratingRelations" class="size-3 animate-spin" />
+            <Link2 v-else class="size-3" />
+            <span>{{ isGeneratingRelations ? 'Generando...' : 'Relaciones' }}</span>
           </button>
           <span
             class="inline-flex items-center text-xs font-medium px-2 py-0.5 rounded"
@@ -91,5 +103,5 @@ const timeAgo = computed(() => {
         </div>
       </div>
     </div>
-  </div>
+  </component>
 </template>

@@ -3,7 +3,7 @@ import { ref, computed, watch } from 'vue'
 import { Settings, Bot, Mail, Plus, Trash2, Loader2, Save } from 'lucide-vue-next'
 import { useAiConfig } from '../../composables/use-ai-config'
 import { useTeachersEmails } from '../../composables/use-teachers-emails'
-import { useToast } from 'vue-toastification'
+import { useToast } from '@/shared/composables/use-toast'
 
 const toast = useToast()
 

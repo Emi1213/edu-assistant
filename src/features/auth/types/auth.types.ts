@@ -1,6 +1,6 @@
 import type { Role } from './roles.enum'
 
-export interface UserProfile {
+export interface User {
   id: number
   email: string
   role: Role
@@ -14,3 +14,4 @@ export interface UserProfile {
   createdAt: Date
   updatedAt: Date
 }
+

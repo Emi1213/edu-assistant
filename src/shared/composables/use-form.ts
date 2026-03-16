@@ -56,7 +56,6 @@ export function useForm<T extends Record<string, any>>(
         }
       }
     } catch (error) {
-      console.warn('Error extracting default values from schema:', error);
     }
     
     const merged: any = { ...defaults, ...(initialValues || {}) };

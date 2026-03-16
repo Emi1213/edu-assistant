@@ -27,11 +27,11 @@ import type {
   MatchActivityOptions,
   ActivityAttemptResponse,
 } from '@/features/activities/types'
-import type { ActivityType as GenActivityType } from '@/features/content-generation/types/content-generation.types'
+import type { ActivityType as GenActivityType } from '@/features/content-generation/types'
 import { LANGUAGE_OPTIONS } from '@/features/modules/constants/modules.constants'
 import { getActivityTypeLabel, getDefaultOptionsForType } from '@/features/activities/constants/activity.constants'
 import { getOptionsAndCorrectAnswer, toEditOptionsShape, buildUpdatePayloadFromEditForm } from '@/features/activities/utils/activity-payload.utils'
-import { useToast } from 'vue-toastification'
+import { useToast } from '@/shared/composables/use-toast'
 
 const route = useRoute()
 const router = useRouter()

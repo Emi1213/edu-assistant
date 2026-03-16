@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { debouncedRef } from '@vueuse/core'
+import { refDebounced } from '@vueuse/core'
 import { X, Search, Loader2, UserPlus } from 'lucide-vue-next'
 import { useStudents } from '@/features/users/composables/queries/use-students'
 
@@ -17,14 +17,17 @@ const emit = defineEmits<{
 }>()
 
 const search = ref('')
-const searchDebounced = debouncedRef(search, 350)
+const searchDebounced = refDebounced(search, 350)
 const selectedIds = ref<Set<number>>(new Set())
 
-const queryParams = computed(() => {
-  if (!props.open) return undefined
-  const term = searchDebounced.value.trim() || undefined
-  return { page: 1, limit: 20, search: term }
-})
+const PAGE = 1
+const LIMIT = 20
+
+const queryParams = computed(() => ({
+  page: PAGE,
+  limit: LIMIT,
+  search: searchDebounced.value.trim() || undefined,
+}))
 
 const { data: studentsResponse, isLoading: isLoadingStudents } = useStudents(queryParams)
 

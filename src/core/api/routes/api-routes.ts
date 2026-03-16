@@ -5,6 +5,7 @@ const AR_KEYS = {
     ACTIVITIES: '/activities',
     ENROLLMENTS: '/enrollments',
     USERS: '/users',
+    FILES: '/files',
     CONTENT_GENERATION: '/content',
     AI_CONFIG: '/ai/config',
 }
@@ -28,7 +29,6 @@ export const API_ROUTES = {
         GET_AVAILABLE: `${AR_KEYS.MODULES}/available`,
         GET_BY_ID: (id: number) => `${AR_KEYS.MODULES}/${id}`,
         UPDATE: (id: number) => `${AR_KEYS.MODULES}/${id}`,
-        DELETE: (id: number) => `${AR_KEYS.MODULES}/${id}`,
     },
     PAGES: {
         CREATE: `${AR_KEYS.PAGES}`,
@@ -77,6 +77,9 @@ export const API_ROUTES = {
     },
     USERS: {
         STUDENTS: `${AR_KEYS.USERS}/students`,
+    },
+    FILES: {
+        UPLOAD: `${AR_KEYS.FILES}/upload`,
     },
     CONTENT_GENERATION: {
         GENERATE: `${AR_KEYS.CONTENT_GENERATION}/generate-content`,

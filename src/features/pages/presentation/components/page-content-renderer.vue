@@ -3,8 +3,8 @@ import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { EditorContent } from '@tiptap/vue-3'
 import { TooltipProvider } from '@/components/ui/tooltip'
-import { usePageContentViewer } from '../../composables/use-page-content-viewer'
-import type { Page } from '../../types/pages.types'
+import { usePageContentViewer } from '../../composables/content/use-page-content-viewer'
+import type { Page } from '../../types'
 
 interface Props {
   page: Page
@@ -242,7 +242,7 @@ const { editor } = usePageContentViewer(editorContent)
 }
 
 .page-content-renderer :deep(a) {
-  color: #C8102E;
+  color: #233a83;
   text-decoration: underline;
   transition: opacity 0.2s ease;
 }

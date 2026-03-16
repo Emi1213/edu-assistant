@@ -1,6 +1,6 @@
 import { useMutation } from '@tanstack/vue-query'
-import { ContentGenerationDataSource } from '../../services/content-generation.services'
-import type { CreateContentGeneration } from '../../types/content-generation.types'
+import { ContentGenerationDataSource } from '../../services/content-generation.service'
+import type { CreateContentGeneration } from '../../types'
 
 const contentGenerationDataSource = new ContentGenerationDataSource()
 
