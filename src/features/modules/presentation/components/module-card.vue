@@ -82,7 +82,10 @@ const handleUnenroll = (e: Event) => {
           Sin descripción
         </p>
       </div>
-      <div class="flex items-center justify-between pt-3 border-t border-border gap-2">
+      <div
+        class="flex items-center justify-between pt-3 border-t border-border gap-2"
+        @click.stop.prevent
+      >
         <div class="flex items-center gap-2 min-w-0">
           <span
             class="inline-flex items-center text-xs font-bold px-2.5 py-1 rounded-full transition-transform duration-200 hover:scale-105 shrink-0"
@@ -93,7 +96,7 @@ const handleUnenroll = (e: Event) => {
             {{ module.isActive ? 'Activo' : 'Inactivo' }}
           </span>
         </div>
-        <div v-if="showEnrollActions" class="flex items-center gap-1 shrink-0" @click.stop>
+        <div v-if="showEnrollActions" class="flex items-center gap-1 shrink-0">
           <button
             v-if="!isEnrolled && onEnroll"
             type="button"
@@ -113,7 +116,7 @@ const handleUnenroll = (e: Event) => {
             Darse de baja
           </button>
         </div>
-        <div v-if="showActions" @click.stop>
+        <div v-if="showActions">
           <ModulesActionsMenu
             :module="module"
             :on-edit="props.onEdit && canEdit() ? handleEdit : undefined"

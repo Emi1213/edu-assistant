@@ -9,6 +9,7 @@ const props = defineProps<{
 }>()
 
 const handleEdit = (event: Event) => {
+  event.preventDefault()
   event.stopPropagation()
   props.onEdit?.()
 }

@@ -62,7 +62,7 @@ const timeAgo = computed(() => {
         </div>
       </div>
 
-      <div class="flex items-center justify-between pt-3 border-t border-border">
+      <div class="flex items-center justify-between pt-3 border-t border-border" @click.stop>
         <div class="flex items-center gap-4 text-xs text-muted-foreground">
           <div class="flex items-center gap-1">
             <Clock class="size-3" />
