@@ -17,7 +17,7 @@ const emit = defineEmits<{
 }>()
 
 const search = ref('')
-const searchDebounced = refDebounced(search, 350)
+const searchDebounced = refDebounced(search, 300)
 const selectedIds = ref<Set<number>>(new Set())
 
 const PAGE = 1
@@ -29,7 +29,11 @@ const queryParams = computed(() => ({
   search: searchDebounced.value.trim() || undefined,
 }))
 
-const { data: studentsResponse, isLoading: isLoadingStudents } = useStudents(queryParams)
+const { data: studentsResponse, isLoading: isLoadingStudents, refetch: refetchStudents } = useStudents(queryParams)
+
+watch(searchDebounced, () => {
+  if (props.open) refetchStudents()
+})
 
 const students = computed(() => studentsResponse.value ?? [])
 const selectableStudents = computed(() =>
