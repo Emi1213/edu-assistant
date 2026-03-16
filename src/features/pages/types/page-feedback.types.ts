@@ -1,4 +1,4 @@
-import type { User } from "./user.types"
+import type { User } from '@/features/auth/types/auth.types'
 
 export interface PageFeedback {
   id: number
