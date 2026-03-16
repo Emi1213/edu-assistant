@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { EditorContent } from '@tiptap/vue-3'
 import { ArrowLeft, Sparkles, Loader2, X, Save, BookOpen, Link2, Image } from 'lucide-vue-next'
-import { usePageEditorView } from '../../composables/use-page-editor-view'
-import { usePageEditorConceptModal } from '../../composables/use-page-editor-concept-modal'
-import { usePageEditorPageLinkModal } from '../../composables/use-page-editor-page-link-modal'
-import { usePageEditorImageModal } from '../../composables/use-page-editor-image-modal'
+import { usePageEditorView } from '../../composables/editor/use-page-editor-view'
+import { usePageEditorConceptModal } from '../../composables/editor/use-page-editor-concept-modal'
+import { usePageEditorPageLinkModal } from '../../composables/editor/use-page-editor-page-link-modal'
+import { usePageEditorImageModal } from '../../composables/editor/use-page-editor-image-modal'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import EditorToolbar from '../components/editor-toolbar.vue'
 import Skeleton from '@/components/ui/skeleton/Skeleton.vue'
@@ -68,7 +68,7 @@ const {
           class="flex items-center justify-center sm:justify-start gap-2 px-4 py-2.5 text-sm font-medium bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 hover:shadow-md transition-all duration-200 w-full sm:w-auto order-2 sm:order-1"
         >
           <ArrowLeft class="size-4 shrink-0" />
-          <span>Volver al módulo</span>
+          <span>Volver a la página</span>
         </button>
 
         <div class="flex flex-wrap items-center justify-center sm:justify-end gap-2 sm:gap-3 order-1 sm:order-2">

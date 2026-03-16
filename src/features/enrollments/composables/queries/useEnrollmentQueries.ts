@@ -11,7 +11,6 @@ export function useMyEnrollments() {
   return useQuery<Enrollment[] | null>({
     queryKey: QUERY_KEYS.ENROLLMENTS(),
     queryFn: () => enrollmentsDataSource.getMyEnrollments(),
-    staleTime: 1000 * 60 * 2,
   })
 }
 
@@ -21,8 +20,6 @@ export function useGetModuleEnrollments(moduleId: Ref<number>) {
     queryKey,
     queryFn: () => enrollmentsDataSource.getModuleEnrollments(moduleId.value),
     enabled: computed(() => moduleId.value != null && moduleId.value > 0),
-    staleTime: 1000 * 60 * 5,
-    refetchOnWindowFocus: false,
   })
   return query
 }

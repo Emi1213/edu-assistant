@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { onMounted, onUnmounted, ref, watch, nextTick } from 'vue'
 import ModulesFilters from '../components/modules-filters.vue'
 import ModuleCard from '../components/module-card.vue'
 import Skeleton from '@/components/ui/skeleton/Skeleton.vue'
@@ -6,19 +7,44 @@ import { Button } from '@/components/ui/button'
 import { Plus } from 'lucide-vue-next'
 import { useRoles } from '@/features/auth/composables/use-roles'
 import type { IModulesListViewProps } from '../../types/ui/modules-list-view.types'
-import type { Module } from '../../types/modules.types'
 
 const props = defineProps<IModulesListViewProps>()
 
 const { canCreate } = useRoles()
 
 const emptyMessage = 'No hay módulos registrados'
+const loadMoreRef = ref<HTMLElement | null>(null)
+let observer: IntersectionObserver | null = null
 
-const handleModuleClick = (module: Module) => {
-  if (props.onClick) {
-    props.onClick(module)
-  }
+const setupObserver = () => {
+  if (observer) observer.disconnect()
+  if (!loadMoreRef.value || !props.loadMore) return
+  observer = new IntersectionObserver(
+    (entries) => {
+      const entry = entries[0]
+      if (
+        entry?.isIntersecting &&
+        props.hasNextPage &&
+        !props.isFetchingNextPage &&
+        props.loadMore
+      ) {
+        props.loadMore()
+      }
+    },
+    { rootMargin: '100px' }
+  )
+  observer.observe(loadMoreRef.value)
 }
+
+onMounted(() => {
+  nextTick(setupObserver)
+})
+
+watch([loadMoreRef, () => props.hasNextPage], () => nextTick(setupObserver))
+
+onUnmounted(() => {
+  if (observer) observer.disconnect()
+})
 </script>
 
 <template>
@@ -61,15 +87,28 @@ const handleModuleClick = (module: Module) => {
       <p class="text-muted-foreground">{{ emptyMessage }}</p>
     </div>
 
-    <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <ModuleCard
-        v-for="module in props.modules"
-        :key="module.id"
-        :module="module"
-        :on-click="props.onClick ? (m) => handleModuleClick(m) : undefined"
-        :on-edit="props.onEdit ? () => props.onEdit(module) : undefined"
-        :on-delete="props.onDelete ? () => props.onDelete(module) : undefined"
-      />
-    </div>
+    <template v-else>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <ModuleCard
+          v-for="module in props.modules"
+          :key="module.id"
+          :module="module"
+          :to="{ name: 'module-wiki', params: { id: module.id } }"
+          :on-edit="props.onEdit ? () => props.onEdit(module) : undefined"
+        />
+      </div>
+      <div
+        ref="loadMoreRef"
+        class="flex items-center justify-center py-8"
+      >
+        <div v-if="props.isFetchingNextPage" class="flex items-center gap-2 text-muted-foreground">
+          <div class="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          <span class="text-sm">Cargando más módulos...</span>
+        </div>
+        <div v-else-if="props.hasNextPage === false && props.modules.length > 0" class="text-sm text-muted-foreground">
+          No hay más módulos para mostrar
+        </div>
+      </div>
+    </template>
   </div>
 </template>

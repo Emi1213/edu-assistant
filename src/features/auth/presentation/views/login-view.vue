@@ -1,37 +1,36 @@
 <template>
   <div class="min-h-screen flex flex-col relative login-background login-font">
-    <!-- Overlay for background image -->
     <div class="absolute inset-0 bg-black opacity-30"></div>
 
     <div class="flex-1 flex items-center justify-center p-4 relative z-10">
       <div
         class="relative flex flex-col w-full max-w-4xl mx-auto bg-white dark:bg-gray-800 shadow-2xl rounded-2xl md:flex-row md:space-y-0 overflow-hidden"
       >
-        <!-- Left Side -->
         <div class="relative w-full md:w-1/2">
           <img
             src="https://images.unsplash.com/photo-1591123120675-6f7f1aae0e5b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=987&q=80"
             alt="img"
             class="w-full h-full hidden md:block object-cover"
           />
-          <!-- Text on image -->
           <div
-            class="absolute hidden md:flex flex-col top-0 left-0 w-full h-full bg-[#C8102E] bg-opacity-90 text-white p-10 justify-center space-y-6"
+            class="absolute hidden md:flex flex-col top-0 left-0 w-full h-full bg-[#233a83] bg-opacity-95 text-white p-10 justify-center space-y-6"
           >
             <img
-              src="/images/logo.jpg"
+              src="/images/logo.png"
               alt="Logo"
               class="w-32 h-32 mx-auto rounded-full object-cover"
             />
             <div class="space-y-4 text-center">
               <h2 class="text-4xl font-extrabold leading-tight">
-                Sistema de Asistencia Educativa
+                Nous AI
               </h2>
+              <p class="text-gray-200 text-xl font-light"> 
+                Sistema Educativo
+              </p>
             </div>
           </div>
         </div>
 
-        <!-- Right Side -->
         <div class="w-full md:w-1/2 p-8 sm:p-12 flex items-center">
           <div class="w-full">
             <div class="text-center mb-8">
@@ -41,11 +40,10 @@
               </p>
             </div>
 
-            <!-- Microsoft Login Button -->
             <button
               @click="handleMicrosoftLogin"
               :disabled="loading"
-              class="w-full flex items-center justify-center gap-3 px-4 py-4 bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 rounded-lg hover:border-[#C8102E] dark:hover:border-[#C8102E] hover:bg-red-50 dark:hover:bg-gray-600 transition-all duration-300 disabled:opacity-60 disabled:cursor-wait shadow-md hover:shadow-lg group"
+              class="w-full flex items-center justify-center gap-3 px-4 py-4 bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 rounded-lg hover:border-[#233a83] dark:hover:border-[#233a83] hover:bg-[#233a83]/10 dark:hover:bg-gray-600 transition-all duration-300 disabled:opacity-60 disabled:cursor-wait shadow-md hover:shadow-lg group"
             >
               <svg class="h-7 w-7" viewBox="0 0 23 23" xmlns="http://www.w3.org/2000/svg">
                 <rect x="0" y="0" width="11" height="11" fill="#F25022" />
@@ -55,7 +53,7 @@
               </svg>
               <div class="text-left">
                 <span
-                  class="font-semibold text-gray-700 dark:text-gray-200 group-hover:text-[#C8102E] dark:group-hover:text-white transition-colors duration-300"
+                  class="font-semibold text-gray-700 dark:text-gray-200 group-hover:text-[#233a83] dark:group-hover:text-white transition-colors duration-300"
                 >
                   <span v-if="!loading">Ingresar con Microsoft 365</span>
                   <span v-else class="flex items-center gap-2">
@@ -92,7 +90,7 @@
             >
               <div class="flex items-start gap-3 text-sm text-gray-600 dark:text-gray-300">
                 <svg
-                  class="h-6 w-6 text-[#C8102E] flex-shrink-0"
+                  class="h-6 w-6 text-[#233a83] flex-shrink-0"
                   fill="none"
                   stroke="currentColor"
                   viewbox="0 0 24 24"
@@ -106,7 +104,7 @@
                 </svg>
                 <p class="leading-relaxed">
                   Utiliza tu cuenta institucional con dominio
-                  <span class="font-semibold text-[#C8102E]">@uta.edu.ec</span> para acceder a la
+                  <span class="font-semibold text-[#233a83]">@uta.edu.ec</span> para acceder a la
                   plataforma.
                 </p>
               </div>

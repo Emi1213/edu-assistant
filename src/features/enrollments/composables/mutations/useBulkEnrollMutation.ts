@@ -10,15 +10,10 @@ export function useBulkEnrollMutation() {
   return useMutation({
     mutationFn: (payload: BulkEnrollStudentsPayload) =>
       enrollmentsDataSource.bulkEnrollStudents(payload),
-    onSuccess: async (data) => {
-      const moduleId = data?.[0]?.moduleId
-      if (moduleId != null) {
-        await Promise.all([
-          queryClient.refetchQueries({ queryKey: QUERY_KEYS.MODULE_ENROLLMENTS(moduleId) }),
-          queryClient.refetchQueries({ queryKey: QUERY_KEYS.MODULE(moduleId) }),
-        ])
-      }
-      await queryClient.refetchQueries({ queryKey: QUERY_KEYS.ENROLLMENTS() })
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.MODULE_ENROLLMENTS() })
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.MODULES() })
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.ENROLLMENTS() })
     },
   })
 }

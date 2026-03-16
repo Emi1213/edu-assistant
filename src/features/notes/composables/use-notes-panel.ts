@@ -2,7 +2,7 @@ import { ref, computed, type Ref } from 'vue'
 import { useCreateNote } from './mutations/use-create-note'
 import { useUpdateNote } from './mutations/use-update-note'
 import { useDeleteNote } from './mutations/use-delete-note'
-import { useToast } from 'vue-toastification'
+import { useToast } from '@/shared/composables/use-toast'
 import type { Note } from '../types/notes.types'
 
 export function useNotesPanel(

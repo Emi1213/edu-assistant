@@ -6,6 +6,8 @@ export const vueQueryClient = new QueryClient({
       retry: 2,
       staleTime: 1000 * 60 * 5,
       refetchOnReconnect: true,
+      refetchOnWindowFocus: false,
+      
     },
   },
 })

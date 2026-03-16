@@ -1,0 +1,86 @@
+/* Layout: wrapper, toolbar, container, header, title */
+
+.editor-page-wrapper {
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+@media (min-width: 640px) {
+  .editor-page-wrapper {
+    padding: 0 2rem;
+  }
+}
+
+.editor-toolbar-wrapper {
+  background-color: var(--card);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  padding: 0.5rem 0;
+}
+@media (min-width: 640px) {
+  .editor-toolbar-wrapper {
+    padding: 0.75rem 0;
+  }
+}
+
+.editor-main-container {
+  background-color: var(--card);
+}
+
+.page-header-editor {
+  padding: 1rem 0 1rem;
+  border-bottom: 1px solid var(--border);
+}
+@media (min-width: 640px) {
+  .page-header-editor {
+    padding: 2rem 0 1.5rem;
+  }
+}
+
+.page-title-input {
+  margin-bottom: 0;
+}
+
+.page-title-input input {
+  font-size: 1.75rem;
+  line-height: 1.2;
+  font-weight: 700;
+}
+@media (min-width: 640px) {
+  .page-title-input input {
+    font-size: 2.5rem;
+  }
+}
+@media (min-width: 1024px) {
+  .page-title-input input {
+    font-size: 3rem;
+  }
+}
+
+.editor-content {
+  padding: 1rem 0;
+  min-height: 60vh;
+}
+@media (min-width: 640px) {
+  .editor-content {
+    padding: 2rem 0;
+  }
+}
+
+.editor-content :deep(.ProseMirror) {
+  outline: none;
+  color: var(--foreground);
+  line-height: 1.75;
+  min-height: 60vh;
+}
+
+.editor-content :deep(.ProseMirror p.is-editor-empty:first-child::before) {
+  content: 'Comienza a escribir o usa el botón "Generar con IA" para crear contenido...';
+  color: var(--muted-foreground);
+  float: left;
+  pointer-events: none;
+  height: 0;
+}

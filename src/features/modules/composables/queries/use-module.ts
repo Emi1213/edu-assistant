@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/vue-query'
-import { ModulesDataSource } from '../../services/modules.services'
+import { ModulesDataSource } from '../../services/modules.service'
 import { QUERY_KEYS } from '@/shared/composables/query-key'
 
 const modulesDataSource = new ModulesDataSource()

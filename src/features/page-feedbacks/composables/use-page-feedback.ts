@@ -3,7 +3,7 @@ import { useCreateFeedback } from './mutations/use-create-feedback'
 import { useUpdateFeedback } from './mutations/use-update-feedback'
 import { useDeleteFeedback } from './mutations/use-delete-feedback'
 import { useAuthStore } from '@/features/auth/context/auth-store'
-import { useToast } from 'vue-toastification'
+import { useToast } from '@/shared/composables/use-toast'
 import type { PageFeedback } from '../types/page-feedbacks.types'
 
 export function usePageFeedback(pageId: number, feedbacks: Ref<PageFeedback[]> | PageFeedback[] | null | undefined) {

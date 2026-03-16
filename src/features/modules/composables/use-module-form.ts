@@ -50,6 +50,8 @@ export function useModuleForm(
       loading.value = true
       try {
         await onValid(data as CreateModule | UpdateModule)
+      } catch (error) {
+
       } finally {
         loading.value = false
       }

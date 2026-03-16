@@ -1,5 +1,5 @@
 
-export { ContentGenerationDataSource } from './services/content-generation.services'
+export { ContentGenerationDataSource } from './services/content-generation.service'
 
 export type {
   ContentGeneration,
@@ -11,7 +11,7 @@ export type {
   TextBlock,
   CodeBlock,
   ImageSuggestionBlock,
-} from './types/content-generation.types'
+} from './types'
 export { useGenerateContent } from './composables/mutations/use-generate-content'
 
 export {

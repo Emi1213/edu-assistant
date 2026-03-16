@@ -3,7 +3,7 @@ import { ref } from 'vue'
 import { Sparkles, Loader2 } from 'lucide-vue-next'
 import TiptapEditor from './tiptap-editor.vue'
 import { useGenerateContent } from '../../composables/mutations/use-generate-content'
-import type { ContentGeneration } from '../../types/content-generation.types'
+import type { ContentGeneration } from '../../types'
 
 interface Props {
   pageId: number

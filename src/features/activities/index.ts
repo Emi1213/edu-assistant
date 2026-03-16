@@ -1,5 +1,5 @@
 export * from './types'
-export { ActivitiesDataSource } from './services/activities.services'
+export { ActivitiesDataSource } from './services/activities.service'
 export { useActivities } from './composables/queries/use-activities'
 export { useCreateActivity } from './composables/mutations/use-create-activity'
 export { useUpdateActivity } from './composables/mutations/use-update-activity'

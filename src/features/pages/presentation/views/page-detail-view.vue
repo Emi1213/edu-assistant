@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ArrowLeft, Edit3, MessageSquare, ClipboardList } from 'lucide-vue-next'
+import { ArrowLeft, Edit3, MessageSquare, MessageCircleQuestion, ClipboardList } from 'lucide-vue-next'
 import { usePage } from '../../composables/queries/use-page'
 import { useRoles } from '@/features/auth/composables/use-roles'
 import { useAuthStore } from '@/features/auth/context/auth-store'
 import PageContentRenderer from '../components/page-content-renderer.vue'
 import NotesPanel from '@/features/notes/presentation/components/notes-panel.vue'
 import PageFeedbackSection from '@/features/page-feedbacks/presentation/components/page-feedback-section.vue'
-import StudentQuestionsPanel from '../components/student-questions-panel.vue'
+import StudentQuestionsPanel from '@/features/student-questions/presentation/components/student-questions-panel.vue';
 import Skeleton from '@/components/ui/skeleton/Skeleton.vue'
 import { Button } from '@/components/ui/button'
 
@@ -62,6 +62,13 @@ const scrollToFeedback = () => {
     feedbackSection.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 }
+
+const scrollToQuestions = () => {
+  const questionsSection = document.getElementById('questions-section')
+  if (questionsSection) {
+    questionsSection.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+}
 </script>
 
 <template>
@@ -109,14 +116,23 @@ const scrollToFeedback = () => {
               </span>
             </div>
             
-            <button
-              @click="scrollToFeedback"
-              class="mt-4 inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-primary hover:text-primary/80 hover:bg-primary/10 rounded-lg transition-all duration-200"
-            >
-              <MessageSquare class="size-4" />
-              <span v-if="isStudent">{{ userFeedback ? 'Ver tu feedback' : 'Agregar feedback' }}</span>
-              <span v-else>Ver feedbacks</span>
-            </button>
+            <div class="mt-4 flex flex-wrap gap-2">
+              <button
+                @click="scrollToFeedback"
+                class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-primary hover:text-primary/80 hover:bg-primary/10 rounded-lg transition-all duration-200"
+              >
+                <MessageSquare class="size-4" />
+                <span v-if="isStudent">{{ userFeedback ? 'Ver tu feedback' : 'Agregar feedback' }}</span>
+                <span v-else>Ver feedbacks</span>
+              </button>
+              <button
+                @click="scrollToQuestions"
+                class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-primary hover:text-primary/80 hover:bg-primary/10 rounded-lg transition-all duration-200"
+              >
+                <MessageCircleQuestion class="size-4" />
+                <span>Ver preguntas</span>
+              </button>
+            </div>
           </div>
 
           <div class="page-content-wrapper">
@@ -353,7 +369,7 @@ const scrollToFeedback = () => {
 }
 
 .page-content :deep(blockquote) {
-  border-left: 4px solid #C8102E;
+  border-left: 4px solid #233a83;
   padding-left: 1rem;
   font-style: italic;
   margin: 1rem 0;
@@ -361,7 +377,7 @@ const scrollToFeedback = () => {
 }
 
 .page-content :deep(a) {
-  color: #C8102E;
+  color: #233a83;
   text-decoration: underline;
 }
 
@@ -370,7 +386,7 @@ const scrollToFeedback = () => {
 }
 
 .dark .page-content :deep(a) {
-  color: rgb(248 113 113);
+  color: #9fb3ff;
 }
 
 .page-content :deep(strong) {

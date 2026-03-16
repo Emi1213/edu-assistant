@@ -26,14 +26,15 @@ export class HttpClient implements IHttpHandler {
       (response) => response,
       (error: AxiosError<IHttpResponse<any>>) => {
         const responseData = error.response?.data
+        const rawMessage: unknown = responseData?.message
 
-        if (responseData?.message?.displayable && Array.isArray(responseData.message.content)) {
-          error.message = responseData.message.content.join(', ')
-        } else if (responseData?.message && typeof responseData.message === 'string') {
-          error.message = responseData.message
-        } else if (error.response?.data?.message) {
-          error.message = String(error.response.data.message)
-        } else if (error.message) {
+        if (rawMessage != null && typeof rawMessage === 'object' && Array.isArray((rawMessage as { content?: unknown[] }).content)) {
+          const content = (rawMessage as { content: unknown[] }).content
+          const text = content.filter((m: unknown) => m != null).join(' ').trim()
+          error.message = text || 'Ocurrió un error inesperado'
+        } else if (typeof rawMessage === 'string' && rawMessage.trim()) {
+          error.message = rawMessage
+        } else if (typeof error.message === 'string' && error.message.trim()) {
           error.message = error.message
         } else {
           error.message = 'Ocurrió un error inesperado'

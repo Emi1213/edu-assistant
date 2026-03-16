@@ -1,11 +1,11 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import type { UserProfile } from '../types/auth.types'
+import type { User } from '../types/auth.types'
 
 export const useAuthStore = defineStore(
   'auth',
   () => {
-    const user = ref<UserProfile | null>(null)
+    const user = ref<User | null>(null)
     const token = ref<string>('')
 
     const isAuthenticated = computed(() => !!token.value)
@@ -14,7 +14,7 @@ export const useAuthStore = defineStore(
       token.value = newToken
     }
 
-    function login(userData: UserProfile | null, authToken: string) {
+    function login(userData: User | null, authToken: string) {
       user.value = userData
       token.value = authToken
     }

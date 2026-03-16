@@ -26,15 +26,15 @@ function isActiveRoute(itemRoute: string): boolean {
         to="/modules"
         class="flex items-center gap-3 shrink-0 rounded-lg transition-opacity hover:opacity-90"
       >
-        <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-[#C8102E] to-[#E63946] p-1.5 shadow-sm">
+        <div class="flex h-10 w-10 items-center justify-center rounded-lg p-1 shadow-sm">
           <img
-            src="/images/logo.jpg"
+            src="/images/logo.png"
             alt="UTA Logo"
             class="h-full w-full rounded object-contain"
           />
         </div>
         <div class="hidden sm:block">
-          <span class="font-semibold text-sm text-foreground">Edu Assistant</span>
+          <span class="font-semibold text-sm text-foreground">Nous AI</span>
         </div>
       </RouterLink>
 
@@ -46,7 +46,7 @@ function isActiveRoute(itemRoute: string): boolean {
           :to="item.route"
           class="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors"
           :class="isActiveRoute(item.route)
-            ? 'bg-[#C8102E]/10 text-[#C8102E] dark:bg-[#E63946]/20 dark:text-red-400'
+            ? 'bg-[#233a83]/10 text-[#233a83] dark:bg-[#233a83]/20 dark:text-[#9fb3ff]'
             : 'text-muted-foreground hover:bg-muted hover:text-foreground'"
         >
           <component

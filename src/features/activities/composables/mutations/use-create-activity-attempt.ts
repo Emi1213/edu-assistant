@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/vue-query'
-import { ActivitiesDataSource } from '../../services/activities.services'
+import { ActivitiesDataSource } from '../../services/activities.service'
 import type { CreateActivityAttemptPayload, ActivityAttemptResponse } from '../../types'
 
 const dataSource = new ActivitiesDataSource()

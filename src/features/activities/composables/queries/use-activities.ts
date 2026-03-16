@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/vue-query'
-import { ActivitiesDataSource } from '../../services/activities.services'
+import { ActivitiesDataSource } from '../../services/activities.service'
 import { QUERY_KEYS } from '@/shared/composables/query-key'
 
 const dataSource = new ActivitiesDataSource()
