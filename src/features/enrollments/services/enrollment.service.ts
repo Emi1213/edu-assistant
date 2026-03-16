@@ -26,11 +26,6 @@ export class EnrollmentsDataSource {
     return response.data
   }
 
-  async getMyEnrollments(): Promise<Enrollment[] | null> {
-    const response = await this.httpClient.get<Enrollment[]>(API_ROUTES.ENROLLMENTS.LIST)
-    return response.data ?? null
-  }
-
   async getModuleEnrollments(moduleId: number): Promise<EnrollmentStudent[] | null> {
     const response = await this.httpClient.get<EnrollmentStudent[]>(
       API_ROUTES.ENROLLMENTS.GET_MODULE_ENROLLMENTS(moduleId)

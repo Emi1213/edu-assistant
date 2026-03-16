@@ -1,12 +1,10 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref, watch, nextTick, computed } from 'vue'
+import { onMounted, onUnmounted, ref, watch, nextTick } from 'vue'
 import ModulesFilters from '../components/modules-filters.vue'
 import ModuleCard from '../components/module-card.vue'
 import Skeleton from '@/components/ui/skeleton/Skeleton.vue'
 import { useAvailableModulesList } from '../../composables/use-available-modules-list'
-import { useMyEnrollments } from '@/features/enrollments/composables/queries/useEnrollmentQueries'
 import { useSelfEnrollMutation } from '@/features/enrollments/composables/mutations/useSelfEnrollMutation'
-import { useSelfUnenrollMutation } from '@/features/enrollments/composables/mutations/useSelfUnenrollMutation'
 import { useToast } from '@/shared/composables/use-toast'
 import type { Module } from '../../types/modules.types'
 
@@ -22,15 +20,7 @@ const {
   loadMore,
 } = useAvailableModulesList()
 
-const { data: myEnrollments } = useMyEnrollments()
-const enrolledModuleIds = computed(() => new Set((myEnrollments.value ?? []).map((e) => e.moduleId)))
-
 const selfEnrollMutation = useSelfEnrollMutation()
-const selfUnenrollMutation = useSelfUnenrollMutation()
-
-function isEnrolled(moduleId: number) {
-  return enrolledModuleIds.value.has(moduleId)
-}
 
 function handleEnroll(module: Module) {
   selfEnrollMutation.mutate(
@@ -40,13 +30,6 @@ function handleEnroll(module: Module) {
       onError: (err: Error) => toast.error(err?.message ?? 'Error al inscribirse'),
     }
   )
-}
-
-function handleUnenroll(module: Module) {
-  selfUnenrollMutation.mutate(module.id, {
-    onSuccess: () => toast.success(`Te has dado de baja de "${module.title}"`),
-    onError: (err: Error) => toast.error(err?.message ?? 'Error al darse de baja'),
-  })
 }
 
 const emptyMessage = 'No modules found'
@@ -129,9 +112,8 @@ onUnmounted(() => {
           v-for="module in modules"
           :key="module.id"
           :module="module"
-          :is-enrolled="isEnrolled(module.id)"
+          :is-enrolled="false"
           :on-enroll="handleEnroll"
-          :on-unenroll="handleUnenroll"
         />
       </div>
 

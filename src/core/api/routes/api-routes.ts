@@ -67,7 +67,6 @@ export const API_ROUTES = {
         ATTEMPTS: (activityId: number) => `${AR_KEYS.ACTIVITIES}/${activityId}/attempts`,
     },
     ENROLLMENTS: {
-        LIST: AR_KEYS.ENROLLMENTS,
         SELF_ENROLL: `${AR_KEYS.ENROLLMENTS}/self`,
         BULK_ENROLL: `${AR_KEYS.ENROLLMENTS}/bulk`,
         GET_MODULE_ENROLLMENTS: (moduleId: number) => `${AR_KEYS.ENROLLMENTS}/module/${moduleId}`,
