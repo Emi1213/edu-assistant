@@ -172,7 +172,9 @@ const handleGenerateRelations = (page: Page) => {
     />
 
     <UpdatePageDialog
-      :visible="!!pageToUpdate"
+      v-if="pageToUpdate"
+      :key="pageToUpdate.id"
+      :visible="true"
       :page="pageToUpdate"
       @close="closeUpdatePage"
     />
