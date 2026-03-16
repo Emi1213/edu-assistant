@@ -44,6 +44,7 @@ export function useModulesTable() {
 
   watch(debouncedSearchQuery, () => {
     loadedModules.value = []
+    refetch()
   })
 
   const modules = computed(() => loadedModules.value)
