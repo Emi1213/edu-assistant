@@ -45,11 +45,21 @@ export class ContentGenerationDataSource {
     }
 
     async extractRelations(payload: ExtractRelationsPayload): Promise<ExtractRelationsResponse | null> {
-        const response = await this.httpClient.post<ExtractRelationsResponse>(
+        const response = await this.httpClient.post<ExtractRelationsResponse | Record<string, unknown>>(
             API_ROUTES.CONTENT_GENERATION.EXTRACT_RELATIONS,
             payload
         )
-        return response.data ?? null
+        const inner = response.data
+        if (inner == null) return null
+        const raw = (inner as { relations?: unknown }).relations
+        const list = Array.isArray(raw) ? raw : []
+        const relations = list
+            .map((r: Record<string, unknown>) => ({
+                targetPageId: Number(r.targetPageId ?? r.target_page_id ?? 0),
+                mentionText: String(r.mentionText ?? r.mention_text ?? '').trim(),
+            }))
+            .filter((r) => r.targetPageId > 0 && r.mentionText.length > 0)
+        return { relations }
     }
 
     async generateActivity(payload: GenerateActivityPayload): Promise<GenerateActivityResponse | null> {

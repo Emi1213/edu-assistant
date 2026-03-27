@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import { EditorContent } from '@tiptap/vue-3'
 import { ArrowLeft, Sparkles, Loader2, X, Save, BookOpen, Link2, Image } from 'lucide-vue-next'
 import { usePageEditorView } from '../../composables/editor/use-page-editor-view'
@@ -6,6 +7,8 @@ import { usePageEditorConceptModal } from '../../composables/editor/use-page-edi
 import { usePageEditorPageLinkModal } from '../../composables/editor/use-page-editor-page-link-modal'
 import { usePageEditorImageModal } from '../../composables/editor/use-page-editor-image-modal'
 import { TooltipProvider } from '@/components/ui/tooltip'
+import { useConceptDefinitionHoverTooltip } from '../../composables/use-concept-definition-hover-tooltip'
+import ConceptDefinitionHoverLayer from '../components/concept-definition-hover-layer.vue'
 import EditorToolbar from '../components/editor-toolbar.vue'
 import Skeleton from '@/components/ui/skeleton/Skeleton.vue'
 
@@ -57,6 +60,10 @@ const {
   handleGenerateImageFromPrompt,
   isGeneratingImage,
 } = usePageEditorImageModal(editor)
+
+const conceptHoverRoot = ref<HTMLElement | null>(null)
+const { visible: conceptTooltipVisible, text: conceptTooltipText, style: conceptTooltipStyle } =
+  useConceptDefinitionHoverTooltip(conceptHoverRoot)
 </script>
 
 <template>
@@ -155,8 +162,13 @@ const {
             </div>
           </div>
 
-          <div class="editor-content">
+          <div ref="conceptHoverRoot" class="editor-content">
             <EditorContent :editor="editor" />
+            <ConceptDefinitionHoverLayer
+              :visible="conceptTooltipVisible"
+              :text="conceptTooltipText"
+              :overlay-style="conceptTooltipStyle"
+            />
           </div>
         </div>
         </div>

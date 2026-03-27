@@ -1,9 +1,28 @@
 import type { Ref } from 'vue'
 import type { Editor } from '@tiptap/vue-3'
+import { Fragment } from '@tiptap/pm/model'
 import { ref } from 'vue'
 import { useToast } from '@/shared/composables/use-toast'
 import { useCreateConcept } from '../mutations/use-create-concept'
 import { findFirstOccurrenceRange } from '@/features/content-generation/utils/find-first-occurrence'
+
+function replaceRangeWithConceptNode(
+  editor: Editor,
+  from: number,
+  to: number,
+  attrs: { conceptId: number; term: string; definition: string }
+) {
+  const state = editor.state
+  const conceptType = state.schema.nodes.concept
+  if (!conceptType) return
+  const slice = state.doc.slice(from, to)
+  const inner =
+    slice.content.size > 0
+      ? slice.content
+      : Fragment.from(state.schema.text(attrs.term))
+  const node = conceptType.create(attrs, inner)
+  editor.view.dispatch(state.tr.replaceWith(from, to, node))
+}
 
 export function usePageEditorConceptModal(pageId: number, editor: Ref<Editor | undefined>) {
   const toast = useToast()
@@ -38,41 +57,40 @@ export function usePageEditorConceptModal(pageId: number, editor: Ref<Editor | u
         definition: conceptForm.value.definition.trim(),
       })
       if (!data) return
-      const conceptNode = {
-        type: 'concept' as const,
-        attrs: {
-          conceptId: data.id,
-          term: data.term,
-          definition: data.definition,
-        },
+      const attrs = {
+        conceptId: data.id,
+        term: data.term,
+        definition: data.definition,
       }
       const savedRange = conceptSelectionRange.value
       if (savedRange) {
-        editor.value
-          .chain()
-          .focus()
-          .deleteRange({ from: savedRange.from, to: savedRange.to })
-          .insertContentAt(savedRange.from, conceptNode)
-          .run()
+        editor.value.chain().focus().run()
+        replaceRangeWithConceptNode(editor.value, savedRange.from, savedRange.to, attrs)
         toast.success('Concepto creado sobre el texto seleccionado. Guarda la página para persistir.')
       } else {
         const range = findFirstOccurrenceRange(editor.value, data.term)
         if (range) {
-          editor.value
-            .chain()
-            .focus()
-            .deleteRange({ from: range.from, to: range.to })
-            .insertContentAt(range.from, conceptNode)
-            .run()
+          editor.value.chain().focus().run()
+          replaceRangeWithConceptNode(editor.value, range.from, range.to, attrs)
           toast.success('Concepto creado y enlazado al texto existente. Guarda la página para persistir.')
         } else {
           const sel = editor.value.state.selection
           const from = sel.from
           const to = sel.to
+          editor.value.chain().focus().run()
           if (from !== to) {
-            editor.value.chain().focus().deleteRange({ from, to }).run()
+            replaceRangeWithConceptNode(editor.value, from, to, attrs)
+          } else {
+            editor.value
+              .chain()
+              .focus()
+              .insertContentAt(from, {
+                type: 'concept',
+                attrs,
+                content: [{ type: 'text', text: data.term }],
+              })
+              .run()
           }
-          editor.value.chain().focus().insertContentAt(from, conceptNode).run()
           toast.success('Concepto creado. Guarda la página para persistir.')
         }
       }

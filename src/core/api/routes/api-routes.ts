@@ -14,7 +14,7 @@ export const API_ROUTES = {
     AUTH: {
         MICROSOFT_LOGIN: `${AR_KEYS.AUTH}/microsoft`,
         ME: `${AR_KEYS.AUTH}/profile`,
-        TEACHERS_EMAILS: `${AR_KEYS.AUTH}/teachers/emails`,
+        TEACHERS_EMAILS: `${AR_KEYS.AUTH}/config/teachers/emails`,
     },
     AI_CONFIG: {
         GET: AR_KEYS.AI_CONFIG,

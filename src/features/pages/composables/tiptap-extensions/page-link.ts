@@ -17,7 +17,7 @@ export const PageLink = Node.create<PageLinkOptions>({
 
   group: 'inline',
   inline: true,
-  atom: true,
+  content: 'inline*',
 
   addAttributes() {
     return {
@@ -44,15 +44,15 @@ export const PageLink = Node.create<PageLinkOptions>({
 
   renderHTML({ node, HTMLAttributes }) {
     const mentionText = node.attrs.mentionText ?? ''
-    return [
-      'span',
-      mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, {
-        'data-type': 'page-link',
-        class: 'page-link-term',
-        title: mentionText ? `Ir a: ${mentionText}` : '',
-      }),
-      mentionText,
-    ]
+    const attrs = mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, {
+      'data-type': 'page-link',
+      class: 'page-link-term',
+      title: mentionText ? `Ir a: ${mentionText}` : '',
+    })
+    if (node.content.size > 0) {
+      return ['span', attrs, 0]
+    }
+    return ['span', attrs, mentionText]
   },
 
   addCommands() {
@@ -66,6 +66,7 @@ export const PageLink = Node.create<PageLinkOptions>({
               targetPageId,
               mentionText,
             },
+            content: [{ type: 'text', text: mentionText }],
           })
         },
     }

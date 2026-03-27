@@ -45,20 +45,21 @@ function applyConceptsToEditor(
   replacements.sort((a, b) => b.from - a.from)
 
   for (const r of replacements) {
-    const actualTerm = editor.state.doc.textBetween(r.from, r.to)
-    editor
-      .chain()
-      .focus()
-      .deleteRange({ from: r.from, to: r.to })
-      .insertContentAt(r.from, {
-        type: 'concept',
-        attrs: {
-          conceptId: r.conceptId,
-          term: actualTerm || r.term,
-          definition: r.definition,
-        },
-      })
-      .run()
+    const state = editor.state
+    const slice = state.doc.slice(r.from, r.to)
+    if (slice.content.size === 0) continue
+    const conceptType = state.schema.nodes.concept
+    if (!conceptType) continue
+    const actualTerm = state.doc.textBetween(r.from, r.to)
+    const conceptNode = conceptType.create(
+      {
+        conceptId: r.conceptId,
+        definition: r.definition,
+        term: actualTerm || r.term,
+      },
+      slice.content
+    )
+    editor.view.dispatch(state.tr.replaceWith(r.from, r.to, conceptNode))
   }
 }
 
