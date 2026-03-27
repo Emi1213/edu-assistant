@@ -146,6 +146,30 @@ export function usePageContentConverter() {
     return prefix + ' ' + content
   }
 
+  const conceptPlainText = (node: any): string => {
+    if (node.type === 'text') return node.text || ''
+    if (node.type === 'concept') {
+      if (node.content?.length) {
+        return node.content.map((c: any) => conceptPlainText(c)).join('')
+      }
+      return node.attrs?.term ?? ''
+    }
+    if (node.content) return node.content.map((c: any) => conceptPlainText(c)).join('')
+    return ''
+  }
+
+  const pageLinkPlainText = (node: any): string => {
+    if (node.type === 'text') return node.text || ''
+    if (node.type === 'pageLink') {
+      if (node.content?.length) {
+        return node.content.map((c: any) => pageLinkPlainText(c)).join('')
+      }
+      return node.attrs?.mentionText ?? ''
+    }
+    if (node.content) return node.content.map((c: any) => pageLinkPlainText(c)).join('')
+    return ''
+  }
+
   const inlineToMarkdown = (node: any): string => {
     if (node.type === 'text') {
       let t = node.text || ''
@@ -160,12 +184,14 @@ export function usePageContentConverter() {
     }
     if (node.type === 'concept') {
       const id = node.attrs?.conceptId ?? 0
-      const term = node.attrs?.term ?? ''
+      const term = node.content?.length ? conceptPlainText(node) : (node.attrs?.term ?? '')
       return term ? `[[concept:${id}|${term}]]` : ''
     }
     if (node.type === 'pageLink') {
       const id = node.attrs?.targetPageId ?? 0
-      const text = node.attrs?.mentionText ?? ''
+      const text = node.content?.length
+        ? node.content.map((c: any) => inlineToMarkdown(c)).join('')
+        : (node.attrs?.mentionText ?? '')
       return text ? `[[page:${id}|${text}]]` : ''
     }
     if (node.content) {
@@ -181,13 +207,13 @@ export function usePageContentConverter() {
 
     if (node.type === 'concept') {
       const id = node.attrs?.conceptId ?? 0
-      const term = node.attrs?.term ?? ''
+      const term = node.content?.length ? conceptPlainText(node) : (node.attrs?.term ?? '')
       return term ? `[[concept:${id}|${term}]]` : ''
     }
 
     if (node.type === 'pageLink') {
       const id = node.attrs?.targetPageId ?? 0
-      const text = node.attrs?.mentionText ?? ''
+      const text = node.content?.length ? pageLinkPlainText(node) : (node.attrs?.mentionText ?? '')
       return text ? `[[page:${id}|${text}]]` : ''
     }
 

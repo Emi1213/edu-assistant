@@ -1,8 +1,21 @@
 import type { Ref } from 'vue'
 import type { Editor } from '@tiptap/vue-3'
+import { Fragment } from '@tiptap/pm/model'
 import { useExtractRelations } from './mutations/use-extract-relations'
 import { findFirstOccurrenceRange } from '../utils/find-first-occurrence'
 import type { ExtractRelationsRelation } from '../types'
+
+function normalizeRelations(raw: readonly unknown[]): ExtractRelationsRelation[] {
+  return raw
+    .map((r) => {
+      const o = r as Record<string, unknown>
+      return {
+        targetPageId: Number(o.targetPageId ?? o.target_page_id ?? 0),
+        mentionText: String(o.mentionText ?? o.mention_text ?? '').trim(),
+      }
+    })
+    .filter((r) => r.targetPageId > 0 && r.mentionText.length > 0)
+}
 
 function rangesOverlap(
   a: { from: number; to: number },
@@ -15,9 +28,10 @@ function applyRelationsToEditor(
   editor: Editor,
   relations: ExtractRelationsRelation[]
 ): void {
-  const candidates: { from: number; to: number; targetPageId: number; mentionText: string }[] = []
+  const normalized = normalizeRelations(relations)
+  const candidates: { from: number; to: number; targetPageId: number }[] = []
 
-  for (const item of relations) {
+  for (const item of normalized) {
     const { targetPageId, mentionText } = item
     const range = findFirstOccurrenceRange(editor, mentionText)
     if (range) {
@@ -25,7 +39,6 @@ function applyRelationsToEditor(
         from: range.from,
         to: range.to,
         targetPageId,
-        mentionText,
       })
     }
   }
@@ -40,18 +53,22 @@ function applyRelationsToEditor(
   replacements.sort((a, b) => b.from - a.from)
 
   for (const r of replacements) {
-    editor
-      .chain()
-      .focus()
-      .deleteRange({ from: r.from, to: r.to })
-      .insertContentAt(r.from, {
-        type: 'pageLink',
-        attrs: {
-          targetPageId: r.targetPageId,
-          mentionText: r.mentionText,
-        },
-      })
-      .run()
+    const state = editor.state
+    const slice = state.doc.slice(r.from, r.to)
+    if (slice.content.size === 0) continue
+    const pageLinkType = state.schema.nodes.pageLink
+    if (!pageLinkType) continue
+    const actualText = state.doc.textBetween(r.from, r.to)
+    const node = pageLinkType.create(
+      {
+        targetPageId: r.targetPageId,
+        mentionText: actualText,
+      },
+      slice.content.size > 0
+        ? slice.content
+        : Fragment.from(state.schema.text(actualText))
+    )
+    editor.view.dispatch(state.tr.replaceWith(r.from, r.to, node))
   }
 }
 

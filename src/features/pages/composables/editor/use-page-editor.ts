@@ -7,7 +7,6 @@ import Image from '@tiptap/extension-image'
 import { ImageSuggestion } from '../tiptap-extensions/image-suggestion'
 import { Concept } from '../tiptap-extensions/concept'
 import { PageLink } from '../tiptap-extensions/page-link'
-import ConceptTooltipNodeView from '../../presentation/components/concept-tooltip-node-view.vue'
 import { useUpdatePageContent } from '../mutations/use-update-page-content'
 import { usePageContentConverter } from '../content/use-page-content-converter'
 import { usePageContentLoader } from '../content/use-page-content-loader'
@@ -58,11 +57,7 @@ export function usePageEditor(pageId: number, initialContent = '') {
           return VueNodeViewRenderer(ImageSuggestionNodeView as any)
         },
       }),
-      Concept.extend({
-        addNodeView() {
-          return VueNodeViewRenderer(ConceptTooltipNodeView as any)
-        },
-      }),
+      Concept,
       PageLink,
     ],
     editorProps: {

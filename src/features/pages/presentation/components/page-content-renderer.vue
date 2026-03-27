@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { EditorContent } from '@tiptap/vue-3'
-import { TooltipProvider } from '@/components/ui/tooltip'
 import { usePageContentViewer } from '../../composables/content/use-page-content-viewer'
+import { useConceptDefinitionHoverTooltip } from '../../composables/use-concept-definition-hover-tooltip'
+import ConceptDefinitionHoverLayer from './concept-definition-hover-layer.vue'
 import type { Page } from '../../types'
 
 interface Props {
@@ -61,17 +62,28 @@ const editorContent = computed(() => {
 })
 
 const { editor } = usePageContentViewer(editorContent)
+
+const conceptHoverRoot = ref<HTMLElement | null>(null)
+const { visible: conceptTooltipVisible, text: conceptTooltipText, style: conceptTooltipStyle } =
+  useConceptDefinitionHoverTooltip(conceptHoverRoot)
 </script>
 
 <template>
-  <TooltipProvider>
-    <div class="page-content-renderer" @click.capture="onContentClick">
-      <EditorContent v-if="editor" :editor="editor" />
-      <div v-else class="text-muted-foreground">
-        No hay contenido disponible
-      </div>
+  <div
+    ref="conceptHoverRoot"
+    class="page-content-renderer"
+    @click.capture="onContentClick"
+  >
+    <EditorContent v-if="editor" :editor="editor" />
+    <div v-else class="text-muted-foreground">
+      No hay contenido disponible
     </div>
-  </TooltipProvider>
+    <ConceptDefinitionHoverLayer
+      :visible="conceptTooltipVisible"
+      :text="conceptTooltipText"
+      :overlay-style="conceptTooltipStyle"
+    />
+  </div>
 </template>
 
 <style scoped>
@@ -259,18 +271,45 @@ const { editor } = usePageContentViewer(editorContent)
 }
 
 .page-content-renderer :deep(.concept-term) {
-  border-bottom: 1px dotted var(--primary);
+  font-style: italic;
+  font-weight: 500;
+  color: var(--foreground);
   cursor: help;
+  padding: 0 0.15em;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-decoration-color: currentColor;
+  text-underline-offset: 0.2em;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+.page-content-renderer :deep(.concept-term strong) {
+  font-weight: 700;
+  font-style: italic;
+  color: inherit;
 }
 
 .page-content-renderer :deep(.page-link-term) {
-  border-bottom: 1px dotted var(--primary);
+  border-bottom: none;
+  text-decoration: underline;
+  text-decoration-color: var(--primary);
+  text-underline-offset: 0.2em;
   color: var(--primary);
   cursor: pointer;
+  background-color: transparent;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+.page-content-renderer :deep(.page-link-term strong),
+.page-content-renderer :deep(.page-link-term em),
+.page-content-renderer :deep(.page-link-term code) {
+  color: var(--primary);
 }
 
 .page-content-renderer :deep(.page-link-term:hover) {
-  text-decoration: underline;
+  opacity: 0.88;
 }
 
 .page-content-renderer :deep(img) {

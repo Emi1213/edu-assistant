@@ -91,13 +91,51 @@
   display: block;
 }
 
+/* Conceptos: cursiva + subrayado punteado (el enlace a página va sólido y en primary) */
 .editor-content :deep(.concept-term) {
-  border-bottom: 1px dotted var(--primary);
+  font-style: italic;
+  font-weight: 500;
+  color: var(--foreground);
   cursor: help;
+  padding: 0 0.15em;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-decoration-color: currentColor;
+  text-underline-offset: 0.2em;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
 }
 
+.editor-content :deep(.concept-term strong) {
+  font-weight: 700;
+  font-style: italic;
+  color: inherit;
+}
+
+/* Relaciones / enlace a página: subrayado + azul primary */
 .editor-content :deep(.page-link-term) {
-  border-bottom: 1px dotted var(--primary);
+  border-bottom: none;
+  text-decoration: underline;
+  text-decoration-color: var(--primary);
+  text-underline-offset: 0.2em;
+  font-style: normal;
+  font-weight: inherit;
   cursor: pointer;
+  color: var(--primary);
+  background-color: transparent;
+  padding: 0;
+  border-radius: 0;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+.editor-content :deep(.page-link-term:hover) {
+  opacity: 0.88;
+}
+
+/* prose/strong global styles override parent color — keep link look inside marks */
+.editor-content :deep(.page-link-term strong),
+.editor-content :deep(.page-link-term em),
+.editor-content :deep(.page-link-term code) {
   color: var(--primary);
 }
