@@ -294,5 +294,6 @@ export function useStudentQuestionsPanel(
     cancelDeleteReply,
     confirmDeleteReply,
     getReplies,
+    currentUserId,
   }
 }

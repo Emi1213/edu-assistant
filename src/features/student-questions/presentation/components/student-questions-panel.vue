@@ -72,9 +72,9 @@ const {
   cancelDeleteReply,
   confirmDeleteReply,
   getReplies,
-} = useStudentQuestionsPanel(props.learningObjectId, questionsRef, props.isProfessor)
-</script>
-
+  currentUserId,
+  } = useStudentQuestionsPanel(props.learningObjectId, questionsRef, props.isProfessor)
+  </script>
 <template>
   <div
     class="student-questions-panel bg-card border border-border rounded-lg overflow-hidden transition-all duration-300"
