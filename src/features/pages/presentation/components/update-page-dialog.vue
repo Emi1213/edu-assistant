@@ -13,13 +13,13 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Loader2, X } from 'lucide-vue-next'
-import { useUpdatePage } from '../../composables/mutations/use-update-page'
+import { useUpdateLearningObject } from '../../composables/mutations/use-update-page'
 import { useToast } from '@/shared/composables/use-toast'
-import type { Page } from '../../types'
+import type { LearningObject } from '../../types'
 
 const props = defineProps<{
   visible: boolean
-  page: Page | null
+  page: LearningObject | null
 }>()
 
 const emit = defineEmits<{
@@ -35,8 +35,8 @@ const editForm = ref({
 })
 const newKeyword = ref('')
 
-const pageId = computed(() => props.page?.id ?? 0)
-const { mutate: updatePage, isPending: isUpdating } = useUpdatePage(pageId)
+const learningObjectId = computed(() => props.page?.id ?? 0)
+const { mutate: updateLearningObject, isPending: isUpdating } = useUpdateLearningObject(learningObjectId)
 
 watch(
   () => [props.visible, props.page] as const,
@@ -46,7 +46,7 @@ watch(
         title: page.title,
         keywords: [...(page.keywords ?? [])],
         isPublished: page.isPublished ?? true,
-        hasManualEdits: (page as Page & { hasManualEdits?: boolean }).hasManualEdits ?? false,
+        hasManualEdits: (page as LearningObject & { hasManualEdits?: boolean }).hasManualEdits ?? false,
       }
       newKeyword.value = ''
     }
@@ -68,7 +68,7 @@ function removeKeyword(index: number) {
 
 function save() {
   if (!props.page) return
-  updatePage(
+  updateLearningObject(
     {
       title: editForm.value.title || undefined,
       keywords: editForm.value.keywords.length ? editForm.value.keywords : undefined,
@@ -77,7 +77,7 @@ function save() {
     },
     {
       onSuccess: () => {
-        toast.success('Página actualizada')
+        toast.success('Objeto de aprendizaje actualizado')
         emit('close')
       },
       onError: (err: Error) => toast.error(err.message || 'Error al actualizar'),
@@ -94,7 +94,7 @@ function handleOpenChange(open: boolean) {
   <Dialog :open="visible" @update:open="handleOpenChange">
     <DialogContent class="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
       <DialogHeader>
-        <DialogTitle>Actualizar página</DialogTitle>
+        <DialogTitle>Actualizar objeto de aprendizaje</DialogTitle>
         <DialogDescription>
           Título, palabras clave y opciones. Todo opcional.
         </DialogDescription>
@@ -106,7 +106,7 @@ function handleOpenChange(open: boolean) {
           <Input
             id="update-page-title"
             v-model="editForm.title"
-            placeholder="Título de la página"
+            placeholder="Título del objeto de aprendizaje"
           />
         </div>
         <div class="space-y-2">

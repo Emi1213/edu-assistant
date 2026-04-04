@@ -73,7 +73,7 @@ function applyRelationsToEditor(
 }
 
 export function useRelationsGenerationHandler(
-  pageId: number,
+  learningObjectId: number,
   editor: Ref<Editor | undefined>
 ) {
   const { mutate: extractRelations, isPending: isExtracting } = useExtractRelations()
@@ -95,7 +95,7 @@ export function useRelationsGenerationHandler(
     }
 
     extractRelations(
-      { pageId },
+      { learningObjectId },
       {
         onSuccess: (data) => {
           if (!data?.relations?.length) {

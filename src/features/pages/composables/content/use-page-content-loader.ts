@@ -1,23 +1,30 @@
 import type { Editor } from '@tiptap/vue-3'
-import type { Page } from '../../types'
+import type { LearningObject } from '../../types'
+
+interface TiptapDoc {
+  type: 'doc'
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  content: any[]
+}
 
 export function usePageContentLoader() {
-  const loadContentFromBlocks = (editor: Editor | undefined, page: Page, filterImageSuggestions = false) => {
-    if (!editor || !page.blocks || page.blocks.length === 0) {
-      if (editor && page.content) {
-        editor.commands.setContent(page.content)
+  const loadContentFromBlocks = (editor: Editor | undefined, learningObject: LearningObject, filterImageSuggestions = false) => {
+    if (!editor || !learningObject.blocks || learningObject.blocks.length === 0) {
+      if (editor && learningObject.content) {
+        editor.commands.setContent(learningObject.content)
       }
       return
     }
 
-    const combinedContent: any = {
+    const combinedContent: TiptapDoc = {
       type: 'doc',
       content: [],
     }
 
-    page.blocks.forEach((block) => {
+    learningObject.blocks.forEach((block) => {
       if (block.tipTapContent && block.tipTapContent.content) {
         if (filterImageSuggestions) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const filteredContent = block.tipTapContent.content.filter((node: any) => 
             node.type !== 'imageSuggestion'
           )
@@ -30,10 +37,11 @@ export function usePageContentLoader() {
 
     if (combinedContent.content.length > 0) {
       editor.commands.setContent(combinedContent)
-    } else if (page.content) {
-      editor.commands.setContent(page.content)
+    } else if (learningObject.content) {
+      editor.commands.setContent(learningObject.content)
     }
   }
+
 
   return {
     loadContentFromBlocks,

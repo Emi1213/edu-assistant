@@ -1,17 +1,18 @@
 <script setup lang="ts">
 import type { RouteLocationRaw } from 'vue-router'
-import type { Page } from '../../types'
+import type { LearningObject } from '../../types'
 import { FileText, Zap, Clock, Link2, Pencil, Loader2 } from 'lucide-vue-next'
 import { computed } from 'vue'
 
 const props = defineProps<{
-  page: Page
+  page: LearningObject
   to?: RouteLocationRaw
   generatingRelationsPageId?: number | null
-  onClick?: (page: Page) => void
-  onGenerateRelations?: (page: Page) => void
-  onUpdatePage?: (page: Page) => void
+  onClick?: (page: LearningObject) => void
+  onGenerateRelations?: (page: LearningObject) => void
+  onUpdatePage?: (page: LearningObject) => void
 }>()
+
 
 const isGeneratingRelations = computed(
   () => props.generatingRelationsPageId != null && props.generatingRelationsPageId === props.page.id

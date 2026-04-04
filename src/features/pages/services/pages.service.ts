@@ -1,26 +1,26 @@
 import { httpClient } from '@/core/infraestructure/http'
 import type { IHttpHandler } from '@/core/interfaces/IHttpHandler'
 import type {
-  Page,
-  PageQueryParams,
-  UpdatePageContentPayload,
-  UpdatePagePayload,
-  CreatePagePayload,
+  LearningObject,
+  LearningObjectQueryParams,
+  UpdateLearningObjectContentPayload,
+  UpdateLearningObjectPayload,
+  CreateLearningObjectPayload,
   CreateConceptPayload,
-  PageConcept,
+  LOConcept,
 } from '../types'
 import type { IHttpPaginatedResponse } from '@/shared/types/http-response.types'
 import { API_ROUTES } from '@/core/api/routes/api-routes'
 
-export class PagesDataSource {
+export class LearningObjectsDataSource {
   private httpClient: IHttpHandler
 
   constructor() {
     this.httpClient = httpClient
   }
 
-  async getByModuleId(moduleId: number, query?: Omit<PageQueryParams, 'moduleId'>): Promise<IHttpPaginatedResponse<Page> | null> {
-    const response = await this.httpClient.get<IHttpPaginatedResponse<Page>>(
+  async getByModuleId(moduleId: number, query?: Omit<LearningObjectQueryParams, 'moduleId'>): Promise<IHttpPaginatedResponse<LearningObject> | null> {
+    const response = await this.httpClient.get<IHttpPaginatedResponse<LearningObject>>(
       API_ROUTES.PAGES.GET_BY_MODULE_ID(moduleId),
       {
         params: query,
@@ -29,29 +29,29 @@ export class PagesDataSource {
     return response.data
   }
 
-  async getById(id: number): Promise<Page | null> {
-    const response = await this.httpClient.get<Page>(API_ROUTES.PAGES.GET_BY_ID(id))
+  async getById(id: number): Promise<LearningObject | null> {
+    const response = await this.httpClient.get<LearningObject>(API_ROUTES.PAGES.GET_BY_ID(id))
     return response.data
   }
 
-  async update(id: number, payload: UpdatePagePayload): Promise<Page | null> {
-    const response = await this.httpClient.patch<Page>(API_ROUTES.PAGES.UPDATE(id), payload)
+  async update(id: number, payload: UpdateLearningObjectPayload): Promise<LearningObject | null> {
+    const response = await this.httpClient.patch<LearningObject>(API_ROUTES.PAGES.UPDATE(id), payload)
     return response.data
   }
 
-  async updateContent(id: number, payload: UpdatePageContentPayload): Promise<Page | null> {
-    const response = await this.httpClient.patch<Page>(API_ROUTES.PAGES.UPDATE_CONTENT(id), payload)
+  async updateContent(id: number, payload: UpdateLearningObjectContentPayload): Promise<LearningObject | null> {
+    const response = await this.httpClient.patch<LearningObject>(API_ROUTES.PAGES.UPDATE_CONTENT(id), payload)
     return response.data
   }
 
-  async create(payload: CreatePagePayload): Promise<Page | null> {
-    const response = await this.httpClient.post<Page>(API_ROUTES.PAGES.CREATE, payload)
+  async create(payload: CreateLearningObjectPayload): Promise<LearningObject | null> {
+    const response = await this.httpClient.post<LearningObject>(API_ROUTES.PAGES.CREATE, payload)
     return response.data
   }
 
-  async createConcept(pageId: number, payload: CreateConceptPayload): Promise<PageConcept | null> {
-    const response = await this.httpClient.post<PageConcept>(
-      API_ROUTES.PAGES.CREATE_CONCEPT(pageId),
+  async createConcept(loId: number, payload: CreateConceptPayload): Promise<LOConcept | null> {
+    const response = await this.httpClient.post<LOConcept>(
+      API_ROUTES.PAGES.CREATE_CONCEPT(loId),
       payload
     )
     return response.data

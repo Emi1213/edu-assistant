@@ -23,19 +23,21 @@ export interface ImageSuggestionContent {
   reason: string
 }
 
-export type PageBlockContent =
+export type LOBlockContent =
   | TextBlockContent
   | CodeBlockContent
   | ImageSuggestionContent
   | ImageBlockContent
 
-export interface PageContentBlock {
+export interface LOContentBlock {
   id?: number
+  orderIndex: number
   type: "TEXT" | "CODE" | "IMAGE" | "IMAGE_SUGGESTION"
-  content: PageBlockContent
+  content: LOBlockContent
   tipTapContent?: TipTapDocument
 }
 
-export interface UpdatePageContentPayload {
-  blocks: PageContentBlock[]
+export interface UpdateLearningObjectContentPayload {
+  blocks: LOContentBlock[]
 }
+

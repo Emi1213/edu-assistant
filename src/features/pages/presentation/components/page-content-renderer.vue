@@ -5,10 +5,10 @@ import { EditorContent } from '@tiptap/vue-3'
 import { usePageContentViewer } from '../../composables/content/use-page-content-viewer'
 import { useConceptDefinitionHoverTooltip } from '../../composables/use-concept-definition-hover-tooltip'
 import ConceptDefinitionHoverLayer from './concept-definition-hover-layer.vue'
-import type { Page } from '../../types'
+import type { LearningObject } from '../../types'
 
 interface Props {
-  page: Page
+  learningObject: LearningObject
 }
 
 const props = defineProps<Props>()
@@ -20,10 +20,10 @@ function onContentClick(event: MouseEvent) {
   const link = el?.closest?.('[data-type="page-link"]')
   if (!link) return
   const pageId = link.getAttribute('data-target-page-id')
-  if (!pageId || !props.page.moduleId) return
+  if (!pageId || !props.learningObject.moduleId) return
   event.preventDefault()
   event.stopPropagation()
-  const url = `/modules/${props.page.moduleId}/pages/${pageId}`
+  const url = `/modules/${props.learningObject.moduleId}/learning-objects/${pageId}`
   if (event.metaKey || event.ctrlKey) {
     window.open(url, '_blank', 'noopener,noreferrer')
   } else {
@@ -32,14 +32,15 @@ function onContentClick(event: MouseEvent) {
 }
 
 const editorContent = computed(() => {
-  if (props.page.blocks && props.page.blocks.length > 0) {
-    const combinedContent: any = {
+  if (props.learningObject.blocks && props.learningObject.blocks.length > 0) {
+    const combinedContent: { type: string; content: unknown[] } = {
       type: 'doc',
       content: [],
     }
 
-    props.page.blocks.forEach((block) => {
+    props.learningObject.blocks.forEach((block) => {
       if (block.tipTapContent && block.tipTapContent.content) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const filteredContent = block.tipTapContent.content.filter((node: any) =>
           node.type !== 'imageSuggestion'
         )
@@ -55,11 +56,12 @@ const editorContent = computed(() => {
       }
     })
 
-    return combinedContent.content.length > 0 ? combinedContent : props.page.content || ''
+    return combinedContent.content.length > 0 ? combinedContent : props.learningObject.content || ''
   }
   
-  return props.page.content || ''
+  return props.learningObject.content || ''
 })
+
 
 const { editor } = usePageContentViewer(editorContent)
 

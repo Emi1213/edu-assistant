@@ -53,8 +53,8 @@ export function useImageGenerationHandler(editor: Ref<Editor | undefined>) {
             }
           }
         },
-        onError: (error: any) => {
-          toast.error(error.message || 'Error al generar la imagen')
+        onError: (error: unknown) => {
+          toast.error((error as { message?: string }).message || 'Error al generar la imagen')
           button.textContent = '🎨 Generar Imagen'
           button.removeAttribute('disabled')
         },

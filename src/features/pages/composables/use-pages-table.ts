@@ -1,24 +1,25 @@
 import type { MaybeRef } from 'vue'
 import { computed, unref } from 'vue'
-import { usePages } from './queries/use-pages'
+import { useLearningObjects } from './queries/use-pages'
 
 const DEFAULT_PAGE = 1
 const DEFAULT_LIMIT = 100
 
-export function usePagesTable(moduleId: MaybeRef<number>) {
-  const pageParams = computed(() => ({
+export function useLearningObjectsTable(moduleId: MaybeRef<number>) {
+  const learningObjectParams = computed(() => ({
     moduleId: unref(moduleId),
     page: DEFAULT_PAGE,
     limit: DEFAULT_LIMIT,
   }))
 
-  const { data: pagesResponse, isLoading: isLoadingPages } = usePages(pageParams)
+  const { data: learningObjectsResponse, isLoading: isLoadingLearningObjects } = useLearningObjects(learningObjectParams)
 
-  const pages = computed(() => pagesResponse.value?.records ?? [])
+  const learningObjects = computed(() => learningObjectsResponse.value?.records ?? [])
 
   return {
-    pages,
-    isLoadingPages,
-    pagesResponse,
+    learningObjects,
+    isLoadingLearningObjects,
+    learningObjectsResponse,
   }
 }
+

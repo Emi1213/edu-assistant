@@ -1,21 +1,33 @@
 import type { Editor } from '@tiptap/vue-3'
-import type { PageContentBlock, UpdatePageContentPayload } from '../../types'
+import type { LOContentBlock, UpdateLearningObjectContentPayload } from '../../types'
+
+interface TiptapNode {
+  type: string
+  content?: TiptapNode[]
+  text?: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  attrs?: Record<string, any>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  marks?: Array<{ type: string; attrs?: Record<string, any> }>
+}
+
 
 export function usePageContentConverter() {
-  const convertEditorToBlocks = (editor: Editor | undefined): PageContentBlock[] => {
+  const convertEditorToBlocks = (editor: Editor | undefined): LOContentBlock[] => {
     if (!editor) return []
 
     const json = editor.getJSON()
-    const blocks: PageContentBlock[] = []
+    const blocks: LOContentBlock[] = []
 
     if (!json.content) return blocks
 
-    let currentTextNodes: any[] = []
+    let currentTextNodes: TiptapNode[] = []
 
     const flushTextNodes = () => {
       if (currentTextNodes.length > 0) {
         const markdown = currentTextNodes.map((n) => nodeToMarkdown(n)).join('\n\n')
         blocks.push({
+          orderIndex: blocks.length,
           type: 'TEXT',
           content: {
             markdown,
@@ -29,52 +41,57 @@ export function usePageContentConverter() {
       }
     }
 
-    json.content.forEach((node: any) => {
-      if (node.type === 'codeBlock') {
+    json.content.forEach((node: unknown) => {
+      const tNode = node as TiptapNode
+      if (tNode.type === 'codeBlock') {
         flushTextNodes()
         blocks.push({
+          orderIndex: blocks.length,
           type: 'CODE',
           content: {
-            code: node.content?.[0]?.text || '',
-            language: node.attrs?.language || 'javascript',
+            code: tNode.content?.[0]?.text || '',
+            language: tNode.attrs?.language || 'javascript',
           },
           tipTapContent: {
             type: 'doc',
-            content: [node],
+            content: [tNode],
           },
         })
-      } else if (node.type === 'image') {
+      } else if (tNode.type === 'image') {
         flushTextNodes()
         blocks.push({
+          orderIndex: blocks.length,
           type: 'IMAGE',
           content: {
-            src: node.attrs?.src ?? '',
-            alt: node.attrs?.alt,
+            src: tNode.attrs?.src ?? '',
+            alt: tNode.attrs?.alt,
           },
           tipTapContent: {
             type: 'doc',
-            content: [node],
+            content: [tNode],
           },
         })
-      } else if (node.type === 'imageSuggestion') {
+      } else if (tNode.type === 'imageSuggestion') {
         flushTextNodes()
         blocks.push({
+          orderIndex: blocks.length,
           type: 'IMAGE_SUGGESTION',
           content: {
-            prompt: node.attrs?.prompt ?? '',
-            reason: node.attrs?.reason ?? '',
+            prompt: tNode.attrs?.prompt ?? '',
+            reason: tNode.attrs?.reason ?? '',
           },
           tipTapContent: {
             type: 'doc',
-            content: [node],
+            content: [tNode],
           },
         })
-      } else if (node.type === 'blockquote') {
-        const textContent = extractTextFromNode(node)
+      } else if (tNode.type === 'blockquote') {
+        const textContent = extractTextFromNode(tNode)
         if (textContent.includes('Sugerencia de Imagen') || textContent.includes('💡')) {
           flushTextNodes()
           const lines = textContent.split('\n').filter(l => l.trim())
           blocks.push({
+            orderIndex: blocks.length,
             type: 'IMAGE_SUGGESTION',
             content: {
               prompt: lines[1] || lines[0] || '',
@@ -82,14 +99,14 @@ export function usePageContentConverter() {
             },
             tipTapContent: {
               type: 'doc',
-              content: [node],
+              content: [tNode],
             },
           })
         } else {
-          currentTextNodes.push(node)
+          currentTextNodes.push(tNode)
         }
       } else {
-        currentTextNodes.push(node)
+        currentTextNodes.push(tNode)
       }
     })
 
@@ -98,30 +115,30 @@ export function usePageContentConverter() {
     return blocks
   }
 
-  const nodeToMarkdown = (node: any): string => {
+  const nodeToMarkdown = (node: TiptapNode): string => {
     if (node.type === 'paragraph') {
-      return (node.content || []).map((c: any) => inlineToMarkdown(c)).join('')
+      return (node.content || []).map((c) => inlineToMarkdown(c)).join('')
     }
     if (node.type === 'heading') {
       const level = node.attrs?.level ?? 1
       const prefix = '#'.repeat(level) + ' '
-      return prefix + (node.content || []).map((c: any) => inlineToMarkdown(c)).join('')
+      return prefix + (node.content || []).map((c) => inlineToMarkdown(c)).join('')
     }
     if (node.type === 'bulletList') {
       return (node.content || [])
-        .map((li: any) => listItemToMarkdown(li, '-'))
+        .map((li) => listItemToMarkdown(li, '-'))
         .join('\n')
     }
     if (node.type === 'orderedList') {
       return (node.content || [])
-        .map((li: any, i: number) => listItemToMarkdown(li, `${i + 1}.`))
+        .map((li, i: number) => listItemToMarkdown(li, `${i + 1}.`))
         .join('\n')
     }
     if (node.type === 'listItem') {
       return listItemToMarkdown(node, '-')
     }
     if (node.type === 'blockquote') {
-      const inner = (node.content || []).map((c: any) => nodeToMarkdown(c)).join('\n\n')
+      const inner = (node.content || []).map((c) => nodeToMarkdown(c)).join('\n\n')
       return inner
         .split('\n')
         .map((line: string) => '> ' + line)
@@ -131,46 +148,46 @@ export function usePageContentConverter() {
       return '---'
     }
     if (node.content) {
-      return (node.content || []).map((c: any) => nodeToMarkdown(c)).join('\n\n')
+      return (node.content || []).map((c) => nodeToMarkdown(c)).join('\n\n')
     }
     return ''
   }
 
-  const listItemToMarkdown = (listItem: any, prefix: string): string => {
-    const content = (listItem.content || []).map((n: any) => {
+  const listItemToMarkdown = (listItem: TiptapNode, prefix: string): string => {
+    const content = (listItem.content || []).map((n) => {
       if (n.type === 'paragraph') {
-        return (n.content || []).map((c: any) => inlineToMarkdown(c)).join('')
+        return (n.content || []).map((c) => inlineToMarkdown(c)).join('')
       }
       return nodeToMarkdown(n)
     }).join('\n')
     return prefix + ' ' + content
   }
 
-  const conceptPlainText = (node: any): string => {
+  const conceptPlainText = (node: TiptapNode): string => {
     if (node.type === 'text') return node.text || ''
     if (node.type === 'concept') {
       if (node.content?.length) {
-        return node.content.map((c: any) => conceptPlainText(c)).join('')
+        return node.content.map((c) => conceptPlainText(c)).join('')
       }
       return node.attrs?.term ?? ''
     }
-    if (node.content) return node.content.map((c: any) => conceptPlainText(c)).join('')
+    if (node.content) return node.content.map((c) => conceptPlainText(c)).join('')
     return ''
   }
 
-  const pageLinkPlainText = (node: any): string => {
+  const pageLinkPlainText = (node: TiptapNode): string => {
     if (node.type === 'text') return node.text || ''
     if (node.type === 'pageLink') {
       if (node.content?.length) {
-        return node.content.map((c: any) => pageLinkPlainText(c)).join('')
+        return node.content.map((c) => pageLinkPlainText(c)).join('')
       }
       return node.attrs?.mentionText ?? ''
     }
-    if (node.content) return node.content.map((c: any) => pageLinkPlainText(c)).join('')
+    if (node.content) return node.content.map((c) => pageLinkPlainText(c)).join('')
     return ''
   }
 
-  const inlineToMarkdown = (node: any): string => {
+  const inlineToMarkdown = (node: TiptapNode): string => {
     if (node.type === 'text') {
       let t = node.text || ''
       const marks = node.marks || []
@@ -190,17 +207,17 @@ export function usePageContentConverter() {
     if (node.type === 'pageLink') {
       const id = node.attrs?.targetPageId ?? 0
       const text = node.content?.length
-        ? node.content.map((c: any) => inlineToMarkdown(c)).join('')
+        ? node.content.map((c) => inlineToMarkdown(c)).join('')
         : (node.attrs?.mentionText ?? '')
       return text ? `[[page:${id}|${text}]]` : ''
     }
     if (node.content) {
-      return node.content.map((c: any) => inlineToMarkdown(c)).join('')
+      return node.content.map((c) => inlineToMarkdown(c)).join('')
     }
     return ''
   }
 
-  const extractTextFromNode = (node: any): string => {
+  const extractTextFromNode = (node: TiptapNode): string => {
     if (node.type === 'text') {
       return node.text || ''
     }
@@ -218,13 +235,13 @@ export function usePageContentConverter() {
     }
 
     if (node.content) {
-      return node.content.map((child: any) => extractTextFromNode(child)).join('')
+      return node.content.map((child) => extractTextFromNode(child)).join('')
     }
 
     return ''
   }
 
-  const createPayload = (editor: Editor | undefined): UpdatePageContentPayload => {
+  const createPayload = (editor: Editor | undefined): UpdateLearningObjectContentPayload => {
     return {
       blocks: convertEditorToBlocks(editor),
     }

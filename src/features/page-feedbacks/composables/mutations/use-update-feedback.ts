@@ -10,7 +10,7 @@ export function useUpdateFeedback(pageId: number) {
     mutationFn: ({ feedbackId, payload }: { feedbackId: number; payload: UpdatePageFeedback }) =>
       pageFeedbacksService.updateFeedback(feedbackId, payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.PAGE(pageId) })
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.LEARNING_OBJECT(pageId) })
     },
   })
 }

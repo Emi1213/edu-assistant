@@ -13,7 +13,7 @@ export function useUpdateQuestionReply(pageId: number) {
     }: { id: number; payload: UpdateQuestionReplyPayload }) =>
       questionRepliesService.update(id, payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.PAGE(pageId) })
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.LEARNING_OBJECT(pageId) })
     },
   })
 }

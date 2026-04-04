@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/dialog'
 import { Loader2 } from 'lucide-vue-next'
 
-const props = defineProps<{
+defineProps<{
   visible: boolean
   title: string
   isPublished: boolean
@@ -38,15 +38,15 @@ const handleOpenChange = (open: boolean) => {
   <Dialog :open="visible" @update:open="handleOpenChange">
     <DialogContent class="sm:max-w-[500px]">
       <DialogHeader>
-        <DialogTitle>Crear Nueva Página</DialogTitle>
+        <DialogTitle>Crear Nuevo Objeto de Aprendizaje</DialogTitle>
         <DialogDescription>
-          Ingresa el título de la página. Podrás agregar contenido después de crearla.
+          Ingresa el título del objeto de aprendizaje. Podrás agregar contenido después de crearlo.
         </DialogDescription>
       </DialogHeader>
 
       <div class="grid gap-4 py-4">
         <div class="grid gap-2">
-          <Label for="page-title">Título de la página *</Label>
+          <Label for="page-title">Título del objeto de aprendizaje *</Label>
           <Input
             id="page-title"
             :model-value="title"
@@ -61,7 +61,7 @@ const handleOpenChange = (open: boolean) => {
           <div class="space-y-0.5">
             <Label for="is-published">Publicar inmediatamente</Label>
             <p class="text-sm text-muted-foreground">
-              La página estará visible para los estudiantes
+              El objeto de aprendizaje estará visible para los estudiantes
             </p>
           </div>
           <Switch
@@ -88,7 +88,7 @@ const handleOpenChange = (open: boolean) => {
           :disabled="isCreating || !title.trim()"
         >
           <Loader2 v-if="isCreating" class="size-4 animate-spin mr-2" />
-          {{ isCreating ? 'Creando...' : 'Crear Página' }}
+          {{ isCreating ? 'Creando...' : 'Crear Objeto de Aprendizaje' }}
         </Button>
       </DialogFooter>
     </DialogContent>

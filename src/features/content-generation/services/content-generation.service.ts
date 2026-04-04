@@ -55,7 +55,8 @@ export class ContentGenerationDataSource {
         const list = Array.isArray(raw) ? raw : []
         const relations = list
             .map((r: Record<string, unknown>) => ({
-                targetPageId: Number(r.targetPageId ?? r.target_page_id ?? 0),
+                // Intenta mapear ambos por si las moscas, respetando lo que el back devuelva
+                targetPageId: Number(r.learningObjectId ?? r.learning_object_id ?? r.targetPageId ?? r.target_page_id ?? 0),
                 mentionText: String(r.mentionText ?? r.mention_text ?? '').trim(),
             }))
             .filter((r) => r.targetPageId > 0 && r.mentionText.length > 0)

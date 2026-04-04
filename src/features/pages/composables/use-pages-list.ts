@@ -1,38 +1,38 @@
 import { ref } from 'vue'
-import type { Page } from '../types'
-import { usePageCreator } from './use-page-creator'
+import type { LearningObject } from '../types'
+import { useLearningObjectCreator } from './use-page-creator'
 
-export function usePagesList(moduleId: number) {
-  const pageToUpdate = ref<Page | null>(null)
+export function useLearningObjectsList(moduleId: number) {
+  const learningObjectToUpdate = ref<LearningObject | null>(null)
 
   const {
     isDialogOpen,
-    pageTitle,
+    learningObjectTitle,
     isPublished,
     isCreating,
     openDialog,
     closeDialog,
     handleCreate,
-  } = usePageCreator(moduleId)
+  } = useLearningObjectCreator(moduleId)
 
-  const openUpdatePage = (page: Page) => {
-    pageToUpdate.value = page
+  const openUpdateLearningObject = (learningObject: LearningObject) => {
+    learningObjectToUpdate.value = learningObject
   }
 
-  const closeUpdatePage = () => {
-    pageToUpdate.value = null
+  const closeUpdateLearningObject = () => {
+    learningObjectToUpdate.value = null
   }
 
   return {
     isDialogOpen,
-    pageTitle,
+    learningObjectTitle,
     isPublished,
     isCreating,
     openDialog,
     closeDialog,
     handleCreate,
-    pageToUpdate,
-    openUpdatePage,
-    closeUpdatePage,
+    learningObjectToUpdate,
+    openUpdateLearningObject,
+    closeUpdateLearningObject,
   }
 }

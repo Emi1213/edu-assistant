@@ -8,7 +8,7 @@ export function useDeleteQuestionReply(pageId: number) {
   return useMutation({
     mutationFn: (id: number) => questionRepliesService.delete(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.PAGE(pageId) })
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.LEARNING_OBJECT(pageId) })
     },
   })
 }

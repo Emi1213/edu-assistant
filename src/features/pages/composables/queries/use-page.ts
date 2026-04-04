@@ -1,13 +1,14 @@
 import { useQuery } from '@tanstack/vue-query'
-import { PagesDataSource } from '../../services/pages.service'
+import { LearningObjectsDataSource } from '../../services/pages.service'
 import { QUERY_KEYS } from '@/shared/composables/query-key'
 
-const pagesDataSource = new PagesDataSource()
+const learningObjectsDataSource = new LearningObjectsDataSource()
 
-export function usePage(id: number) {
+export function useLearningObject(id: number) {
   const query = useQuery({
-    queryKey: QUERY_KEYS.PAGE(id),
-    queryFn: () => pagesDataSource.getById(id),
+    queryKey: QUERY_KEYS.LEARNING_OBJECT(id),
+    queryFn: () => learningObjectsDataSource.getById(id),
   })
   return query
 }
+

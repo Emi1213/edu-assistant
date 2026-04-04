@@ -3,7 +3,7 @@ import type { Editor } from '@tiptap/vue-3'
 import { Fragment } from '@tiptap/pm/model'
 import { ref, computed, watch, unref } from 'vue'
 import { useToast } from '@/shared/composables/use-toast'
-import { usePages } from '../queries/use-pages'
+import { useLearningObjects } from '../queries/use-pages'
 import type { MaybeRef } from 'vue'
 
 function replaceRangeWithPageLink(
@@ -33,7 +33,7 @@ function replaceRangeWithPageLink(
 
 export function usePageEditorPageLinkModal(
   editor: Ref<Editor | undefined>,
-  pageId: MaybeRef<number>,
+  learningObjectId: MaybeRef<number>,
   moduleId: MaybeRef<number>
 ) {
   const toast = useToast()
@@ -44,15 +44,15 @@ export function usePageEditorPageLinkModal(
   })
   const pageLinkSelectionRange = ref<{ from: number; to: number } | null>(null)
 
-  const pagesQueryParams = computed(() => ({
+  const learningObjectsQueryParams = computed(() => ({
     moduleId: unref(moduleId),
     page: 1,
     limit: 100,
   }))
-  const { data: pagesResponse } = usePages(pagesQueryParams)
+  const { data: learningObjectsResponse } = useLearningObjects(learningObjectsQueryParams)
   const modulePages = computed(
     () =>
-      pagesResponse.value?.records?.filter((p: { id: number }) => p.id !== unref(pageId)) ?? []
+      learningObjectsResponse.value?.records?.filter((p: { id: number }) => p.id !== unref(learningObjectId)) ?? []
   )
 
   watch(
@@ -113,7 +113,7 @@ export function usePageEditorPageLinkModal(
         .run()
     }
     closePageLinkModal()
-    toast.success('Enlace insertado. Guarda la página para persistir.')
+    toast.success('Enlace insertado. Guarda el objeto de aprendizaje para persistir.')
   }
 
   return {

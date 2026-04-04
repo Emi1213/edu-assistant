@@ -6,12 +6,13 @@ import type {
 export type ActivityType = PageActivityType
 
 export interface GenerateActivityPayload {
-  pageId: number
+  learningObjectId: number
   type: ActivityType
   language: string
   difficulty: number
   instructions?: string
 }
+
 
 export interface GeneratedActivity {
   type?: ActivityType

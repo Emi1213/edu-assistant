@@ -1,8 +1,8 @@
 import { ref, computed, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { usePage } from '../queries/use-page'
-import { usePageEditor } from './use-page-editor'
-import { useUpdatePage } from '../mutations/use-update-page'
+import { useLearningObject } from '../queries/use-page'
+import { useLearningObjectEditor } from './use-page-editor'
+import { useUpdateLearningObject } from '../mutations/use-update-page'
 import { useAIContentGeneration } from '@/features/content-generation/composables/use-ai-content-generation'
 import { useImageGenerationHandler } from '@/features/content-generation/composables/use-image-generation-handler'
 import { useConceptsGenerationHandler } from '@/features/content-generation/composables/use-concepts-generation-handler'
@@ -10,31 +10,31 @@ import { useRelationsGenerationHandler } from '@/features/content-generation/com
 import type { ExtractRelationsRelation } from '@/features/content-generation/types'
 import { useToast } from '@/shared/composables/use-toast'
 
-export function usePageEditorView() {
+export function useLearningObjectEditorView() {
   const route = useRoute()
   const router = useRouter()
   const toast = useToast()
 
-  const pageId = computed(() => Number(route.params.pageId))
+  const learningObjectId = computed(() => Number(route.params.learningObjectId))
   const moduleId = computed(() => Number(route.params.id))
 
-  const { data: page, isLoading: isLoadingPage } = usePage(pageId.value)
-  const pageTitle = ref('')
-  const pageKeywords = ref<string[]>([])
+  const { data: learningObject, isLoading: isLoadingLearningObject } = useLearningObject(learningObjectId.value)
+  const learningObjectTitle = ref('')
+  const learningObjectKeywords = ref<string[]>([])
 
-  const { mutateAsync: updatePage, isPending: isUpdatingPage } = useUpdatePage(pageId)
+  const { mutateAsync: updateLearningObject, isPending: isUpdatingLearningObject } = useUpdateLearningObject(learningObjectId)
   const {
     editor,
     isMounted,
     isSaving,
-    setContentFromPage,
+    setContentFromLearningObject,
     insertContent,
     saveContent,
-  } = usePageEditor(pageId.value)
+  } = useLearningObjectEditor(learningObjectId.value)
 
-  const savePage = async () => {
-    await updatePage({ title: pageTitle.value, keywords: pageKeywords.value })
-    saveContent()
+  const saveLearningObject = async () => {
+    await updateLearningObject({ title: learningObjectTitle.value, keywords: learningObjectKeywords.value })
+    await saveContent()
   }
 
   const {
@@ -45,44 +45,51 @@ export function usePageEditorView() {
     openAIModal,
     closeAIModal,
     generate,
-  } = useAIContentGeneration(pageId.value)
+  } = useAIContentGeneration(learningObjectId.value)
 
   useImageGenerationHandler(editor)
 
   const { generateConcepts, isExtracting: isExtractingConcepts } = useConceptsGenerationHandler(
-    pageId.value,
+    learningObjectId.value,
     editor
   )
-  const handleGenerateConcepts = () => {
-    generateConcepts(
-      () => toast.success('Conceptos generados'),
-      (msg) => toast.error(msg)
-    )
+  const handleGenerateConcepts = async () => {
+    try {
+      // Save before extracting to ensure backend has blocks
+      await saveLearningObject()
+      
+      generateConcepts(
+        () => toast.success('Conceptos generados'),
+        (msg) => toast.error(msg)
+      )
+    } catch {
+      // Error already handled in saveLearningObject/saveContent
+    }
   }
 
-  const { generateRelations } = useRelationsGenerationHandler(pageId.value, editor)
+  const { generateRelations } = useRelationsGenerationHandler(learningObjectId.value, editor)
 
-  const relationsStorageKey = (id: number) => `page-relations-${id}`
+  const relationsStorageKey = (id: number) => `learning-object-relations-${id}`
 
   const hasRunApplyRelations = ref(false)
   watch(
-    [() => editor.value, () => page.value, () => route.query.applyRelations],
-    async ([editorInstance, pageData]) => {
+    [() => editor.value, () => learningObject.value, () => route.query.applyRelations],
+    async ([editorInstance, learningObjectData]) => {
       if (
         editorInstance &&
-        pageData &&
+        learningObjectData &&
         route.query.applyRelations === '1' &&
         !hasRunApplyRelations.value
       ) {
         hasRunApplyRelations.value = true
-        setContentFromPage(pageData)
+        setContentFromLearningObject(learningObjectData)
         await nextTick()
         await nextTick()
 
         let preFetchedRelations = history.state?.relations as ExtractRelationsRelation[] | undefined
         if (!preFetchedRelations?.length) {
           try {
-            const raw = sessionStorage.getItem(relationsStorageKey(pageData.id))
+            const raw = sessionStorage.getItem(relationsStorageKey(learningObjectData.id))
             if (raw) {
               const parsed = JSON.parse(raw) as unknown
               if (Array.isArray(parsed) && parsed.length > 0) {
@@ -93,18 +100,20 @@ export function usePageEditorView() {
             /* ignore */
           }
         }
-        sessionStorage.removeItem(relationsStorageKey(pageData.id))
+        sessionStorage.removeItem(relationsStorageKey(learningObjectData.id))
 
         generateRelations(
           () => {
             toast.success('Relaciones aplicadas. Guarda los cambios si lo deseas.')
-            const { applyRelations: _, ...rest } = route.query
-            router.replace({ path: route.path, query: rest })
+            const query = { ...route.query }
+            delete query.applyRelations
+            router.replace({ path: route.path, query })
           },
           (msg) => {
             toast.error(msg)
-            const { applyRelations: __, ...rest } = route.query
-            router.replace({ path: route.path, query: rest })
+            const query = { ...route.query }
+            delete query.applyRelations
+            router.replace({ path: route.path, query })
           },
           preFetchedRelations?.length ? { relations: preFetchedRelations } : undefined
         )
@@ -114,13 +123,13 @@ export function usePageEditorView() {
   )
 
   watch(
-    () => page.value,
-    (pageData) => {
-      if (pageData) {
-        pageTitle.value = pageData.title
-        pageKeywords.value = [...pageData.keywords]
+    () => learningObject.value,
+    (learningObjectData) => {
+      if (learningObjectData) {
+        learningObjectTitle.value = learningObjectData.title
+        learningObjectKeywords.value = [...learningObjectData.keywords]
         if (editor.value) {
-          setContentFromPage(pageData)
+          setContentFromLearningObject(learningObjectData)
         }
       }
     },
@@ -130,26 +139,26 @@ export function usePageEditorView() {
   watch(
     () => editor.value,
     (editorInstance) => {
-      if (editorInstance && page.value) {
-        if (!pageTitle.value) {
-          pageTitle.value = page.value.title
-          pageKeywords.value = [...page.value.keywords]
+      if (editorInstance && learningObject.value) {
+        if (!learningObjectTitle.value) {
+          learningObjectTitle.value = learningObject.value.title
+          learningObjectKeywords.value = [...learningObject.value.keywords]
         }
-        setContentFromPage(page.value)
+        setContentFromLearningObject(learningObject.value)
       }
     },
     { immediate: true }
   )
 
   const goBack = () => {
-    router.push(`/modules/${moduleId.value}/pages/${pageId.value}`)
+    router.push(`/modules/${moduleId.value}/learning-objects/${learningObjectId.value}`)
   }
 
   const handleGenerateContent = () => {
     generate(
       (result) => {
-        if (result.title) pageTitle.value = result.title
-        if (result.keywords) pageKeywords.value = result.keywords
+        if (result.title) learningObjectTitle.value = result.title
+        if (result.keywords) learningObjectKeywords.value = result.keywords
         if (result.content) {
           insertContent(result.content)
         }
@@ -173,17 +182,17 @@ export function usePageEditorView() {
   }
 
   return {
-    pageId,
+    learningObjectId,
     moduleId,
-    page,
-    isLoadingPage,
+    learningObject,
+    isLoadingLearningObject,
     editor,
     isMounted,
-    isSaving: isSaving || isUpdatingPage,
-    pageTitle,
-    pageKeywords,
+    isSaving: isSaving || isUpdatingLearningObject,
+    learningObjectTitle,
+    learningObjectKeywords,
     goBack,
-    saveContent: savePage,
+    saveContent: saveLearningObject,
     showAIModal,
     aiInstructions,
     openAIModal,

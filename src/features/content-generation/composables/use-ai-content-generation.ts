@@ -3,7 +3,7 @@ import { marked } from 'marked'
 import { useGenerateContent } from './mutations/use-generate-content'
 import { normalizeConceptMarkersInMarkdown } from '../utils/normalize-concept-markers'
 
-export function useAIContentGeneration(pageId: number) {
+export function useAIContentGeneration(learningObjectId: number) {
   const showAIModal = ref(false)
   const aiInstructions = ref('')
   const isGenerating = ref(false)
@@ -25,34 +25,36 @@ export function useAIContentGeneration(pageId: number) {
     generationError.value = ''
   }
 
-  const processBlocks = (blocks: any[]): { content: string; imageSuggestions: Array<{ prompt: string; reason: string }> } => {
+  const processBlocks = (blocks: unknown[]): { content: string; imageSuggestions: Array<{ prompt: string; reason: string }> } => {
     let contentToInsert = ''
     const imageSuggestions: Array<{ prompt: string; reason: string }> = []
 
     blocks.forEach((block) => {
-      switch (block.type) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const b = block as any
+      switch (b.type) {
         case 'TEXT':
-          if ('markdown' in block.content) {
-            const raw = block.content.markdown as string
+          if (b.content && 'markdown' in b.content) {
+            const raw = b.content.markdown as string
             const normalized = normalizeConceptMarkersInMarkdown(raw)
             const htmlContent = marked.parse(normalized) as string
             contentToInsert += htmlContent + '\n\n'
           }
           break
         case 'CODE':
-          if ('code' in block.content && 'language' in block.content) {
-            const escapedCode = block.content.code
+          if (b.content && 'code' in b.content && 'language' in b.content) {
+            const escapedCode = b.content.code
               .replace(/&/g, '&amp;')
               .replace(/</g, '&lt;')
               .replace(/>/g, '&gt;')
-            contentToInsert += `<pre><code class="language-${block.content.language}">${escapedCode}</code></pre>\n\n`
+            contentToInsert += `<pre><code class="language-${b.content.language}">${escapedCode}</code></pre>\n\n`
           }
           break
         case 'IMAGE_SUGGESTION':
-          if ('prompt' in block.content && 'reason' in block.content) {
+          if (b.content && 'prompt' in b.content && 'reason' in b.content) {
             imageSuggestions.push({
-              prompt: block.content.prompt,
-              reason: block.content.reason,
+              prompt: b.content.prompt,
+              reason: b.content.reason,
             })
           }
           break
@@ -73,7 +75,7 @@ export function useAIContentGeneration(pageId: number) {
 
     generateContent(
       {
-        pageId,
+        learningObjectId,
         instructions: aiInstructions.value,
       },
       {
@@ -99,10 +101,11 @@ export function useAIContentGeneration(pageId: number) {
 
           isGenerating.value = false
         },
-        onError: (error: any) => {
+        onError: (error: unknown) => {
           if (!isMounted()) return
           isGenerating.value = false
-          generationError.value = error.message || 'Error al generar contenido. Por favor, intenta de nuevo.'
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          generationError.value = (error as any).message || 'Error al generar contenido. Por favor, intenta de nuevo.'
         },
       }
     )

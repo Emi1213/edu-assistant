@@ -10,7 +10,7 @@ export function useCreateStudentQuestion(pageId: number) {
     mutationFn: (payload: CreateStudentQuestionPayload) =>
       studentQuestionsService.create(payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.PAGE(pageId) })
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.LEARNING_OBJECT(pageId) })
     },
   })
 }

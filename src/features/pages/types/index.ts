@@ -1,13 +1,13 @@
 
-export type { PageFeedback } from "./page-feedback.types"
+export type { LOFeedback as LearningObjectFeedback } from "./page-feedback.types"
 
 export type {
   Note,
-  Page,
-  PageQueryParams,
-  PagesQueryParams,
-  UpdatePagePayload,
-  CreatePagePayload,
+  LearningObject,
+  LearningObjectQueryParams,
+  LearningObjectsQueryParams,
+  UpdateLearningObjectPayload,
+  CreateLearningObjectPayload,
 } from "./page.types"
 
 export type {
@@ -16,12 +16,13 @@ export type {
   TextBlockContent,
   CodeBlockContent,
   ImageSuggestionContent,
-  PageBlockContent,
-  PageContentBlock,
-  UpdatePageContentPayload,
+  LOBlockContent,
+  LOContentBlock,
+  UpdateLearningObjectContentPayload,
 } from "./page-content.types"
 
-export type { CreateConceptPayload, PageConcept } from "./concepts.types"
+
+export type { CreateConceptPayload, LOConcept, LOConcept as PageConcept } from "./concepts.types"
 
 export type {
   ActivityType,

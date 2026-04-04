@@ -9,7 +9,7 @@ export function useCreateFeedback(pageId: number) {
   return useMutation({
     mutationFn: (payload: CreatePageFeedback) => pageFeedbacksService.createFeedback(payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.PAGE(pageId) })
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.LEARNING_OBJECT(pageId) })
     },
   })
 }

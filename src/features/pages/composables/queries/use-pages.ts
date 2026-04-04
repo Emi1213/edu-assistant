@@ -1,18 +1,19 @@
 import type { ComputedRef } from 'vue'
-import type { PagesQueryParams } from '../../types'
+import type { LearningObjectsQueryParams } from '../../types'
 import { useQuery } from '@tanstack/vue-query'
 import { QUERY_KEYS } from '@/shared/composables/query-key'
-import { PagesDataSource } from '../../services/pages.service'
+import { LearningObjectsDataSource } from '../../services/pages.service'
 
-const pagesDataSource = new PagesDataSource()
+const learningObjectsDataSource = new LearningObjectsDataSource()
 
-export function usePages(params: ComputedRef<PagesQueryParams>) {
+export function useLearningObjects(params: ComputedRef<LearningObjectsQueryParams>) {
   const query = useQuery({
-    queryKey: QUERY_KEYS.PAGES(params.value),
+    queryKey: QUERY_KEYS.LEARNING_OBJECTS(params.value),
     queryFn: () => {
       const { moduleId, ...queryParams } = params.value
-      return pagesDataSource.getByModuleId(moduleId, queryParams)
+      return learningObjectsDataSource.getByModuleId(moduleId, queryParams)
     },
   })
   return query
 }
+

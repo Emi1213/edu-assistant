@@ -10,9 +10,10 @@ export interface AiConfiguration {
   updatedAt: Date
 }
 
-export interface CreateAiConfiguration extends Omit<AiConfiguration, 'id' | 'moduleId' | 'createdAt' | 'updatedAt'> {}
+export type CreateAiConfiguration = Omit<AiConfiguration, 'id' | 'moduleId' | 'createdAt' | 'updatedAt'>
 
-export interface UpdateAiConfiguration extends Partial<CreateAiConfiguration> {}
+export type UpdateAiConfiguration = Partial<CreateAiConfiguration>
+
 
 export type TargetLevel = 'BASIC' | 'INTERMEDIATE' | 'ADVANCED'
 

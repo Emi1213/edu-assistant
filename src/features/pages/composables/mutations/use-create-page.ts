@@ -1,17 +1,18 @@
 import { useMutation, useQueryClient } from '@tanstack/vue-query'
-import { PagesDataSource } from '../../services/pages.service'
-import type { CreatePagePayload } from '../../types'
+import { LearningObjectsDataSource } from '../../services/pages.service'
+import type { CreateLearningObjectPayload } from '../../types'
 import { QUERY_KEYS } from '@/shared/composables/query-key'
 
-const pagesDataSource = new PagesDataSource()
+const learningObjectsDataSource = new LearningObjectsDataSource()
 
-export function useCreatePage(moduleId: number) {
+export function useCreateLearningObject(moduleId: number) {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (payload: CreatePagePayload) => pagesDataSource.create(payload),
+    mutationFn: (payload: CreateLearningObjectPayload) => learningObjectsDataSource.create(payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.PAGES({ moduleId }) })
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.LEARNING_OBJECTS({ moduleId }) })
     },
   })
 }
+

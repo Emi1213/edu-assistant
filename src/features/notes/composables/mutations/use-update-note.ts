@@ -10,7 +10,7 @@ export function useUpdateNote(pageId: number) {
     mutationFn: ({ noteId, payload }: { noteId: number; payload: UpdateNote }) =>
       notesService.updateNote(noteId, payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.PAGE(pageId) })
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.LEARNING_OBJECT(pageId) })
     },
   })
 }

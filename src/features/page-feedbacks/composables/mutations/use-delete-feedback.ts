@@ -8,7 +8,7 @@ export function useDeleteFeedback(pageId: number) {
   return useMutation({
     mutationFn: (feedbackId: number) => pageFeedbacksService.deleteFeedback(feedbackId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.PAGE(pageId) })
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.LEARNING_OBJECT(pageId) })
     },
   })
 }

@@ -1,54 +1,54 @@
 import { ref } from 'vue'
-import { useCreatePage } from './mutations/use-create-page'
+import { useCreateLearningObject } from './mutations/use-create-page'
 import { useToast } from '@/shared/composables/use-toast'
-import type { CreatePagePayload } from '../types'
+import type { CreateLearningObjectPayload } from '../types'
 
-export function usePageCreator(moduleId: number) {
+export function useLearningObjectCreator(moduleId: number) {
   const toast = useToast()
   const isDialogOpen = ref(false)
-  const pageTitle = ref('')
+  const learningObjectTitle = ref('')
   const isPublished = ref(false)
 
-  const { mutate: createPage, isPending: isCreating } = useCreatePage(moduleId)
+  const { mutate: createLearningObject, isPending: isCreating } = useCreateLearningObject(moduleId)
 
   const openDialog = () => {
     isDialogOpen.value = true
-    pageTitle.value = ''
+    learningObjectTitle.value = ''
     isPublished.value = false
   }
 
   const closeDialog = () => {
     isDialogOpen.value = false
-    pageTitle.value = ''
+    learningObjectTitle.value = ''
     isPublished.value = false
   }
 
   const handleCreate = () => {
-    if (!pageTitle.value.trim()) {
-      toast.warning('El título de la página es requerido')
+    if (!learningObjectTitle.value.trim()) {
+      toast.warning('El título del objeto de aprendizaje es requerido')
       return
     }
 
-    const payload: CreatePagePayload = {
+    const payload: CreateLearningObjectPayload = {
       moduleId,
-      title: pageTitle.value.trim(),
+      title: learningObjectTitle.value.trim(),
       isPublished: isPublished.value,
     }
 
-    createPage(payload, {
+    createLearningObject(payload, {
       onSuccess: () => {
-        toast.success('Página creada exitosamente')
+        toast.success('Objeto de aprendizaje creado exitosamente')
         closeDialog()
       },
       onError: (error: any) => {
-        toast.error(error.message || 'Error al crear la página')
+        toast.error(error.message || 'Error al crear el objeto de aprendizaje')
       },
     })
   }
 
   return {
     isDialogOpen,
-    pageTitle,
+    learningObjectTitle,
     isPublished,
     isCreating,
     openDialog,

@@ -4,8 +4,9 @@ export interface ExtractRelationsRelation {
 }
 
 export interface ExtractRelationsPayload {
-  pageId: number
+  learningObjectId: number
 }
+
 
 export interface ExtractRelationsResponse {
   relations: ExtractRelationsRelation[]
