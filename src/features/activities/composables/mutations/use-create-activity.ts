@@ -5,13 +5,13 @@ import type { CreateActivityPayload } from '../../types'
 
 const dataSource = new ActivitiesDataSource()
 
-export function useCreateActivity(pageId: number) {
+export function useCreateActivity(learningObjectId: number) {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (payload: CreateActivityPayload) =>
-      dataSource.create(pageId, payload),
+      dataSource.create(learningObjectId, payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.ACTIVITIES(pageId) })
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.ACTIVITIES(learningObjectId) })
     },
   })
 }

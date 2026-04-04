@@ -2,7 +2,7 @@ import type { ActivityOptionsByType, ActivityType } from './activity-options.typ
 
 export interface Activity {
   id: number
-  pageId: number
+  learningObjectId: number
   type: ActivityType
   question: string
   options: Record<string, unknown> | ActivityOptionsByType

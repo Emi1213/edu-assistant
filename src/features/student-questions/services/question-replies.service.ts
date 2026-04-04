@@ -10,7 +10,7 @@ import type {
 class QuestionRepliesService {
   async create(payload: CreateQuestionReplyPayload): Promise<QuestionReply> {
     const response: IHttpResponse<QuestionReply> = await httpClient.post(
-      API_ROUTES.PAGES.QUESTION_REPLIES.CREATE,
+      API_ROUTES.LEARNING_OBJECTS.QUESTION_REPLIES.CREATE,
       payload
     )
     if (!response.data) {
@@ -21,7 +21,7 @@ class QuestionRepliesService {
 
   async update(id: number, payload: UpdateQuestionReplyPayload): Promise<QuestionReply> {
     const response: IHttpResponse<QuestionReply> = await httpClient.patch(
-      API_ROUTES.PAGES.QUESTION_REPLIES.UPDATE(id),
+      API_ROUTES.LEARNING_OBJECTS.QUESTION_REPLIES.UPDATE(id),
       payload
     )
     if (!response.data) {
@@ -31,7 +31,7 @@ class QuestionRepliesService {
   }
 
   async delete(id: number): Promise<void> {
-    await httpClient.delete(API_ROUTES.PAGES.QUESTION_REPLIES.DELETE(id))
+    await httpClient.delete(API_ROUTES.LEARNING_OBJECTS.QUESTION_REPLIES.DELETE(id))
   }
 }
 

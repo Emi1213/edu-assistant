@@ -1,5 +1,5 @@
 import type { ModuleQueryParams } from "@/features/modules/types/modules.types";
-import type { LearningObjectsQueryParams } from "@/features/pages/types";
+import type { LearningObjectsQueryParams } from "@/features/learning-objects/types";
 import type { StudentsQueryParams } from "@/features/users/types";
 
 export const QUERY_KEYS = {

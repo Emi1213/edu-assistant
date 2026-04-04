@@ -38,7 +38,7 @@ export const modulesRoutes: RouteRecordRaw[] = [
       {
         path: ':id/learning-objects/:learningObjectId',
         name: 'learning-object-detail',
-        component: () => import('@/features/pages/presentation/views/page-detail-view.vue'),
+        component: () => import('@/features/learning-objects/presentation/views/learning-object-detail-view.vue'),
         meta: {
           layout: 'dashboard',
           requiresAuth: true,
@@ -48,7 +48,7 @@ export const modulesRoutes: RouteRecordRaw[] = [
       {
         path: ':id/learning-objects/:learningObjectId/activities',
         name: 'learning-object-activities',
-        component: () => import('@/features/activities/presentation/views/page-activities-view.vue'),
+        component: () => import('@/features/activities/presentation/views/learning-object-activities-view.vue'),
         meta: {
           layout: 'dashboard',
           requiresAuth: true,
@@ -58,7 +58,7 @@ export const modulesRoutes: RouteRecordRaw[] = [
       {
         path: ':id/learning-objects/:learningObjectId/edit',
         name: 'learning-object-edit',
-        component: () => import('@/features/pages/presentation/views/page-editor-view.vue'),
+        component: () => import('@/features/learning-objects/presentation/views/learning-object-editor-view.vue'),
         meta: {
           layout: 'minimal',
           requiresAuth: true,

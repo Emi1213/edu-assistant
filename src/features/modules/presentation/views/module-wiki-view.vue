@@ -3,17 +3,18 @@ import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ArrowLeft, BookOpen, Users, Plus } from 'lucide-vue-next'
 import { useModule } from '../../composables/queries/use-module'
-import { useLearningObjectsTable } from '@/features/pages/composables/use-pages-table'
-import { useLearningObjectsList } from '@/features/pages/composables/use-pages-list'
+import { useLearningObjectsTable } from '@/features/learning-objects/composables/use-learning-objects-table'
+import { useLearningObjectsList } from '@/features/learning-objects/composables/use-learning-objects-list'
 import { useRoles } from '@/features/auth/composables/use-roles'
 import { useExtractRelations } from '@/features/content-generation/composables/mutations/use-extract-relations'
 import { useToast } from '@/shared/composables/use-toast'
 import { toFullAssetUrl } from '@/shared/utils/image.utils'
-import PageCard from '@/features/pages/presentation/components/page-card.vue'
-import CreatePageDialog from '@/features/pages/presentation/components/create-page-dialog.vue'
-import UpdatePageDialog from '@/features/pages/presentation/components/update-page-dialog.vue'
+import LearningObjectCard from '@/features/learning-objects/presentation/components/learning-object-card.vue'
+import CreateLearningObjectDialog from '@/features/learning-objects/presentation/components/create-learning-object-dialog.vue'
+import UpdateLearningObjectDialog from '@/features/learning-objects/presentation/components/update-learning-object-dialog.vue'
 import Skeleton from '@/components/ui/skeleton/Skeleton.vue'
-import type { LearningObject } from '@/features/pages/types'
+import type { LearningObject } from '@/features/learning-objects/types'
+import { useUpdateLearningObject } from '@/features/learning-objects/composables/mutations/use-update-learning-object'
 
 const route = useRoute()
 const router = useRouter()
@@ -40,6 +41,28 @@ const {
 
 const { mutate: extractRelations } = useExtractRelations()
 const generatingRelationsLearningObjectId = ref<number | null>(null)
+
+// Lógica de publicación directa
+const publishingLoId = ref<number | null>(null)
+const loToPublish = computed(() => publishingLoId.value ?? 0)
+const { mutate: updateLO } = useUpdateLearningObject(loToPublish)
+
+const handlePublishNow = (learningObject: LearningObject) => {
+  publishingLoId.value = learningObject.id
+  updateLO(
+    { isPublished: true },
+    {
+      onSuccess: () => {
+        toast.success(`"${learningObject.title}" publicado con éxito`)
+        publishingLoId.value = null
+      },
+      onError: (error: any) => {
+        toast.error(error.message || 'Error al publicar')
+        publishingLoId.value = null
+      },
+    }
+  )
+}
 
 const goBack = () => {
   router.push('/modules')
@@ -154,19 +177,21 @@ const handleGenerateRelations = (learningObject: LearningObject) => {
       </div>
 
       <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <PageCard
+        <LearningObjectCard
           v-for="learningObject in learningObjects"
           :key="learningObject.id"
-          :page="learningObject"
+          :learning-object="learningObject"
           :to="{ name: 'learning-object-detail', params: { id: moduleId, learningObjectId: learningObject.id } }"
-          :generating-relations-page-id="generatingRelationsLearningObjectId"
-          :on-update-page="canEdit() ? openUpdateLearningObject : undefined"
+          :generating-relations-learning-object-id="generatingRelationsLearningObjectId"
+          :is-publishing="publishingLoId === learningObject.id"
+          :on-update-learning-object="canEdit() ? openUpdateLearningObject : undefined"
           :on-generate-relations="canEdit() ? handleGenerateRelations : undefined"
+          :on-publish-now="canEdit() ? handlePublishNow : undefined"
         />
       </div>
     </div>
 
-    <CreatePageDialog
+    <CreateLearningObjectDialog
       :visible="isDialogOpen"
       :title="learningObjectTitle"
       :is-published="isPublished"
@@ -177,11 +202,11 @@ const handleGenerateRelations = (learningObject: LearningObject) => {
       @create="handleCreate"
     />
 
-    <UpdatePageDialog
+    <UpdateLearningObjectDialog
       v-if="learningObjectToUpdate"
       :key="learningObjectToUpdate.id"
       :visible="true"
-      :page="learningObjectToUpdate"
+      :learning-object="learningObjectToUpdate"
       @close="closeUpdateLearningObject"
     />
   </div>

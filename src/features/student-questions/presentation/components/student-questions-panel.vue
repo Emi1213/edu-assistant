@@ -19,7 +19,7 @@ import ConfirmationDialog from '@/shared/components/confirmation-dialog.vue'
 import type { StudentQuestion } from '../../types'
 
 interface Props {
-  pageId: number
+  learningObjectId: number
   studentQuestions: StudentQuestion[] | null | undefined
   isProfessor?: boolean
   embedded?: boolean
@@ -72,7 +72,7 @@ const {
   cancelDeleteReply,
   confirmDeleteReply,
   getReplies,
-} = useStudentQuestionsPanel(props.pageId, questionsRef, props.isProfessor)
+} = useStudentQuestionsPanel(props.learningObjectId, questionsRef, props.isProfessor)
 </script>
 
 <template>
@@ -154,7 +154,7 @@ const {
           {{ isProfessor ? 'No hay preguntas aún' : 'No tienes preguntas aún' }}
         </p>
         <p class="text-muted-foreground/60 text-xs mt-1">
-          {{ isProfessor ? 'Los estudiantes pueden hacer preguntas sobre esta página.' : 'Haz una pregunta si algo no quedó claro.' }}
+          {{ isProfessor ? 'Los estudiantes pueden hacer preguntas sobre este objeto de aprendizaje.' : 'Haz una pregunta si algo no quedó claro.' }}
         </p>
       </div>
 
@@ -242,8 +242,8 @@ const {
               <span class="text-xs text-muted-foreground">{{ formatDate(q.createdAt) }}</span>
             </div>
 
-            <!-- Respuestas (solo profesor): listado + botón Responder + formulario -->
-            <div v-if="isProfessor" class="mt-4 pt-3 border-t border-border space-y-3">
+            <!-- Respuestas: listado visible para todos -->
+            <div v-if="getReplies(q).length > 0 || isProfessor" class="mt-4 pt-3 border-t border-border space-y-3">
               <div v-for="reply in getReplies(q)" :key="reply.id" class="pl-3 border-l-2 border-muted">
                 <div v-if="editingReplyId === reply.id" class="space-y-2">
                   <textarea
@@ -273,63 +273,71 @@ const {
                 <div v-else>
                   <p class="text-sm text-foreground whitespace-pre-wrap">{{ reply.replyText }}</p>
                   <div class="flex items-center gap-2 mt-1">
-                    <span class="text-xs text-muted-foreground">
+                    <span class="text-xs font-medium" :class="reply.isFromTeacher ? 'text-primary' : 'text-muted-foreground'">
                       {{ reply.isFromTeacher ? 'Profesor' : reply.user?.displayName || reply.user?.email }}
                     </span>
                     <span class="text-xs text-muted-foreground">{{ formatDate(reply.createdAt) }}</span>
-                    <button
-                      type="button"
-                      @click="startEditingReply(reply)"
-                      class="text-xs text-muted-foreground hover:text-primary"
-                    >
-                      Editar
-                    </button>
-                    <button
-                      type="button"
-                      @click="openDeleteReplyDialog(reply.id)"
-                      :disabled="isDeletingReply"
-                      class="text-xs text-muted-foreground hover:text-destructive disabled:opacity-50"
-                    >
-                      Eliminar
-                    </button>
+                    
+                    <!-- Solo el autor o el profesor pueden editar/borrar -->
+                    <template v-if="isProfessor || (reply.user?.id === currentUserId)">
+                      <button
+                        type="button"
+                        @click="startEditingReply(reply)"
+                        class="text-xs text-muted-foreground hover:text-primary ml-2"
+                      >
+                        Editar
+                      </button>
+                      <button
+                        type="button"
+                        @click="openDeleteReplyDialog(reply.id)"
+                        :disabled="isDeletingReply"
+                        class="text-xs text-muted-foreground hover:text-destructive"
+                      >
+                        Eliminar
+                      </button>
+                    </template>
                   </div>
                 </div>
               </div>
-              <div v-if="replyingToQuestionId === q.id" class="space-y-2">
-                <textarea
-                  :id="`new-reply-${q.id}`"
-                  v-model="newReplyText"
-                  placeholder="Escribe tu respuesta..."
-                  :disabled="isCreatingReply"
-                  class="w-full min-h-[80px] p-2 text-sm bg-muted/30 border border-border rounded-md resize-none disabled:opacity-50"
-                />
-                <div class="flex gap-2">
-                  <button
-                    type="button"
-                    @click="cancelReplying"
-                    class="text-sm text-muted-foreground hover:bg-muted px-2 py-1 rounded"
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    type="button"
-                    @click="saveNewReply(q.id)"
-                    :disabled="isCreatingReply || !newReplyText.trim()"
-                    class="text-sm bg-primary text-primary-foreground px-2 py-1 rounded disabled:opacity-50"
-                  >
-                    {{ isCreatingReply ? 'Guardando...' : 'Responder' }}
-                  </button>
+
+              <!-- Formulario para nueva respuesta (Solo profesor por ahora, o según lógica de negocio) -->
+              <template v-if="isProfessor">
+                <div v-if="replyingToQuestionId === q.id" class="space-y-2">
+                  <textarea
+                    :id="`new-reply-${q.id}`"
+                    v-model="newReplyText"
+                    placeholder="Escribe tu respuesta..."
+                    :disabled="isCreatingReply"
+                    class="w-full min-h-[80px] p-2 text-sm bg-muted/30 border border-border rounded-md resize-none disabled:opacity-50"
+                  />
+                  <div class="flex gap-2">
+                    <button
+                      type="button"
+                      @click="cancelReplying"
+                      class="text-sm text-muted-foreground hover:bg-muted px-2 py-1 rounded"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      type="button"
+                      @click="saveNewReply(q.id)"
+                      :disabled="isCreatingReply || !newReplyText.trim()"
+                      class="text-sm bg-primary text-primary-foreground px-2 py-1 rounded disabled:opacity-50"
+                    >
+                      {{ isCreatingReply ? 'Guardando...' : 'Responder' }}
+                    </button>
+                  </div>
                 </div>
-              </div>
-              <button
-                v-else
-                type="button"
-                @click="startReplying(q.id)"
-                class="flex items-center gap-1.5 text-sm text-primary hover:underline"
-              >
-                <Reply class="size-4" />
-                Responder
-              </button>
+                <button
+                  v-else
+                  type="button"
+                  @click="startReplying(q.id)"
+                  class="flex items-center gap-1.5 text-sm text-primary hover:underline"
+                >
+                  <Reply class="size-4" />
+                  Responder
+                </button>
+              </template>
             </div>
           </div>
         </div>

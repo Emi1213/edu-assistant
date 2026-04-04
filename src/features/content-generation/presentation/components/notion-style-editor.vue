@@ -10,7 +10,7 @@ import { lowlight } from '@/shared/config/lowlight.config'
 
 interface Props {
   modelValue?: string
-  pageId: number
+  learningObjectId: number
   placeholder?: string
 }
 
@@ -97,7 +97,7 @@ const handleGenerateContent = () => {
 
   generateContent(
     {
-      learningObjectId: props.pageId,
+      learningObjectId: props.learningObjectId,
       instructions: aiPrompt.value,
     },
     {
