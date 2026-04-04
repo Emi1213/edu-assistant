@@ -13,7 +13,7 @@ export interface QuestionReply {
 export interface StudentQuestion {
   id: number
   user: User
-  pageId: number
+  learningObjectId: number
   question: string
   isPublic: boolean
   upvotes: number
@@ -24,8 +24,9 @@ export interface StudentQuestion {
 
 export type CreateStudentQuestionPayload = Pick<
   StudentQuestion,
-  "pageId" | "question" | "isPublic"
+  "learningObjectId" | "question" | "isPublic"
 >
+
 
 export type UpdateStudentQuestionPayload = Partial<
   Pick<StudentQuestion, "question" | "isPublic">

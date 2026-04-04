@@ -15,7 +15,7 @@ export function useUpdateStudentQuestion(pageId: number) {
       payload: UpdateStudentQuestionPayload
     }) => studentQuestionsService.update(id, payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.PAGE(pageId) })
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.LEARNING_OBJECT(pageId) })
     },
   })
 }

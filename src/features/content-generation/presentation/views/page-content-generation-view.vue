@@ -2,7 +2,7 @@
 import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ArrowLeft, FileText } from 'lucide-vue-next'
-import { usePage } from '@/features/pages/composables/queries/use-page'
+import { useLearningObject } from '@/features/pages/composables/queries/use-page'
 import ContentGenerationForm from '../components/content-generation-form.vue'
 import GeneratedContentDisplay from '../components/generated-content-display.vue'
 import Skeleton from '@/components/ui/skeleton/Skeleton.vue'
@@ -10,15 +10,15 @@ import type { ContentGeneration } from '../../types'
 
 const route = useRoute()
 const router = useRouter()
-const pageId = computed(() => Number(route.params.pageId))
+const learningObjectId = computed(() => Number(route.params.learningObjectId))
 const moduleId = computed(() => Number(route.params.id))
 
-const { data: page, isLoading } = usePage(pageId.value)
+const { data: learningObject, isLoading } = useLearningObject(learningObjectId.value)
 
 const generatedContent = ref<ContentGeneration | null>(null)
 
 const goBack = () => {
-  router.push(`/modules/${moduleId.value}/pages/${pageId.value}`)
+  router.push(`/modules/${moduleId.value}/learning-objects/${learningObjectId.value}`)
 }
 
 const handleContentGenerated = (content: ContentGeneration) => {
@@ -33,7 +33,7 @@ const handleContentGenerated = (content: ContentGeneration) => {
       class="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors w-full sm:w-auto"
     >
       <ArrowLeft class="size-4 shrink-0" />
-      <span>Volver a la Página</span>
+      <span>Volver al objeto de aprendizaje</span>
     </button>
 
     <div v-if="isLoading" class="space-y-4">
@@ -41,7 +41,7 @@ const handleContentGenerated = (content: ContentGeneration) => {
       <Skeleton class="h-32 w-full" />
     </div>
 
-    <div v-else-if="page" class="space-y-6 sm:space-y-8">
+    <div v-else-if="learningObject" class="space-y-6 sm:space-y-8">
       <!-- Page Info -->
       <div class="rounded-lg border border-border bg-card p-4 sm:p-6 min-w-0">
         <div class="flex flex-col sm:flex-row sm:items-start gap-4">
@@ -50,10 +50,10 @@ const handleContentGenerated = (content: ContentGeneration) => {
           </div>
           <div class="flex-1 min-w-0">
             <h1 class="text-xl sm:text-2xl font-bold text-foreground mb-2 break-words">
-              Generar Contenido para: {{ page.title }}
+              Generar Contenido para: {{ learningObject.title }}
             </h1>
             <p class="text-sm text-muted-foreground">
-              Usa el editor a continuación para proporcionar instrucciones sobre qué tipo de contenido deseas generar para esta página.
+              Usa el editor a continuación para proporcionar instrucciones sobre qué tipo de contenido deseas generar para este objeto de aprendizaje.
             </p>
           </div>
         </div>
@@ -62,7 +62,7 @@ const handleContentGenerated = (content: ContentGeneration) => {
       <!-- Content Generation Form -->
       <div class="rounded-lg border border-border bg-card p-4 sm:p-6 min-w-0">
         <ContentGenerationForm
-          :page-id="pageId"
+          :page-id="learningObjectId"
           @content-generated="handleContentGenerated"
         />
       </div>
@@ -81,7 +81,7 @@ const handleContentGenerated = (content: ContentGeneration) => {
     </div>
 
     <div v-else class="rounded-md bg-card px-6 py-12 text-center">
-      <p class="text-muted-foreground">Página no encontrada</p>
+      <p class="text-muted-foreground">Objeto de aprendizaje no encontrado</p>
     </div>
   </div>
 </template>

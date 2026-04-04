@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ArrowLeft, Edit3, MessageSquare, MessageCircleQuestion, ClipboardList } from 'lucide-vue-next'
-import { usePage } from '../../composables/queries/use-page'
+import { useLearningObject } from '../../composables/queries/use-page'
 import { useRoles } from '@/features/auth/composables/use-roles'
 import { useAuthStore } from '@/features/auth/context/auth-store'
 import PageContentRenderer from '../components/page-content-renderer.vue'
@@ -14,32 +14,32 @@ import { Button } from '@/components/ui/button'
 
 const route = useRoute()
 const router = useRouter()
-const pageId = computed(() => Number(route.params.pageId))
+const learningObjectId = computed(() => Number(route.params.learningObjectId))
 const moduleId = computed(() => Number(route.params.id))
 
-const { data: page, isLoading } = usePage(pageId.value)
+const { data: learningObject, isLoading } = useLearningObject(learningObjectId.value)
 const { canEdit, isStudent } = useRoles()
 const authStore = useAuthStore()
 
 const pageNotes = computed(() => {
-  if (!page.value) return []
-  return page.value.notes ?? []
+  if (!learningObject.value) return []
+  return learningObject.value.notes ?? []
 })
 
 const pageStudentQuestions = computed(() => {
-  if (!page.value) return []
-  return page.value.studentQuestions ?? []
+  if (!learningObject.value) return []
+  return learningObject.value.studentQuestions ?? []
 })
 
 const isProfessor = computed(() => canEdit())
 
-const pageFeedbacks = computed(() => {
-  if (!page.value) return []
-  return page.value.pageFeedbacks ?? []
+const loFeedbacks = computed(() => {
+  if (!learningObject.value) return []
+  return learningObject.value.loFeedbacks ?? []
 })
 
 const userFeedback = computed(() => {
-  const feedbacksValue = pageFeedbacks.value
+  const feedbacksValue = loFeedbacks.value
   if (!feedbacksValue || !Array.isArray(feedbacksValue)) return null
   return feedbacksValue.find(f => f.user?.id === authStore.user?.id) || null
 })
@@ -49,12 +49,13 @@ const goBack = () => {
 }
 
 const goToEditor = () => {
-  router.push(`/modules/${moduleId.value}/pages/${pageId.value}/edit`)
+  router.push(`/modules/${moduleId.value}/learning-objects/${learningObjectId.value}/edit`)
 }
 
 const goToActivities = () => {
-  router.push(`/modules/${moduleId.value}/pages/${pageId.value}/activities`)
+  router.push(`/modules/${moduleId.value}/learning-objects/${learningObjectId.value}/activities`)
 }
+
 
 const scrollToFeedback = () => {
   const feedbackSection = document.getElementById('feedback-section')
@@ -83,7 +84,7 @@ const scrollToQuestions = () => {
       </button>
 
       <button
-        v-if="!isLoading && page && canEdit()"
+        v-if="!isLoading && learningObject && canEdit()"
         @click="goToEditor"
         class="flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-lg font-medium transition-all duration-200 hover:bg-primary/90 hover:shadow-md w-full sm:w-auto"
       >
@@ -99,16 +100,16 @@ const scrollToQuestions = () => {
       <Skeleton class="h-4 w-2/3" />
     </div>
 
-    <div v-else-if="page" class="flex flex-col lg:flex-row gap-0 min-w-0">
+    <div v-else-if="learningObject" class="flex flex-col lg:flex-row gap-0 min-w-0">
       <div class="flex-1 min-w-0 overflow-x-auto">
         <div class="wiki-page">
           <div class="page-header">
             <h1 class="page-title text-xl sm:text-2xl lg:text-3xl break-words">
-              {{ page.title }}
+              {{ learningObject.title }}
             </h1>
-            <div v-if="page.keywords && page.keywords.length > 0" class="flex flex-wrap gap-2 mt-3">
+            <div v-if="learningObject.keywords && learningObject.keywords.length > 0" class="flex flex-wrap gap-2 mt-3">
               <span
-                v-for="keyword in page.keywords"
+                v-for="keyword in learningObject.keywords"
                 :key="keyword"
                 class="keyword-badge"
               >
@@ -136,22 +137,22 @@ const scrollToQuestions = () => {
           </div>
 
           <div class="page-content-wrapper">
-            <PageContentRenderer :page="page" />
+            <PageContentRenderer :learning-object="learningObject" />
           </div>
 
-          <div v-if="page" class="mt-6 pt-6 border-t border-border">
+          <div v-if="learningObject" class="mt-6 pt-6 border-t border-border">
             <Button variant="outline" class="gap-2" @click="goToActivities">
               <ClipboardList class="size-4" />
               Ver actividades
             </Button>
           </div>
 
-          <div v-if="page" id="feedback-section" class="mt-6 pt-6 border-t border-border">
-            <PageFeedbackSection :page-id="page.id" :feedbacks="page.pageFeedbacks || []" />
+          <div v-if="learningObject" id="feedback-section" class="mt-6 pt-6 border-t border-border">
+            <PageFeedbackSection :page-id="learningObject.id" :feedbacks="loFeedbacks" />
           </div>
-          <div v-if="page" id="questions-section" class="mt-6 pt-6 border-t border-border">
+          <div v-if="learningObject" id="questions-section" class="mt-6 pt-6 border-t border-border">
             <StudentQuestionsPanel
-              :page-id="page.id"
+              :page-id="learningObject.id"
               :student-questions="pageStudentQuestions"
               :is-professor="isProfessor"
               embedded
@@ -160,14 +161,16 @@ const scrollToQuestions = () => {
         </div>
       </div>
 
-      <div v-if="isStudent && page" class="notes-sidebar-wrapper">
-        <NotesPanel :page-id="page.id" :notes="pageNotes" />
+      <div v-if="isStudent && learningObject" class="notes-sidebar-wrapper">
+        <NotesPanel :learning-object-id="learningObject.id" :notes="pageNotes" />
       </div>
+
     </div>
 
     <div v-else class="rounded-md bg-card px-6 py-12 text-center">
-      <p class="text-muted-foreground">Página no encontrada</p>
+      <p class="text-muted-foreground">Objeto de aprendizaje no encontrado</p>
     </div>
+
   </div>
 </template>
 

@@ -35,7 +35,6 @@ export type UpdateActivityPayload = Partial<
   Pick<Activity, 'type' | 'question' | 'difficulty' | 'isApprovedByTeacher'>
 > & {
   options?: Record<string, unknown>
-  correctAnswer?: CorrectAnswerPayload
   explanation?: string
   usedAsExample?: boolean
 }

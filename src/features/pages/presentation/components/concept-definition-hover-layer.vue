@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { Teleport } from 'vue'
-
 defineProps<{
+
   visible: boolean
   text: string
   overlayStyle: Record<string, string>

@@ -10,7 +10,7 @@ import { useToast } from '@/shared/composables/use-toast'
 import type { StudentQuestion, QuestionReply } from '../types/student-questions.types'
 
 export function useStudentQuestionsPanel(
-  pageId: number,
+  learningObjectId: number,
   studentQuestions: Ref<StudentQuestion[] | null | undefined> | StudentQuestion[] | null | undefined,
   isProfessor: boolean
 ) {
@@ -34,12 +34,12 @@ export function useStudentQuestionsPanel(
   const showDeleteReplyDialog = ref(false)
   const replyToDelete = ref<number | null>(null)
 
-  const { mutate: createQuestion, isPending: isCreatingQuestion } = useCreateStudentQuestion(pageId)
-  const { mutate: updateQuestion, isPending: isUpdatingQuestion } = useUpdateStudentQuestion(pageId)
-  const { mutate: deleteQuestion, isPending: isDeletingQuestion } = useDeleteStudentQuestion(pageId)
-  const { mutate: createReply, isPending: isCreatingReply } = useCreateQuestionReply(pageId)
-  const { mutate: updateReply, isPending: isUpdatingReply } = useUpdateQuestionReply(pageId)
-  const { mutate: deleteReply, isPending: isDeletingReply } = useDeleteQuestionReply(pageId)
+  const { mutate: createQuestion, isPending: isCreatingQuestion } = useCreateStudentQuestion(learningObjectId)
+  const { mutate: updateQuestion, isPending: isUpdatingQuestion } = useUpdateStudentQuestion(learningObjectId)
+  const { mutate: deleteQuestion, isPending: isDeletingQuestion } = useDeleteStudentQuestion(learningObjectId)
+  const { mutate: createReply, isPending: isCreatingReply } = useCreateQuestionReply(learningObjectId)
+  const { mutate: updateReply, isPending: isUpdatingReply } = useUpdateQuestionReply(learningObjectId)
+  const { mutate: deleteReply, isPending: isDeletingReply } = useDeleteQuestionReply(learningObjectId)
 
   const questionsList = computed(() => {
     const value =
@@ -78,7 +78,7 @@ export function useStudentQuestionsPanel(
     }
     createQuestion(
       {
-        pageId,
+        learningObjectId,
         question: newQuestion.value.trim(),
         isPublic: newIsPublic.value,
       },

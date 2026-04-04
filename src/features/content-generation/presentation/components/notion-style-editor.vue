@@ -97,7 +97,7 @@ const handleGenerateContent = () => {
 
   generateContent(
     {
-      pageId: props.pageId,
+      learningObjectId: props.pageId,
       instructions: aiPrompt.value,
     },
     {

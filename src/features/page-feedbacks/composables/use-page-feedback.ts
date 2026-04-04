@@ -6,7 +6,7 @@ import { useAuthStore } from '@/features/auth/context/auth-store'
 import { useToast } from '@/shared/composables/use-toast'
 import type { PageFeedback } from '../types/page-feedbacks.types'
 
-export function usePageFeedback(pageId: number, feedbacks: Ref<PageFeedback[]> | PageFeedback[] | null | undefined) {
+export function usePageFeedback(learningObjectId: number, feedbacks: Ref<PageFeedback[]> | PageFeedback[] | null | undefined) {
   const authStore = useAuthStore()
   const toast = useToast()
 
@@ -14,9 +14,9 @@ export function usePageFeedback(pageId: number, feedbacks: Ref<PageFeedback[]> |
   const feedbackContent = ref('')
   const showDeleteDialog = ref(false)
 
-  const { mutate: createFeedback, isPending: isCreating } = useCreateFeedback(pageId)
-  const { mutate: updateFeedback, isPending: isUpdating } = useUpdateFeedback(pageId)
-  const { mutate: deleteFeedback, isPending: isDeleting } = useDeleteFeedback(pageId)
+  const { mutate: createFeedback, isPending: isCreating } = useCreateFeedback(learningObjectId)
+  const { mutate: updateFeedback, isPending: isUpdating } = useUpdateFeedback(learningObjectId)
+  const { mutate: deleteFeedback, isPending: isDeleting } = useDeleteFeedback(learningObjectId)
 
   const feedbacksValue = computed(() => {
     const value = feedbacks && typeof feedbacks === 'object' && 'value' in feedbacks ? feedbacks.value : feedbacks
@@ -57,15 +57,15 @@ export function usePageFeedback(pageId: number, feedbacks: Ref<PageFeedback[]> |
             toast.success('Feedback actualizado exitosamente')
             cancelEditing()
           },
-          onError: (error: any) => {
-            toast.error(error.message || 'Error al actualizar el feedback')
+          onError: (error: unknown) => {
+            toast.error((error as { message?: string }).message || 'Error al actualizar el feedback')
           },
         }
       )
     } else {
       createFeedback(
         {
-          pageId,
+          learningObjectId,
           feedback: feedbackContent.value.trim(),
         },
         {
@@ -73,8 +73,8 @@ export function usePageFeedback(pageId: number, feedbacks: Ref<PageFeedback[]> |
             toast.success('Feedback enviado exitosamente')
             cancelEditing()
           },
-          onError: (error: any) => {
-            toast.error(error.message || 'Error al enviar el feedback')
+          onError: (error: unknown) => {
+            toast.error((error as { message?: string }).message || 'Error al enviar el feedback')
           },
         }
       )
@@ -97,8 +97,8 @@ export function usePageFeedback(pageId: number, feedbacks: Ref<PageFeedback[]> |
         toast.success('Feedback eliminado exitosamente')
         cancelDelete()
       },
-      onError: (error: any) => {
-        toast.error(error.message || 'Error al eliminar el feedback')
+      onError: (error: unknown) => {
+        toast.error((error as { message?: string }).message || 'Error al eliminar el feedback')
         cancelDelete()
       },
     })

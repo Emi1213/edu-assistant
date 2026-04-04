@@ -36,8 +36,8 @@ export const modulesRoutes: RouteRecordRaw[] = [
         },
       },
       {
-        path: ':id/pages/:pageId',
-        name: 'page-detail',
+        path: ':id/learning-objects/:learningObjectId',
+        name: 'learning-object-detail',
         component: () => import('@/features/pages/presentation/views/page-detail-view.vue'),
         meta: {
           layout: 'dashboard',
@@ -46,8 +46,8 @@ export const modulesRoutes: RouteRecordRaw[] = [
         },
       },
       {
-        path: ':id/pages/:pageId/activities',
-        name: 'page-activities',
+        path: ':id/learning-objects/:learningObjectId/activities',
+        name: 'learning-object-activities',
         component: () => import('@/features/activities/presentation/views/page-activities-view.vue'),
         meta: {
           layout: 'dashboard',
@@ -56,8 +56,8 @@ export const modulesRoutes: RouteRecordRaw[] = [
         },
       },
       {
-        path: ':id/pages/:pageId/edit',
-        name: 'page-edit',
+        path: ':id/learning-objects/:learningObjectId/edit',
+        name: 'learning-object-edit',
         component: () => import('@/features/pages/presentation/views/page-editor-view.vue'),
         meta: {
           layout: 'minimal',
@@ -65,6 +65,7 @@ export const modulesRoutes: RouteRecordRaw[] = [
           roles: ['TEACHER'], 
         },
       }
+
     ]
   },
   {

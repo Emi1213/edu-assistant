@@ -2,7 +2,7 @@
 import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ArrowLeft, Plus, Sparkles, Loader2, X, ClipboardList, Pencil, Trash2, CheckCircle2 } from 'lucide-vue-next'
-import { usePage } from '@/features/pages/composables/queries/use-page'
+import { useLearningObject } from '@/features/pages/composables/queries/use-page'
 import { useActivities } from '@/features/activities/composables/queries/use-activities'
 import { useCreateActivity } from '@/features/activities/composables/mutations/use-create-activity'
 import { useUpdateActivity } from '@/features/activities/composables/mutations/use-update-activity'
@@ -35,22 +35,22 @@ import { useToast } from '@/shared/composables/use-toast'
 
 const route = useRoute()
 const router = useRouter()
-const pageId = computed(() => Number(route.params.pageId))
+const learningObjectId = computed(() => Number(route.params.learningObjectId))
 const moduleId = computed(() => Number(route.params.id))
 
-const { data: page, isLoading: isLoadingPage } = usePage(pageId.value)
-const { data: activitiesData, isLoading: isLoadingActivities, refetch: refetchActivities } = useActivities(pageId.value)
+const { data: learningObject, isLoading: isLoadingLearningObject } = useLearningObject(learningObjectId.value)
+const { data: activitiesData, isLoading: isLoadingActivities, refetch: refetchActivities } = useActivities(learningObjectId.value)
 const { canEdit, isStudent } = useRoles()
 const toast = useToast()
 
-const { mutate: updateActivity, isPending: isUpdating } = useUpdateActivity(pageId.value)
-const { mutate: deleteActivity, isPending: isDeleting } = useDeleteActivity(pageId.value)
+const { mutate: updateActivity, isPending: isUpdating } = useUpdateActivity(learningObjectId.value)
+const { mutate: deleteActivity, isPending: isDeleting } = useDeleteActivity(learningObjectId.value)
 const { mutate: createAttempt, isPending: isSubmittingAttempt } = useCreateActivityAttempt()
 
 const activities = computed(() => activitiesData.value ?? [])
 
 const goBackToPage = () => {
-  router.push(`/modules/${moduleId.value}/pages/${pageId.value}`)
+  router.push(`/modules/${moduleId.value}/learning-objects/${learningObjectId.value}`)
 }
 
 const showCreateModal = ref(false)
@@ -61,7 +61,7 @@ const createForm = ref<CreateActivityPayload>({
   difficulty: 2,
   isApprovedByTeacher: false,
 })
-const { mutate: createActivity, isPending: isCreating } = useCreateActivity(pageId.value)
+const { mutate: createActivity, isPending: isCreating } = useCreateActivity(learningObjectId.value)
 
 function openCreateModal() {
   createForm.value = {
@@ -249,10 +249,10 @@ function mapApiActivityToPreview(activity: Record<string, unknown>, requestedTyp
 }
 
 function handleGenerateActivity() {
-  if (!page.value) return
+  if (!learningObject.value) return
   generateActivity(
     {
-      pageId: page.value.id,
+      learningObjectId: learningObject.value.id,
       type: generateForm.value.type,
       language: generateForm.value.language,
       difficulty: generateForm.value.difficulty,
@@ -349,13 +349,13 @@ const editForm = ref<EditFormShape>({
 
 function openEditModal(act: Activity) {
   activityToEdit.value = act
-  const { options, correctAnswer } = getOptionsAndCorrectAnswer(act)
+  const { options } = getOptionsAndCorrectAnswer(act)
   editForm.value = {
     activityId: act.id,
     type: act.type,
     question: act.question,
-    options: toEditOptionsShape(act.type, options, correctAnswer),
-    explanation: typeof act.explanation === 'string' ? act.explanation : undefined,
+    options: toEditOptionsShape(act.type, options),
+    explanation: typeof act.explanation === 'string' ? act.explanation : '',
     difficulty: act.difficulty,
     isApprovedByTeacher: act.isApprovedByTeacher,
     usedAsExample: act.usedAsExample,
@@ -370,13 +370,12 @@ function closeEditModal() {
 
 function submitUpdateActivity() {
   const id = editForm.value.activityId
-  if (id == null || !page.value) return
-  const { options, correctAnswer } = buildUpdatePayloadFromEditForm(editForm.value)
+  if (id == null || !learningObject.value) return
+  const { options } = buildUpdatePayloadFromEditForm(editForm.value)
   const payload: UpdateActivityPayload = {
     type: editForm.value.type,
     question: editForm.value.question?.trim(),
     options,
-    correctAnswer,
     explanation: editForm.value.explanation,
     difficulty: editForm.value.difficulty,
     isApprovedByTeacher: editForm.value.isApprovedByTeacher,
@@ -407,7 +406,7 @@ function closeDeleteConfirm() {
 
 function doDeleteActivity() {
   const act = activityToDelete.value
-  if (!act || !page.value) return
+  if (!act || !learningObject.value) return
   deleteActivity(act.id, {
     onSuccess: () => {
       toast.success('Actividad eliminada.')
@@ -452,7 +451,7 @@ function closeAttemptModal() {
 
 function submitAttempt() {
   const act = activityToAttempt.value
-  if (!act || !page.value) return
+  if (!act || !learningObject.value) return
   let studentAnswer: CreateActivityAttemptPayload['studentAnswer']
   if (act.type === 'MULTIPLE_CHOICE' && typeof attemptAnswer.value.selectedOption === 'number') {
     studentAnswer = { selectedOption: attemptAnswer.value.selectedOption }
@@ -487,22 +486,22 @@ function submitAttempt() {
         class="flex items-center gap-2 px-4 py-2.5 text-sm font-medium bg-muted text-foreground rounded-lg hover:bg-muted/80 transition-all w-full sm:w-auto"
       >
         <ArrowLeft class="size-4 shrink-0" />
-        <span>Volver a la página</span>
+        <span>Volver al objeto de aprendizaje</span>
       </button>
     </div>
 
-    <div v-if="isLoadingPage" class="space-y-4">
+    <div v-if="isLoadingLearningObject" class="space-y-4">
       <Skeleton class="h-10 w-3/4" />
       <Skeleton class="h-32 w-full" />
     </div>
 
-    <template v-else-if="page">
+    <template v-else-if="learningObject">
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 min-w-0">
         <h1 class="text-xl sm:text-2xl font-bold flex items-center gap-2 break-words">
           <ClipboardList class="size-6 sm:size-7 text-primary shrink-0" />
           Actividades
         </h1>
-        <p class="text-sm text-muted-foreground truncate sm:max-w-xs">{{ page.title }}</p>
+        <p class="text-sm text-muted-foreground truncate sm:max-w-xs">{{ learningObject.title }}</p>
       </div>
 
       <div v-if="canEdit()" class="flex flex-wrap gap-2 sm:gap-3">
@@ -568,7 +567,7 @@ function submitAttempt() {
     </template>
 
     <div v-else class="rounded-md bg-card px-6 py-12 text-center">
-      <p class="text-muted-foreground">Página no encontrada</p>
+      <p class="text-muted-foreground">Objeto de aprendizaje no encontrado</p>
     </div>
 
     <Teleport to="body">

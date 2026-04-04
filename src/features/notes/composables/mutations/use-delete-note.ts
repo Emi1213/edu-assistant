@@ -8,7 +8,7 @@ export function useDeleteNote(pageId: number) {
   return useMutation({
     mutationFn: (noteId: number) => notesService.deleteNote(noteId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.PAGE(pageId) })
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.LEARNING_OBJECT(pageId) })
     },
   })
 }

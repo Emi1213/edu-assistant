@@ -26,7 +26,7 @@ const handleGenerateContent = () => {
 
   mutate(
     {
-      pageId: props.pageId,
+      learningObjectId: props.pageId,
       instructions: instructions.value,
     },
     {

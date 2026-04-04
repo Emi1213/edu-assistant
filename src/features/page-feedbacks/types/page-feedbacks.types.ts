@@ -9,7 +9,8 @@ export interface PageFeedback {
 }
 
 export interface CreatePageFeedback extends Pick<PageFeedback, 'feedback'> {
-  pageId: number
+  learningObjectId: number
 }
 
-export interface UpdatePageFeedback extends Pick<PageFeedback, 'feedback'> {}
+export type UpdatePageFeedback = Pick<PageFeedback, 'feedback'>
+

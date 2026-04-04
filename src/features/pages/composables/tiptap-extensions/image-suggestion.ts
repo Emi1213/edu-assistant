@@ -1,8 +1,9 @@
 import { Node, mergeAttributes } from '@tiptap/core'
 
 export interface ImageSuggestionOptions {
-  HTMLAttributes: Record<string, any>
+  HTMLAttributes: Record<string, unknown>
 }
+
 
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {

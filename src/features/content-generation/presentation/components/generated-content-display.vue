@@ -1,17 +1,34 @@
 <script setup lang="ts">
 import { Code2, ImageIcon, Lightbulb } from 'lucide-vue-next'
+import { marked } from 'marked'
 import type { ContentGeneration, ContentGenerationBlock, CodeBlock, ImageSuggestionBlock, TextBlock } from '../../types'
 
 interface Props {
   content: ContentGeneration
 }
 
-const props = defineProps<Props>()
+defineProps<Props>()
+
 
 const renderBlockContent = (block: ContentGenerationBlock) => {
   switch (block.type) {
-    case 'TEXT':
-      return (block.content as TextBlock).markdown
+    case 'TEXT': {
+      const markdown = (block.content as TextBlock).markdown
+      if (!markdown) return ''
+      
+      // La IA a veces devuelve los saltos de línea como texto literal \n o incluso /n/
+      // Reemplazamos ambos para que marked los reconozca como saltos de línea reales
+      const sanitizedMarkdown = markdown
+        .replace(/\\n/g, '\n')
+        .replace(/\/n\//g, '\n')
+      
+      // Convertir Markdown a HTML real. marked.parse es síncrono por defecto en v17
+      // si no se usan opciones asíncronas.
+      return marked.parse(sanitizedMarkdown, {
+        breaks: true,
+        gfm: true,
+      }) as string
+    }
     case 'CODE':
       return block.content
     case 'IMAGE_SUGGESTION':

@@ -11,32 +11,44 @@ import type {
 
 export function getOptionsAndCorrectAnswer(act: Activity): {
   options: Record<string, unknown>
-  correctAnswer?: UpdateActivityPayload['correctAnswer']
 } {
   const opts = act.options
   if (!opts || typeof opts !== 'object') return { options: {} }
   switch (act.type) {
     case 'MULTIPLE_CHOICE': {
-      const mc = opts as MultipleChoiceActivityOptions
-      return { options: { options: mc.options ?? [] }, correctAnswer: mc.correctAnswer }
+      const mc = opts as any
+      return {
+        options: {
+          options: mc.options ?? [],
+          correctAnswer: mc.correctAnswer ?? 0,
+        },
+      }
     }
     case 'TRUE_FALSE': {
-      const tf = opts as TrueFalseActivityOptions
-      return { options: {}, correctAnswer: tf.correctAnswer }
+      const tf = opts as any
+      return {
+        options: {
+          correctAnswer: tf.correctAnswer ?? true,
+        },
+      }
     }
     case 'FILL_BLANK': {
-      const fb = opts as FillBlankActivityOptions
-      const correctAnswers = fb.correctAnswers ?? []
+      const fb = opts as any
+      const acceptableAnswers = fb.acceptableAnswers ?? fb.correctAnswers ?? []
       return {
-        options: { correctAnswers },
-        correctAnswer: correctAnswers.length === 1 ? correctAnswers[0] : correctAnswers,
+        options: {
+          correctAnswer: fb.correctAnswer ?? (acceptableAnswers.length > 0 ? acceptableAnswers[0] : ''),
+          acceptableAnswers,
+        },
       }
     }
     case 'MATCH': {
-      const m = opts as MatchActivityOptions
+      const m = opts as any
+      const pairs = m.pairs ?? []
       return {
-        options: { leftItems: m.leftItems ?? [], rightItems: m.rightItems ?? [] },
-        correctAnswer: m.correctPairs ?? [],
+        options: {
+          pairs,
+        },
       }
     }
     default:
@@ -46,32 +58,41 @@ export function getOptionsAndCorrectAnswer(act: Activity): {
 
 export function toEditOptionsShape(
   type: ActivityType,
-  options: Record<string, unknown>,
-  correctAnswer?: UpdateActivityPayload['correctAnswer']
+  options: Record<string, unknown>
 ): ActivityOptionsByType {
   switch (type) {
     case 'MULTIPLE_CHOICE': {
       const opts = (options.options as string[]) ?? []
-      return { options: opts.length ? opts : ['', '', '', ''], correctAnswer: typeof correctAnswer === 'number' ? correctAnswer : 0 }
-    }
-    case 'TRUE_FALSE':
-      return { correctAnswer: typeof correctAnswer === 'boolean' ? correctAnswer : true }
-    case 'FILL_BLANK':
-      return { correctAnswers: (options.correctAnswers as string[]) ?? [] }
-    case 'MATCH':
+      const correctAnswer = (options.correctAnswer as number) ?? 0
       return {
-        leftItems: (options.leftItems as string[]) ?? [],
-        rightItems: (options.rightItems as string[]) ?? [],
+        options: opts.length ? opts : ['', '', '', ''],
+        correctAnswer: typeof correctAnswer === 'number' ? correctAnswer : 0,
       }
+    }
+    case 'TRUE_FALSE': {
+      const correctAnswer = (options.correctAnswer as boolean) ?? true
+      return { correctAnswer: typeof correctAnswer === 'boolean' ? correctAnswer : true }
+    }
+    case 'FILL_BLANK': {
+      const acceptableAnswers = (options.acceptableAnswers as string[]) ?? (options.correctAnswers as string[]) ?? []
+      return { correctAnswers: acceptableAnswers }
+    }
+    case 'MATCH': {
+      const pairs = (options.pairs as { left: string; right: string }[]) ?? []
+      return {
+        leftItems: pairs.map((p) => p.left),
+        rightItems: pairs.map((p) => p.right),
+      }
+    }
     default:
-      return { options: [], correctAnswer: 0 }
+      return { options: [], correctAnswer: 0 } as any
   }
 }
 
 export function buildUpdatePayloadFromEditForm(editForm: {
   type: ActivityType
   options: ActivityOptionsByType
-}): Pick<UpdateActivityPayload, 'options' | 'correctAnswer'> {
+}): Pick<UpdateActivityPayload, 'options'> {
   const type = editForm.type
   const opts = editForm.options
   switch (type) {
@@ -79,24 +100,45 @@ export function buildUpdatePayloadFromEditForm(editForm: {
       const mc = opts as MultipleChoiceActivityOptions
       const optionsList = mc.options?.filter(Boolean) ?? []
       return {
-        options: { options: optionsList.length >= 2 ? optionsList : mc.options ?? [] },
-        correctAnswer: mc.correctAnswer ?? 0,
+        options: {
+          options: optionsList.length >= 2 ? optionsList : mc.options ?? [],
+          correctAnswer: mc.correctAnswer ?? 0,
+        },
       }
     }
-    case 'TRUE_FALSE':
-      return { options: {}, correctAnswer: (opts as TrueFalseActivityOptions).correctAnswer ?? true }
+    case 'TRUE_FALSE': {
+      const tf = opts as TrueFalseActivityOptions
+      return {
+        options: {
+          correctAnswer: tf.correctAnswer ?? true,
+        },
+      }
+    }
     case 'FILL_BLANK': {
       const fb = opts as FillBlankActivityOptions
       const list = fb.correctAnswers ?? []
-      return { options: { correctAnswers: list }, correctAnswer: list.length === 1 ? list[0] : list }
+      return {
+        options: {
+          correctAnswer: list.length > 0 ? list[0] : '',
+          acceptableAnswers: list,
+        },
+      }
     }
     case 'MATCH': {
       const m = opts as MatchActivityOptions
       const left = m.leftItems ?? []
       const right = m.rightItems ?? []
-      return { options: { leftItems: left, rightItems: right }, correctAnswer: left.map((_, i) => [i, i] as [number, number]) }
+      const pairs = left.map((l, i) => ({
+        left: l,
+        right: right[i] ?? '',
+      }))
+      return {
+        options: {
+          pairs,
+        },
+      }
     }
     default:
-      return { options: {}, correctAnswer: undefined }
+      return { options: {} }
   }
 }

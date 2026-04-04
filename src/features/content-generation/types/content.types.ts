@@ -17,7 +17,7 @@ export interface ContentGenerationResponse {
 }
 
 export interface CreateContentGeneration {
-  pageId: number
+  learningObjectId: number
   instructions: string
   language?: string
   targetLevel?: TargetLevel
@@ -25,6 +25,7 @@ export interface CreateContentGeneration {
   contentLength?: ContentLength
   tone?: Tone
 }
+
 
 export interface ContentGenerationBlock {
   type: ContentGenerationBlockType

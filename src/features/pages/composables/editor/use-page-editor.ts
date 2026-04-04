@@ -7,7 +7,7 @@ import Image from '@tiptap/extension-image'
 import { ImageSuggestion } from '../tiptap-extensions/image-suggestion'
 import { Concept } from '../tiptap-extensions/concept'
 import { PageLink } from '../tiptap-extensions/page-link'
-import { useUpdatePageContent } from '../mutations/use-update-page-content'
+import { useUpdateLearningObjectContent } from '../mutations/use-update-page-content'
 import { usePageContentConverter } from '../content/use-page-content-converter'
 import { usePageContentLoader } from '../content/use-page-content-loader'
 import { useToast } from '@/shared/composables/use-toast'
@@ -15,14 +15,14 @@ import { lowlight } from '@/shared/config/lowlight.config'
 import { toImageDataUrl } from '@/shared/utils/image.utils'
 import CodeBlockNodeView from '../../presentation/components/code-block-node-view.vue'
 import ImageSuggestionNodeView from '../../presentation/components/image-suggestion-node-view.vue'
-import type { Page } from '../../types'
+import type { LearningObject } from '../../types'
 
-export function usePageEditor(pageId: number, initialContent = '') {
+export function useLearningObjectEditor(learningObjectId: number, initialContent = '') {
   const editorContent = ref('')
   const isMounted = ref(true)
   const toast = useToast()
 
-  const { mutate: updateContent, isPending: isSaving } = useUpdatePageContent(pageId)
+  const { mutateAsync: updateContent, isPending: isSaving } = useUpdateLearningObjectContent(learningObjectId)
   const { createPayload } = usePageContentConverter()
   const { loadContentFromBlocks } = usePageContentLoader()
 
@@ -40,6 +40,7 @@ export function usePageEditor(pageId: number, initialContent = '') {
         },
       }).extend({
         addNodeView() {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           return VueNodeViewRenderer(CodeBlockNodeView as any)
         },
       }),
@@ -54,6 +55,7 @@ export function usePageEditor(pageId: number, initialContent = '') {
       }),
       ImageSuggestion.extend({
         addNodeView() {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           return VueNodeViewRenderer(ImageSuggestionNodeView as any)
         },
       }),
@@ -77,9 +79,9 @@ export function usePageEditor(pageId: number, initialContent = '') {
     }
   }
 
-  const setContentFromPage = (page: Page) => {
-    if (editor.value && page) {
-      loadContentFromBlocks(editor.value, page)
+  const setContentFromLearningObject = (learningObject: LearningObject) => {
+    if (editor.value && learningObject) {
+      loadContentFromBlocks(editor.value, learningObject)
     }
   }
 
@@ -89,19 +91,18 @@ export function usePageEditor(pageId: number, initialContent = '') {
     }
   }
 
-  const saveContent = () => {
+  const saveContent = async () => {
     if (!editor.value) return
 
     const payload = createPayload(editor.value)
 
-    updateContent(payload, {
-      onSuccess: () => {
-        toast.success('Contenido guardado exitosamente')
-      },
-      onError: (error: any) => {
-        toast.error(error.message || 'Error al guardar el contenido')
-      },
-    })
+    try {
+      await updateContent(payload)
+      toast.success('Contenido guardado exitosamente')
+    } catch (error: unknown) {
+      toast.error((error as { message?: string }).message || 'Error al guardar el contenido')
+      throw error
+    }
   }
 
   onBeforeUnmount(() => {
@@ -115,7 +116,7 @@ export function usePageEditor(pageId: number, initialContent = '') {
     isMounted,
     isSaving,
     setContent,
-    setContentFromPage,
+    setContentFromLearningObject,
     insertContent,
     saveContent,
   }

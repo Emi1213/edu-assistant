@@ -15,7 +15,7 @@ function viewerContent(value: unknown): Content {
   return stripImageSuggestionsFromDoc(value) as Content
 }
 
-export function usePageContentViewer(content: Ref<any>) {
+export function usePageContentViewer(content: Ref<unknown>) {
   const editor = useEditor({
     content: viewerContent(content.value),
     extensions: [

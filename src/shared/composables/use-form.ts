@@ -2,24 +2,25 @@ import { ref, reactive, toRaw } from "vue";
 import { ZodError, ZodObject } from "zod";
 import type { ZodRawShape } from "zod";
 
-export function useForm<T extends Record<string, any>>(
+export function useForm<T extends Record<string, unknown>>(
   initialSchema: ZodObject<ZodRawShape>,
   initialValues?: Partial<T>
 ) {
   const schema = ref(initialSchema);
 
   const getDefaultValues = (): T => {
-    const defaults: any = {};
+    const defaults: Record<string, unknown> = {};
     
     try {
       const rawSchema = toRaw(schema.value);
       const shape = rawSchema.shape;
       
-      const extractDefault = (field: any): any => {
+      const extractDefault = (field: unknown): unknown => {
         if (!field || typeof field !== 'object') return undefined;
         
         try {
           const fieldRaw = toRaw(field);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const def = (fieldRaw as any)?._def;
           if (!def) return undefined;
           
@@ -36,13 +37,13 @@ export function useForm<T extends Record<string, any>>(
           }
           
           if ('typeName' in def && def.typeName === 'ZodObject' && def.shape) {
-            const nested: any = {};
+            const nested: Record<string, unknown> = {};
             for (const key in def.shape) {
               nested[key] = extractDefault(def.shape[key]);
             }
             return nested;
           }
-        } catch (error) {
+        } catch {
           return undefined;
         }
         
@@ -55,14 +56,17 @@ export function useForm<T extends Record<string, any>>(
           defaults[key] = defaultValue;
         }
       }
-    } catch (error) {
+    } catch {
+      // Ignore errors
     }
     
-    const merged: any = { ...defaults, ...(initialValues || {}) };
+    const merged: Record<string, unknown> = { ...defaults, ...(initialValues || {}) };
     
     for (const key in merged) {
-      if (defaults[key] && typeof defaults[key] === 'object' && !Array.isArray(defaults[key]) && merged[key] && typeof merged[key] === 'object') {
-        merged[key] = { ...defaults[key], ...merged[key] };
+      const defVal = defaults[key];
+      const merVal = merged[key];
+      if (defVal && typeof defVal === 'object' && !Array.isArray(defVal) && merVal && typeof merVal === 'object') {
+        merged[key] = { ...(defVal as object), ...(merVal as object) };
       }
     }
     
@@ -150,7 +154,7 @@ export function useForm<T extends Record<string, any>>(
     resetErrors();
   };
 
-  const handleSubmit = async (callback: (data: any) => Promise<void> | void) => {
+  const handleSubmit = async (callback: (data: T) => Promise<void> | void) => {
     if (validate()) {
       const dataToSubmit = { ...toRaw(formData) } as T;
       await callback(dataToSubmit);

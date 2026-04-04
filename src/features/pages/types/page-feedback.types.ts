@@ -1,6 +1,6 @@
 import type { User } from '@/features/auth/types/auth.types'
 
-export interface PageFeedback {
+export interface LOFeedback {
   id: number
   user: User
   feedback: string

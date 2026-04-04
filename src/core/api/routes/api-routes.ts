@@ -1,7 +1,7 @@
 const AR_KEYS = {
     AUTH: '/auth',
     MODULES: '/modules',
-    PAGES: '/pages',
+    PAGES: '/learning-objects',
     ACTIVITIES: '/activities',
     ENROLLMENTS: '/enrollments',
     USERS: '/users',
@@ -33,6 +33,8 @@ export const API_ROUTES = {
     PAGES: {
         CREATE: `${AR_KEYS.PAGES}`,
         GET_BY_MODULE_ID: (moduleId: number) => `${AR_KEYS.PAGES}/module/${moduleId}`,
+
+
         GET_BY_ID: (id: number) => `${AR_KEYS.PAGES}/${id}`,
         UPDATE: (id: number) => `${AR_KEYS.PAGES}/${id}`,
         UPDATE_CONTENT: (id: number) => `${AR_KEYS.PAGES}/${id}/content`,
@@ -53,9 +55,9 @@ export const API_ROUTES = {
             DELETE: (id: number) => `${AR_KEYS.PAGES}/question-replies/${id}`,
         },
         FEEDBACKS: {
-            CREATE: `page-feedbacks`,
-            UPDATE: (feedbackId: number) => `page-feedbacks/${feedbackId}`,
-            DELETE: (feedbackId: number) => `page-feedbacks/${feedbackId}`,
+            CREATE: `${AR_KEYS.PAGES}/learning-object-feedbacks`,
+            UPDATE: (feedbackId: number) => `${AR_KEYS.PAGES}/learning-object-feedbacks/${feedbackId}`,
+            DELETE: (feedbackId: number) => `${AR_KEYS.PAGES}/learning-object-feedbacks/${feedbackId}`,
         },
         ACTIVITIES: {
             LIST: (pageId: number) => `${AR_KEYS.PAGES}/${pageId}/activities`,

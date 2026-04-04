@@ -64,7 +64,7 @@ function applyConceptsToEditor(
 }
 
 export function useConceptsGenerationHandler(
-  pageId: number,
+  learningObjectId: number,
   editor: Ref<Editor | undefined>
 ) {
   const { mutate: extractConcepts, isPending: isExtracting } = useExtractConcepts()
@@ -76,7 +76,7 @@ export function useConceptsGenerationHandler(
     }
 
     extractConcepts(
-      { pageId },
+      { learningObjectId },
       {
         onSuccess: (data) => {
           if (!data?.terms?.length) {

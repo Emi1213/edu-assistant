@@ -4,8 +4,9 @@ export interface ExtractConceptsTerm {
 }
 
 export interface ExtractConceptsPayload {
-  pageId: number
+  learningObjectId: number
 }
+
 
 export interface ExtractConceptsResponse {
   terms: ExtractConceptsTerm[]

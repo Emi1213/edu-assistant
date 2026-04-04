@@ -1,23 +1,24 @@
 import { unref, type MaybeRef } from 'vue'
 import { useMutation, useQueryClient } from '@tanstack/vue-query'
-import { PagesDataSource } from '../../services/pages.service'
+import { LearningObjectsDataSource } from '../../services/pages.service'
 import { QUERY_KEYS } from '@/shared/composables/query-key'
-import type { UpdatePagePayload } from '../../types'
+import type { UpdateLearningObjectPayload } from '../../types'
 
-const pagesDataSource = new PagesDataSource()
+const learningObjectsDataSource = new LearningObjectsDataSource()
 
-export function useUpdatePage(pageIdRef: MaybeRef<number>) {
+export function useUpdateLearningObject(learningObjectIdRef: MaybeRef<number>) {
   const queryClient = useQueryClient()
 
   const mutation = useMutation({
-    mutationFn: (payload: UpdatePagePayload) =>
-      pagesDataSource.update(unref(pageIdRef), payload),
+    mutationFn: (payload: UpdateLearningObjectPayload) =>
+      learningObjectsDataSource.update(unref(learningObjectIdRef), payload),
     onSuccess: () => {
-      const id = unref(pageIdRef)
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.PAGE(id) })
-      queryClient.invalidateQueries({ queryKey: ['pages'] })
+      const id = unref(learningObjectIdRef)
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.LEARNING_OBJECT(id) })
+      queryClient.invalidateQueries({ queryKey: ['learning-objects'] })
     },
   })
 
   return mutation
 }
+

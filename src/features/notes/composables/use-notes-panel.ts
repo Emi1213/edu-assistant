@@ -6,7 +6,7 @@ import { useToast } from '@/shared/composables/use-toast'
 import type { Note } from '../types/notes.types'
 
 export function useNotesPanel(
-  pageId: number,
+  learningObjectId: number,
   notes: Ref<Note[] | null | undefined> | Note[] | null | undefined
 ) {
   const toast = useToast()
@@ -19,9 +19,9 @@ export function useNotesPanel(
   const showDeleteDialog = ref(false)
   const noteToDelete = ref<number | null>(null)
 
-  const { mutate: createNote, isPending: isCreatingNote } = useCreateNote(pageId)
-  const { mutate: updateNote, isPending: isUpdatingNote } = useUpdateNote(pageId)
-  const { mutate: deleteNote, isPending: isDeletingNote } = useDeleteNote(pageId)
+  const { mutate: createNote, isPending: isCreatingNote } = useCreateNote(learningObjectId)
+  const { mutate: updateNote, isPending: isUpdatingNote } = useUpdateNote(learningObjectId)
+  const { mutate: deleteNote, isPending: isDeletingNote } = useDeleteNote(learningObjectId)
 
   const userNotes = computed(() => {
     const notesValue = notes && typeof notes === 'object' && 'value' in notes ? notes.value : notes
@@ -59,7 +59,7 @@ export function useNotesPanel(
 
     createNote(
       {
-        pageId,
+        learningObjectId,
         content: newNoteContent.value.trim(),
       },
       {
@@ -103,8 +103,9 @@ export function useNotesPanel(
           toast.success('Nota actualizada exitosamente')
           cancelEditing()
         },
-        onError: (error: any) => {
-          toast.error(error.message || 'Error al actualizar la nota')
+        onError: (error: unknown) => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          toast.error((error as any).message || 'Error al actualizar la nota')
         },
       }
     )
@@ -128,8 +129,9 @@ export function useNotesPanel(
         toast.success('Nota eliminada exitosamente')
         cancelDelete()
       },
-      onError: (error: any) => {
-        toast.error(error.message || 'Error al eliminar la nota')
+      onError: (error: unknown) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        toast.error((error as any).message || 'Error al eliminar la nota')
       },
     })
   }

@@ -3,9 +3,9 @@ export interface CreateConceptPayload {
   definition: string
 }
 
-export interface PageConcept {
+export interface LOConcept {
   id: number
-  pageId: number
+  learningObjectId: number
   term: string
   definition: string
   createdAt: string
