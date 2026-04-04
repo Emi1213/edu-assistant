@@ -3,14 +3,14 @@ import { studentQuestionsService } from '../../services/student-questions.servic
 import type { CreateStudentQuestionPayload } from '../../types/student-questions.types'
 import { QUERY_KEYS } from '@/shared/composables/query-key'
 
-export function useCreateStudentQuestion(pageId: number) {
+export function useCreateStudentQuestion(learningObjectId: number) {
   const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: (payload: CreateStudentQuestionPayload) =>
       studentQuestionsService.create(payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.LEARNING_OBJECT(pageId) })
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.LEARNING_OBJECT(learningObjectId) })
     },
   })
 }

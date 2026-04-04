@@ -6,7 +6,7 @@ import { useGenerateContent } from '../../composables/mutations/use-generate-con
 import type { ContentGeneration } from '../../types'
 
 interface Props {
-  pageId: number
+  learningObjectId: number
 }
 
 interface Emits {
@@ -26,7 +26,7 @@ const handleGenerateContent = () => {
 
   mutate(
     {
-      learningObjectId: props.pageId,
+      learningObjectId: props.learningObjectId,
       instructions: instructions.value,
     },
     {
@@ -52,7 +52,7 @@ const canGenerate = () => {
         Instrucciones para generar contenido
       </label>
       <p class="text-sm text-muted-foreground">
-        Describe qué tipo de contenido quieres generar para esta página. Puedes ser tan específico como desees.
+        Describe qué tipo de contenido quieres generar para este objeto de aprendizaje. Puedes ser tan específico como desees.
       </p>
     </div>
 
