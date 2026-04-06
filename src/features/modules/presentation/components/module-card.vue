@@ -37,16 +37,18 @@ const handleUnenroll = (e: Event) => {
 </script>
 
 <template>
-  <component
-    :is="props.to ? 'router-link' : 'div'"
-    :to="props.to"
-    class="group relative rounded-lg border border-border bg-card overflow-hidden shadow-sm hover:shadow-xl hover:border-[#233a83] dark:hover:border-[#121a3d] transition-all duration-200 block no-underline text-inherit"
+  <div
+    class="group relative rounded-lg border border-border bg-card overflow-hidden shadow-sm hover:shadow-xl hover:border-[#233a83] dark:hover:border-[#121a3d] transition-all duration-200"
     :class="{ 'cursor-pointer': props.to || props.onClick }"
-    @click="!props.to && props.onClick && props.onClick(props.module)"
   >
-    <div class="absolute left-0 top-0 bottom-0 w-1 bg-[#233a83]"></div>
-
-    <div class="p-5">
+    <component
+      :is="props.to ? 'router-link' : 'div'"
+      :to="props.to"
+      class="block no-underline text-inherit"
+      @click="!props.to && props.onClick && props.onClick(props.module)"
+    >
+      <div class="absolute left-0 top-0 bottom-0 w-1 bg-[#233a83]"></div>
+      <div class="p-5 pb-0">
       <div class="flex items-start gap-3 mb-3">
         <div class="flex-shrink-0 w-10 h-10 rounded-md bg-[#233a83] flex items-center justify-center overflow-hidden transition-all duration-200 group-hover:scale-105">
           <img
@@ -73,7 +75,6 @@ const handleUnenroll = (e: Event) => {
         </div>
       </div>
 
-      <!-- Description -->
       <div class="mb-4">
         <p v-if="module.description" class="text-sm text-muted-foreground/80 line-clamp-2 leading-relaxed">
           {{ module.description }}
@@ -82,44 +83,45 @@ const handleUnenroll = (e: Event) => {
           Sin descripción
         </p>
       </div>
-      <div class="flex items-center justify-between pt-3 border-t border-border gap-2">
-        <div class="flex items-center gap-2 min-w-0">
-          <span
-            class="inline-flex items-center text-xs font-bold px-2.5 py-1 rounded-full transition-transform duration-200 hover:scale-105 shrink-0"
-            :class="module.isActive
-              ? 'bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400'
-              : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'"
-          >
-            {{ module.isActive ? 'Activo' : 'Inactivo' }}
-          </span>
-        </div>
-        <div v-if="showEnrollActions" class="flex items-center gap-1 shrink-0" @click.stop>
-          <button
-            v-if="!isEnrolled && onEnroll"
-            type="button"
-            class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
-            @click="handleEnroll"
-          >
-            <UserPlus class="size-3.5" />
-            Inscribirse
-          </button>
-          <button
-            v-else-if="isEnrolled && onUnenroll"
-            type="button"
-            class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-border bg-muted text-muted-foreground hover:bg-muted/80 transition-colors"
-            @click="handleUnenroll"
-          >
-            <UserMinus class="size-3.5" />
-            Darse de baja
-          </button>
-        </div>
-        <div v-if="showActions" @click.stop>
-          <ModulesActionsMenu
-            :module="module"
-            :on-edit="props.onEdit && canEdit() ? handleEdit : undefined"
-          />
-        </div>
+      </div>
+    </component>
+    <div class="flex items-center justify-between px-5 pb-5 pt-3 border-t border-border gap-2">
+      <div class="flex items-center gap-2 min-w-0">
+        <span
+          class="inline-flex items-center text-xs font-bold px-2.5 py-1 rounded-full transition-transform duration-200 hover:scale-105 shrink-0"
+          :class="module.isActive
+            ? 'bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400'
+            : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'"
+        >
+          {{ module.isActive ? 'Activo' : 'Inactivo' }}
+        </span>
+      </div>
+      <div v-if="showEnrollActions" class="flex items-center gap-1 shrink-0">
+        <button
+          v-if="!isEnrolled && onEnroll"
+          type="button"
+          class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+          @click="handleEnroll"
+        >
+          <UserPlus class="size-3.5" />
+          Inscribirse
+        </button>
+        <button
+          v-else-if="isEnrolled && onUnenroll"
+          type="button"
+          class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-border bg-muted text-muted-foreground hover:bg-muted/80 transition-colors"
+          @click="handleUnenroll"
+        >
+          <UserMinus class="size-3.5" />
+          Darse de baja
+        </button>
+      </div>
+      <div v-if="showActions">
+        <ModulesActionsMenu
+          :module="module"
+          :on-edit="props.onEdit && canEdit() ? handleEdit : undefined"
+        />
       </div>
     </div>
-  </component>
+  </div>
 </template>

@@ -25,7 +25,7 @@ export function findFirstOccurrenceRange(
       const text = node.text ?? ''
       if (text.length > 0) {
         segments.push({
-          from: pos + 1,
+          from: pos,
           to: pos + node.nodeSize,
           text,
         })
@@ -34,12 +34,47 @@ export function findFirstOccurrenceRange(
   })
 
   const fullText = segments.map((s) => s.text).join('')
-  const pattern = new RegExp(`\\b${escapeRegex(trimmed)}\\b`, 'i')
-  const match = fullText.match(pattern)
-  if (!match || match.index === undefined) return null
 
-  const startChar = match.index
-  const endChar = startChar + match[0].length
+  const findMatchRange = (): { start: number; end: number } | null => {
+    const asciiWord = new RegExp(`\\b${escapeRegex(trimmed)}\\b`, 'i')
+    let m = fullText.match(asciiWord)
+    if (m?.index !== undefined) {
+      return { start: m.index, end: m.index + m[0].length }
+    }
+    try {
+      const unicodeWord = new RegExp(
+        `(?<![\\p{L}\\p{N}])${escapeRegex(trimmed)}(?![\\p{L}\\p{N}])`,
+        'iu'
+      )
+      m = fullText.match(unicodeWord)
+      if (m?.index !== undefined) {
+        return { start: m.index, end: m.index + m[0].length }
+      }
+    } catch {
+      // engines sin flag u
+    }
+    const lower = fullText.toLowerCase()
+    const q = trimmed.toLowerCase()
+    let fromIdx = 0
+    while (fromIdx < fullText.length) {
+      const i = lower.indexOf(q, fromIdx)
+      if (i === -1) return null
+      const before = i === 0 ? '\u0000' : fullText[i - 1]!
+      const after = i + q.length >= fullText.length ? '\u0000' : fullText[i + q.length]!
+      const isWordChar = (c: string) => /[\p{L}\p{N}]/u.test(c)
+      if (!isWordChar(before) && !isWordChar(after)) {
+        return { start: i, end: i + q.length }
+      }
+      fromIdx = i + 1
+    }
+    return null
+  }
+
+  const range = findMatchRange()
+  if (!range) return null
+
+  const startChar = range.start
+  const endChar = range.end
   let acc = 0
   let from = 0
   let to = 0

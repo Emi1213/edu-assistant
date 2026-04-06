@@ -17,7 +17,7 @@ export const Concept = Node.create<ConceptOptions>({
 
   group: 'inline',
   inline: true,
-  atom: true,
+  content: 'inline*',
 
   addAttributes() {
     return {
@@ -49,15 +49,15 @@ export const Concept = Node.create<ConceptOptions>({
 
   renderHTML({ node, HTMLAttributes }) {
     const definition = node.attrs.definition ?? ''
-    return [
-      'span',
-      mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, {
-        'data-type': 'concept',
-        class: 'concept-term',
-        ...(definition ? { title: definition } : {}),
-      }),
-      node.attrs.term ?? '',
-    ]
+    const attrs = mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, {
+      'data-type': 'concept',
+      class: 'concept-term',
+      ...(definition ? { title: definition } : {}),
+    })
+    if (node.content.size > 0) {
+      return ['span', attrs, 0]
+    }
+    return ['span', attrs, node.attrs.term ?? '']
   },
 
   addCommands() {
@@ -72,6 +72,7 @@ export const Concept = Node.create<ConceptOptions>({
               term,
               definition,
             },
+            content: [{ type: 'text', text: term }],
           })
         },
     }

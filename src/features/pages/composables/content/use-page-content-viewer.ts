@@ -1,6 +1,5 @@
 import { onBeforeUnmount, watch } from 'vue'
 import { useEditor } from '@tiptap/vue-3'
-import { VueNodeViewRenderer } from '@tiptap/vue-3'
 import StarterKit from '@tiptap/starter-kit'
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
 import Image from '@tiptap/extension-image'
@@ -8,12 +7,17 @@ import { lowlight } from '@/shared/config/lowlight.config'
 import { toImageDataUrl } from '@/shared/utils/image.utils'
 import { Concept } from '../tiptap-extensions/concept'
 import { PageLink } from '../tiptap-extensions/page-link'
-import ConceptTooltipNodeView from '../../presentation/components/concept-tooltip-node-view.vue'
+import { stripImageSuggestionsFromDoc } from '../../utils/strip-image-suggestions-from-doc'
 import type { Ref } from 'vue'
+import type { Content } from '@tiptap/core'
+
+function viewerContent(value: unknown): Content {
+  return stripImageSuggestionsFromDoc(value) as Content
+}
 
 export function usePageContentViewer(content: Ref<any>) {
   const editor = useEditor({
-    content: content.value,
+    content: viewerContent(content.value),
     extensions: [
       StarterKit.configure({
         codeBlock: false,
@@ -53,11 +57,7 @@ export function usePageContentViewer(content: Ref<any>) {
           return ['img', { ...HTMLAttributes, src, alt: node.attrs.alt, style: 'max-width: 100%; max-height: 360px; object-fit: contain; border-radius: 8px; margin: 16px auto; display: block;' }]
         },
       }),
-      Concept.extend({
-        addNodeView() {
-          return VueNodeViewRenderer(ConceptTooltipNodeView as any)
-        },
-      }),
+      Concept,
       PageLink,
     ],
     editable: false,
@@ -70,7 +70,7 @@ export function usePageContentViewer(content: Ref<any>) {
 
   watch(content, (newContent) => {
     if (editor.value && newContent) {
-      editor.value.commands.setContent(newContent)
+      editor.value.commands.setContent(viewerContent(newContent) as Content)
     }
   })
 

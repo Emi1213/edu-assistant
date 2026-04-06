@@ -14,7 +14,7 @@ export const API_ROUTES = {
     AUTH: {
         MICROSOFT_LOGIN: `${AR_KEYS.AUTH}/microsoft`,
         ME: `${AR_KEYS.AUTH}/profile`,
-        TEACHERS_EMAILS: `${AR_KEYS.AUTH}/teachers/emails`,
+        TEACHERS_EMAILS: `${AR_KEYS.AUTH}/config/teachers/emails`,
     },
     AI_CONFIG: {
         GET: AR_KEYS.AI_CONFIG,
@@ -67,7 +67,6 @@ export const API_ROUTES = {
         ATTEMPTS: (activityId: number) => `${AR_KEYS.ACTIVITIES}/${activityId}/attempts`,
     },
     ENROLLMENTS: {
-        LIST: AR_KEYS.ENROLLMENTS,
         SELF_ENROLL: `${AR_KEYS.ENROLLMENTS}/self`,
         BULK_ENROLL: `${AR_KEYS.ENROLLMENTS}/bulk`,
         GET_MODULE_ENROLLMENTS: (moduleId: number) => `${AR_KEYS.ENROLLMENTS}/module/${moduleId}`,

@@ -52,10 +52,16 @@ const handleGenerateRelations = (page: Page) => {
     {
       onSuccess: (data) => {
         generatingRelationsPageId.value = null
+        const relations = data?.relations ?? []
+        try {
+          sessionStorage.setItem(`page-relations-${page.id}`, JSON.stringify(relations))
+        } catch {
+          /* ignore */
+        }
         router.push({
           path: `/modules/${moduleId.value}/pages/${page.id}/edit`,
           query: { applyRelations: '1' },
-          state: { relations: data?.relations ?? [] } as Record<string, unknown> as import('vue-router').HistoryState,
+          state: { relations } as Record<string, unknown> as import('vue-router').HistoryState,
         })
       },
       onError: () => {
@@ -172,7 +178,9 @@ const handleGenerateRelations = (page: Page) => {
     />
 
     <UpdatePageDialog
-      :visible="!!pageToUpdate"
+      v-if="pageToUpdate"
+      :key="pageToUpdate.id"
+      :visible="true"
       :page="pageToUpdate"
       @close="closeUpdatePage"
     />

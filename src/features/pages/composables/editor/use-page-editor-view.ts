@@ -1,4 +1,4 @@
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { usePage } from '../queries/use-page'
 import { usePageEditor } from './use-page-editor'
@@ -62,10 +62,12 @@ export function usePageEditorView() {
 
   const { generateRelations } = useRelationsGenerationHandler(pageId.value, editor)
 
+  const relationsStorageKey = (id: number) => `page-relations-${id}`
+
   const hasRunApplyRelations = ref(false)
   watch(
     [() => editor.value, () => page.value, () => route.query.applyRelations],
-    ([editorInstance, pageData]) => {
+    async ([editorInstance, pageData]) => {
       if (
         editorInstance &&
         pageData &&
@@ -74,7 +76,25 @@ export function usePageEditorView() {
       ) {
         hasRunApplyRelations.value = true
         setContentFromPage(pageData)
-        const preFetchedRelations = history.state?.relations as ExtractRelationsRelation[] | undefined
+        await nextTick()
+        await nextTick()
+
+        let preFetchedRelations = history.state?.relations as ExtractRelationsRelation[] | undefined
+        if (!preFetchedRelations?.length) {
+          try {
+            const raw = sessionStorage.getItem(relationsStorageKey(pageData.id))
+            if (raw) {
+              const parsed = JSON.parse(raw) as unknown
+              if (Array.isArray(parsed) && parsed.length > 0) {
+                preFetchedRelations = parsed as ExtractRelationsRelation[]
+              }
+            }
+          } catch {
+            /* ignore */
+          }
+        }
+        sessionStorage.removeItem(relationsStorageKey(pageData.id))
+
         generateRelations(
           () => {
             toast.success('Relaciones aplicadas. Guarda los cambios si lo deseas.')

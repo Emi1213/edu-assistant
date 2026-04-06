@@ -52,6 +52,7 @@ const modulesListViewProps = computed(
     :title="initialData ? 'Editar Módulo' : 'Agregar Módulo'"
   >
     <ModuleForm
+      :key="initialData?.id ?? 'create'"
       :onSubmit="handleSubmit"
       :onCancel="closeDrawer"
       :initialData="initialData"

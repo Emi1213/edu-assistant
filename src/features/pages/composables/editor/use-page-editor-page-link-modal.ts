@@ -1,9 +1,35 @@
 import type { Ref } from 'vue'
 import type { Editor } from '@tiptap/vue-3'
+import { Fragment } from '@tiptap/pm/model'
 import { ref, computed, watch, unref } from 'vue'
 import { useToast } from '@/shared/composables/use-toast'
 import { usePages } from '../queries/use-pages'
 import type { MaybeRef } from 'vue'
+
+function replaceRangeWithPageLink(
+  editor: Editor,
+  from: number,
+  to: number,
+  attrs: { targetPageId: number; mentionText: string }
+) {
+  const state = editor.state
+  const pageLinkType = state.schema.nodes.pageLink
+  if (!pageLinkType) return
+  const slice = state.doc.slice(from, to)
+  const actualText = state.doc.textBetween(from, to)
+  const inner =
+    slice.content.size > 0
+      ? slice.content
+      : Fragment.from(state.schema.text(attrs.mentionText))
+  const node = pageLinkType.create(
+    {
+      targetPageId: attrs.targetPageId,
+      mentionText: actualText || attrs.mentionText,
+    },
+    inner
+  )
+  editor.view.dispatch(state.tr.replaceWith(from, to, node))
+}
 
 export function usePageEditorPageLinkModal(
   editor: Ref<Editor | undefined>,
@@ -68,20 +94,24 @@ export function usePageEditorPageLinkModal(
     const savedRange = pageLinkSelectionRange.value
     const from = savedRange ? savedRange.from : editor.value.state.selection.from
     const to = savedRange ? savedRange.to : editor.value.state.selection.to
-    if (from !== to) {
-      editor.value.chain().focus().deleteRange({ from, to }).run()
+    const attrs = {
+      targetPageId: pageLinkForm.value.targetPageId,
+      mentionText: pageLinkForm.value.mentionText.trim(),
     }
-    editor.value
-      .chain()
-      .focus()
-      .insertContentAt(from, {
-        type: 'pageLink',
-        attrs: {
-          targetPageId: pageLinkForm.value.targetPageId,
-          mentionText: pageLinkForm.value.mentionText.trim(),
-        },
-      })
-      .run()
+    editor.value.chain().focus().run()
+    if (from !== to) {
+      replaceRangeWithPageLink(editor.value, from, to, attrs)
+    } else {
+      editor.value
+        .chain()
+        .focus()
+        .insertContentAt(from, {
+          type: 'pageLink',
+          attrs,
+          content: [{ type: 'text', text: attrs.mentionText }],
+        })
+        .run()
+    }
     closePageLinkModal()
     toast.success('Enlace insertado. Guarda la página para persistir.')
   }
