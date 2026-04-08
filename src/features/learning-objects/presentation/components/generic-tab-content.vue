@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { LearningObject } from '../../types/learning-object.types'
 import { FileText, Clock } from 'lucide-vue-next'
-import { computed } from 'vue'
 
 const props = defineProps<{
   learningObjects: LearningObject[]
