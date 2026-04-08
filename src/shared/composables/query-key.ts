@@ -3,8 +3,6 @@ import type { PagesQueryParams } from "@/features/pages/types";
 import type { StudentsQueryParams } from "@/features/users/types";
 
 export const QUERY_KEYS = {
-    LEARNING_OBJECT_TYPES: () => ['learning-object-types'],
-    LEARNING_OBJECTS: (moduleId: number) => ['learning-objects', moduleId],
     // Modules
     MODULES: (params?: ModuleQueryParams) => params ? ['modules', params] : ['modules'],
     MODULE: (id: number) => ['modules', id],

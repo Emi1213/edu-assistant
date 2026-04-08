@@ -39,10 +39,3 @@ __screenshots__/
 
 # Lockfiles
 package-lock.json
-
-# Local docs (design specs, brainstorm sessions)
-docs/
-.superpowers/
-
-# Environment variables
-.env
