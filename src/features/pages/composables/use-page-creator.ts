@@ -1,17 +1,19 @@
 import { ref } from 'vue'
 import { useCreatePage } from './mutations/use-create-page'
 import { useToast } from '@/shared/composables/use-toast'
-import type { CreatePagePayload } from '../types'
+import type { CreateLearningObjectPayload } from '@/features/learning-objects/types/learning-object.types'
 
 export function usePageCreator(moduleId: number) {
   const toast = useToast()
   const isDialogOpen = ref(false)
   const pageTitle = ref('')
   const isPublished = ref(false)
+  const activeTypeId = ref<number>(0)
 
   const { mutate: createPage, isPending: isCreating } = useCreatePage(moduleId)
 
-  const openDialog = () => {
+  const openDialog = (typeId: number) => {
+    activeTypeId.value = typeId
     isDialogOpen.value = true
     pageTitle.value = ''
     isPublished.value = false
@@ -29,9 +31,10 @@ export function usePageCreator(moduleId: number) {
       return
     }
 
-    const payload: CreatePagePayload = {
+    const payload: CreateLearningObjectPayload = {
       moduleId,
       title: pageTitle.value.trim(),
+      typeId: activeTypeId.value,
       isPublished: isPublished.value,
     }
 

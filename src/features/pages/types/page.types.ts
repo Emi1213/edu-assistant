@@ -44,4 +44,6 @@ export type UpdatePagePayload = Partial<
   hasManualEdits?: boolean
 }
 
-export type CreatePagePayload = Pick<Page, "moduleId" | "title" | "isPublished">
+export type CreatePagePayload = Pick<Page, "moduleId" | "title" | "isPublished"> & {
+  typeId: number
+}
