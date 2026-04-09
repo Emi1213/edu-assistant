@@ -214,6 +214,12 @@ export function useLearningObjectContentConverter() {
       case 'text': {
         let t = node.text || ''
         const marks = node.marks || []
+        let linkHref: string | undefined
+        for (const m of marks) {
+          if (m.type === 'link') {
+            linkHref = m.attrs?.href
+          }
+        }
         for (const m of marks) {
           switch (m.type) {
             case 'bold':
@@ -229,6 +235,10 @@ export function useLearningObjectContentConverter() {
               t = '`' + t + '`'
               break
           }
+        }
+        if (linkHref) {
+          const safe = t.replace(/\\/g, '\\\\').replace(/\]/g, '\\]')
+          t = `[${safe}](${linkHref})`
         }
         return t
       }

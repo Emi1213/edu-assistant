@@ -38,7 +38,7 @@ const router = useRouter()
 const learningObjectId = computed(() => Number(route.params.learningObjectId))
 const moduleId = computed(() => Number(route.params.id))
 
-const { data: learningObject, isLoading: isLoadingLearningObject } = useLearningObject(learningObjectId.value)
+const { data: learningObject, isLoading: isLoadingLearningObject } = useLearningObject(learningObjectId)
 const { data: activitiesData, isLoading: isLoadingActivities, refetch: refetchActivities } = useActivities(learningObjectId.value)
 const { canEdit, isStudent } = useRoles()
 const toast = useToast()
@@ -566,7 +566,7 @@ function submitAttempt() {
                   <Pencil class="size-4" />
                   Editar
                 </Button>
-                <Button type="button" variant="ghost" size="sm" class="gap-1 text-destructive hover:text-destructive" :disabled="isDeleting" @click="confirmDelete(act)">
+                <Button type="button" variant="ghost" size="sm" class="gap-1 text-muted-foreground hover:text-primary hover:bg-primary/10" :disabled="isDeleting" @click="confirmDelete(act)">
                   <Trash2 class="size-4" />
                   Eliminar
                 </Button>

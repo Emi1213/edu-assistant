@@ -220,7 +220,7 @@ const {
                   type="button"
                   @click="openDeleteDialog(q.id)"
                   :disabled="isDeletingQuestion"
-                  class="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded transition-all duration-200 disabled:opacity-50"
+                  class="p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded transition-all duration-200 disabled:opacity-50"
                   title="Eliminar"
                 >
                   <Trash2 class="size-4" />
@@ -291,7 +291,7 @@ const {
                         type="button"
                         @click="openDeleteReplyDialog(reply.id)"
                         :disabled="isDeletingReply"
-                        class="text-xs text-muted-foreground hover:text-destructive"
+                        class="text-xs text-muted-foreground hover:text-primary"
                       >
                         Eliminar
                       </button>

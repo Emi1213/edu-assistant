@@ -3,7 +3,9 @@ export type {
     LearningObjectsQueryParams,
     UpdateLearningObjectPayload,
     CreateLearningObjectPayload,
-    LearningObjectQueryParams
+    LearningObjectQueryParams,
+    ReorderLearningObjectItem,
+    ReorderLearningObjectsPayload,
 } from "./learning-object.types"
 export type { LearningObjectType } from "./learning-object-type.types"
 export type { LearningObjectTypeConfig } from "./learning-object-type-config.types"

@@ -7,6 +7,7 @@ import { lowlight } from '@/shared/config/lowlight.config'
 import { toImageDataUrl } from '@/shared/utils/image.utils'
 import { Concept } from '../tiptap-extensions/concept'
 import { LearningObjectLink } from '../tiptap-extensions/learning-object-link'
+import { createLearningObjectLink } from '../tiptap-extensions/editor-external-link'
 import { stripImageSuggestionsFromDoc } from '../../utils/strip-image-suggestions-from-doc'
 import type { Ref } from 'vue'
 import type { Content } from '@tiptap/core'
@@ -59,6 +60,7 @@ export function useLearningObjectContentViewer(content: Ref<unknown>) {
       }),
       Concept,
       LearningObjectLink,
+      createLearningObjectLink(),
     ],
     editable: false,
     editorProps: {

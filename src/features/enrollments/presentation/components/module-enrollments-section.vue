@@ -132,7 +132,7 @@ function handleAddStudents(selectedIds: number[]) {
                 </button>
                 <button
                   type="button"
-                  class="p-2 rounded-lg text-destructive hover:bg-destructive/10 transition-colors"
+                  class="p-2 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
                   title="Eliminar del módulo"
                   :disabled="deleteMutation.isPending.value"
                   @click="handleRemove(e)"

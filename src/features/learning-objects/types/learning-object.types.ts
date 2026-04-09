@@ -1,14 +1,7 @@
 import type { StudentQuestion } from "@/features/student-questions/types/student-questions.types"
 import type { LOContentBlock } from "./learning-object-content.types"
 import type { LOFeedback } from "./learning-object-feedback.types"
-
-export interface Note {
-  id: number
-  learningObjectId: number
-  userId: number
-  content: string
-  createdAt: string
-}
+import type { Note } from "@/features/notes"
 
 export interface LearningObject {
   id: number
@@ -26,6 +19,8 @@ export interface LearningObject {
   loFeedbacks?: LOFeedback[] | null
   notes?: Note[] | null
   blocks?: LOContentBlock[]
+  previousLoId: number | null
+  nextLoId: number | null
 }
 
 export interface LearningObjectQueryParams {
@@ -47,4 +42,13 @@ export type UpdateLearningObjectPayload = Partial<
 
 export type CreateLearningObjectPayload = Pick<LearningObject, "moduleId" | "title" | "isPublished"> & {
   typeId: number
+}
+
+export interface ReorderLearningObjectItem {
+  id: number
+  orderIndex: number
+}
+
+export interface ReorderLearningObjectsPayload {
+  los: ReorderLearningObjectItem[]
 }
