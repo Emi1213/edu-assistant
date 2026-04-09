@@ -10,6 +10,8 @@
   ],
   "compilerOptions": {
     "preserveSymlinks": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
     "baseUrl": ".",
     "noEmit": true,
     "paths": {
