@@ -1,4 +1,4 @@
-import type { Ref } from 'vue'
+import type { MaybeRefOrGetter, Ref } from 'vue'
 import type { Editor } from '@tiptap/vue-3'
 import { Fragment } from '@tiptap/pm/model'
 import { ref } from 'vue'
@@ -24,7 +24,10 @@ function replaceRangeWithConceptNode(
   editor.view.dispatch(state.tr.replaceWith(from, to, node))
 }
 
-export function useLearningObjectEditorConceptModal(learningObjectId: number, editor: Ref<Editor | undefined>) {
+export function useLearningObjectEditorConceptModal(
+  learningObjectId: MaybeRefOrGetter<number>,
+  editor: Ref<Editor | undefined>
+) {
   const toast = useToast()
   const showConceptModal = ref(false)
   const conceptForm = ref({ term: '', definition: '' })

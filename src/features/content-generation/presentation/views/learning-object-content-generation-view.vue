@@ -13,7 +13,7 @@ const router = useRouter()
 const learningObjectId = computed(() => Number(route.params.learningObjectId))
 const moduleId = computed(() => Number(route.params.id))
 
-const { data: learningObject, isLoading } = useLearningObject(learningObjectId.value)
+const { data: learningObject, isLoading } = useLearningObject(learningObjectId)
 
 const generatedContent = ref<ContentGeneration | null>(null)
 

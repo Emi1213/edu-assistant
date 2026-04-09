@@ -121,13 +121,42 @@
 </template>
 
 <script setup lang="ts">
+import { watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useAuth } from '../../composables/use-auth'
+import { useToast } from '@/shared/composables/use-toast'
+import { messageForOAuthCallbackQuery } from '../../utils/oauth-callback-errors'
 
+const route = useRoute()
+const router = useRouter()
+const toast = useToast()
 const { login, loading } = useAuth()
 
 function handleMicrosoftLogin() {
   login()
 }
+
+function consumeOAuthErrorFromQuery() {
+  const err = route.query.error as string | undefined
+  const errDesc = route.query.error_description as string | undefined
+  if (!err && !errDesc) return
+
+  toast.error(messageForOAuthCallbackQuery(err, errDesc))
+
+  const nextQuery = { ...route.query } as Record<string, string | string[] | undefined>
+  delete nextQuery.error
+  delete nextQuery.error_description
+  const cleaned = Object.fromEntries(
+    Object.entries(nextQuery).filter(([, v]) => v !== undefined && v !== '')
+  ) as Record<string, string | string[]>
+  router.replace({ name: 'login', query: cleaned })
+}
+
+watch(
+  () => [route.query.error, route.query.error_description],
+  () => consumeOAuthErrorFromQuery(),
+  { immediate: true }
+)
 </script>
 
 <style scoped>

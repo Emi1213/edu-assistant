@@ -1,3 +1,4 @@
+import type { MaybeRefOrGetter } from 'vue'
 import { ref, onBeforeUnmount } from 'vue'
 import { useEditor } from '@tiptap/vue-3'
 import { VueNodeViewRenderer } from '@tiptap/vue-3'
@@ -7,6 +8,7 @@ import Image from '@tiptap/extension-image'
 import { ImageSuggestion } from '../tiptap-extensions/image-suggestion'
 import { Concept } from '../tiptap-extensions/concept'
 import { LearningObjectLink } from '../tiptap-extensions/learning-object-link'
+import { createLearningObjectLink } from '../tiptap-extensions/editor-external-link'
 import { useUpdateLearningObjectContent } from '../mutations/use-update-learning-object-content'
 import { useLearningObjectContentConverter } from '../content/use-learning-object-content-converter'
 import { useLearningObjectContentLoader } from '../content/use-learning-object-content-loader'
@@ -17,7 +19,7 @@ import CodeBlockNodeView from '../../presentation/components/code-block-node-vie
 import ImageSuggestionNodeView from '../../presentation/components/image-suggestion-node-view.vue'
 import type { LearningObject } from '../../types'
 
-export function useLearningObjectEditor(learningObjectId: number, initialContent = '') {
+export function useLearningObjectEditor(learningObjectId: MaybeRefOrGetter<number>, initialContent = '') {
   const editorContent = ref('')
   const isMounted = ref(true)
   const toast = useToast()
@@ -61,6 +63,7 @@ export function useLearningObjectEditor(learningObjectId: number, initialContent
       }),
       Concept,
       LearningObjectLink,
+      createLearningObjectLink(),
     ],
     editorProps: {
       attributes: {

@@ -38,6 +38,7 @@ export const API_ROUTES = {
     },
     LEARNING_OBJECTS: {
         CREATE: `${AR_KEYS.LEARNING_OBJECTS}`,
+        REORDER: `${AR_KEYS.LEARNING_OBJECTS}/reorder`,
         GET_BY_MODULE_ID: (moduleId: number) => `${AR_KEYS.LEARNING_OBJECTS}/module/${moduleId}`,
         GET_BY_ID: (id: number) => `${AR_KEYS.LEARNING_OBJECTS}/${id}`,
         UPDATE: (id: number) => `${AR_KEYS.LEARNING_OBJECTS}/${id}`,

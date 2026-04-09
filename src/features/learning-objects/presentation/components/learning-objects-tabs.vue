@@ -3,6 +3,8 @@ import type { RouteLocationRaw } from 'vue-router'
 import type { LearningObject, LearningObjectType } from '../../types'
 import { Plus } from 'lucide-vue-next'
 import { ref, computed, watch } from 'vue'
+import { useLearningObjectsListReorder } from '../../composables/use-learning-objects-list-reorder'
+import { sortLearningObjectsByOrderIndex } from '../../utils/learning-objects-reorder.utils'
 import {
   FALLBACK_DETAIL_ROUTE_NAME,
   LEARNING_OBJECT_TYPE_CONFIG,
@@ -45,6 +47,14 @@ const queryParams = computed(() => ({
 const { data: learningObjectsResponse, isLoading } = useLearningObjects(queryParams)
 
 const learningObjects = computed(() => learningObjectsResponse.value?.records ?? [])
+
+const sortedLearningObjects = computed(() => sortLearningObjectsByOrderIndex(learningObjects.value))
+
+const { reorderByDrag, isReorderingLearningObjects } = useLearningObjectsListReorder(props.moduleId)
+
+function handleReorderDrag(fromIndex: number, toIndex: number) {
+  reorderByDrag(sortedLearningObjects.value, fromIndex, toIndex)
+}
 
 const activeType = computed(() =>
   props.types.find((type) => type.id === activeTypeId.value)
@@ -101,9 +111,11 @@ const buildDetailRoute = (learningObject: LearningObject): RouteLocationRaw => (
     </div>
 
     <GenericTabContent
-      :learning-objects="learningObjects"
+      :learning-objects="sortedLearningObjects"
       :is-loading="isLoading"
       :can-edit="canEdit"
+      :reorder-pending="isReorderingLearningObjects"
+      :on-reorder-drag="canEdit && sortedLearningObjects.length > 1 ? handleReorderDrag : undefined"
       :generating-relations-learning-object-id="generatingRelationsLearningObjectId"
       :publishing-learning-object-id="publishingLearningObjectId"
       :build-detail-route="buildDetailRoute"

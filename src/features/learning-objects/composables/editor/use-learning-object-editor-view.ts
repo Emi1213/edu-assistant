@@ -18,7 +18,7 @@ export function useLearningObjectEditorView() {
   const learningObjectId = computed(() => Number(route.params.learningObjectId))
   const moduleId = computed(() => Number(route.params.id))
 
-  const { data: learningObject, isLoading: isLoadingLearningObject } = useLearningObject(learningObjectId.value)
+  const { data: learningObject, isLoading: isLoadingLearningObject } = useLearningObject(learningObjectId)
   const learningObjectTitle = ref('')
   const learningObjectKeywords = ref<string[]>([])
 
@@ -30,7 +30,7 @@ export function useLearningObjectEditorView() {
     setContentFromLearningObject,
     insertContent,
     saveContent,
-  } = useLearningObjectEditor(learningObjectId.value)
+  } = useLearningObjectEditor(learningObjectId)
 
   const saveLearningObject = async () => {
     await updateLearningObject({ title: learningObjectTitle.value, keywords: learningObjectKeywords.value })
@@ -45,12 +45,12 @@ export function useLearningObjectEditorView() {
     openAIModal,
     closeAIModal,
     generate,
-  } = useAIContentGeneration(learningObjectId.value)
+  } = useAIContentGeneration(learningObjectId)
 
   useImageGenerationHandler(editor)
 
   const { generateConcepts, isExtracting: isExtractingConcepts } = useConceptsGenerationHandler(
-    learningObjectId.value,
+    learningObjectId,
     editor
   )
   const handleGenerateConcepts = async () => {
@@ -67,7 +67,7 @@ export function useLearningObjectEditorView() {
     }
   }
 
-  const { generateRelations } = useRelationsGenerationHandler(learningObjectId.value, editor)
+  const { generateRelations } = useRelationsGenerationHandler(learningObjectId, editor)
 
   const relationsStorageKey = (id: number) => `learning-object-relations-${id}`
 
