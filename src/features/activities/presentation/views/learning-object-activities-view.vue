@@ -22,8 +22,6 @@ import type {
   CreateActivityAttemptPayload,
   UpdateActivityPayload,
   MultipleChoiceActivityOptions,
-  TrueFalseActivityOptions,
-  FillBlankActivityOptions,
   MatchActivityOptions,
   ActivityAttemptResponse,
 } from '@/features/activities/types'
@@ -45,6 +43,7 @@ const toast = useToast()
 
 const { mutate: updateActivity, isPending: isUpdating } = useUpdateActivity(learningObjectId.value)
 const { mutate: deleteActivity, isPending: isDeleting } = useDeleteActivity(learningObjectId.value)
+const { mutate: createActivity, isPending: isCreating } = useCreateActivity(learningObjectId.value)
 const { mutate: createAttempt, isPending: isSubmittingAttempt } = useCreateActivityAttempt()
 
 const activities = computed(() => activitiesData.value ?? [])
@@ -59,20 +58,30 @@ const goBackToPage = () => {
   })
 }
 
+interface ActivityFormState {
+  type: ActivityType
+  question: string
+  explanation?: string
+  options: ActivityOptionsByType
+  difficulty: number
+  isApprovedByTeacher: boolean
+}
+
 const showCreateModal = ref(false)
-const createForm = ref<CreateActivityPayload>({
+const createForm = ref<ActivityFormState>({
   type: 'MULTIPLE_CHOICE',
   question: '',
+  explanation: '',
   options: { options: ['', '', '', ''], correctAnswer: 0 } as MultipleChoiceActivityOptions,
   difficulty: 2,
   isApprovedByTeacher: false,
 })
-const { mutate: createActivity, isPending: isCreating } = useCreateActivity(learningObjectId.value)
 
 function openCreateModal() {
   createForm.value = {
     type: 'MULTIPLE_CHOICE',
     question: '',
+    explanation: '',
     options: getDefaultOptionsForType('MULTIPLE_CHOICE'),
     difficulty: 2,
     isApprovedByTeacher: false,
@@ -90,71 +99,22 @@ function submitCreateActivity() {
     toast.error('Escribe la pregunta')
     return
   }
-  if (form.type === 'MULTIPLE_CHOICE' && form.options && 'options' in form.options) {
-    const opts = (form.options as MultipleChoiceActivityOptions).options.filter(Boolean)
-    if (opts.length < 2) {
-      toast.error('Añade al menos dos opciones')
-      return
-    }
-    createActivity(
-      {
-        ...form,
-        options: { options: opts, correctAnswer: (form.options as MultipleChoiceActivityOptions).correctAnswer },
-      },
-      {
-        onSuccess: () => { toast.success('Actividad creada'); closeCreateModal() },
-        onError: (err: Error) => { toast.error(err.message || 'Error al crear la actividad') },
-      }
-    )
-    return
-  }
-  if (form.type === 'TRUE_FALSE' && form.options && 'correctAnswer' in form.options) {
-    createActivity(
-      {
-        type: 'TRUE_FALSE',
-        question: form.question.trim(),
-        options: { correctAnswer: (form.options as TrueFalseActivityOptions).correctAnswer },
-        difficulty: form.difficulty,
-        isApprovedByTeacher: form.isApprovedByTeacher,
-      },
-      {
-        onSuccess: () => { toast.success('Actividad creada'); closeCreateModal() },
-        onError: (err: Error) => { toast.error(err.message || 'Error al crear la actividad') },
-      }
-    )
-    return
-  }
-  if (form.type === 'FILL_BLANK' || form.type === 'MATCH') {
-    createActivity(
-      {
-        type: form.type,
-        question: form.question.trim(),
-        options: form.options as FillBlankActivityOptions | MatchActivityOptions,
-        explanation: form.explanation,
-        difficulty: form.difficulty,
-        isApprovedByTeacher: form.isApprovedByTeacher,
-      },
-      {
-        onSuccess: () => { toast.success('Actividad creada'); closeCreateModal() },
-        onError: (err: Error) => { toast.error(err.message || 'Error al crear la actividad') },
-      }
-    )
-    return
-  }
-  createActivity(
-    {
-      type: form.type,
+
+  const payload: CreateActivityPayload = {
+    type: form.type,
+    difficulty: form.difficulty,
+    isApprovedByTeacher: form.isApprovedByTeacher,
+    options: {
+      ...form.options,
       question: form.question.trim(),
-      options: form.options,
       explanation: form.explanation,
-      difficulty: form.difficulty,
-      isApprovedByTeacher: form.isApprovedByTeacher,
-    },
-    {
-      onSuccess: () => { toast.success('Actividad creada'); closeCreateModal() },
-      onError: (err: Error) => { toast.error(err.message || 'Error al crear la actividad') },
-    }
-  )
+    } as ActivityOptionsByType,
+  }
+
+  createActivity(payload, {
+    onSuccess: () => { toast.success('Actividad creada'); closeCreateModal() },
+    onError: (err: Error) => { toast.error(err.message || 'Error al crear la actividad') },
+  })
 }
 
 const showGenerateModal = ref(false)
@@ -259,7 +219,7 @@ function isActivityResponse(data: unknown): data is { activity: unknown } {
 }
 
 function handleGenerateActivity() {
-  if (!learningObject.value) return
+  if (!learningObject?.value) return
   generateActivity(
     {
       learningObjectId: learningObject.value.id,
@@ -303,28 +263,51 @@ function saveGeneratedPreview() {
   const preview = generatedPreview.value
   if (!preview?.question.trim()) return
   const type = (generateForm.value.type || preview.type || 'MULTIPLE_CHOICE') as ActivityType
+  
+  const baseOptions = {
+    question: preview.question.trim(),
+    explanation: preview.explanation,
+  } as CreateActivityPayload['options']
+
   const payload: CreateActivityPayload = {
     type,
-    question: preview.question.trim(),
     difficulty: generateForm.value.difficulty,
     isApprovedByTeacher: false,
+    options: baseOptions,
   }
-  if (preview.explanation) payload.explanation = preview.explanation
 
   if (type === 'MULTIPLE_CHOICE' && preview.options && preview.options.length >= 2 && typeof preview.correctAnswer === 'number') {
-    payload.options = { options: preview.options, correctAnswer: preview.correctAnswer }
+    payload.options = { 
+      question: preview.question.trim(),
+      explanation: preview.explanation,
+      options: preview.options, 
+      correctAnswer: preview.correctAnswer 
+    }
   } else if (type === 'TRUE_FALSE') {
-    payload.options = { correctAnswer: preview.correctAnswerBoolean ?? true }
+    payload.options = { 
+      question: preview.question.trim(),
+      explanation: preview.explanation,
+      correctAnswer: preview.correctAnswerBoolean ?? true 
+    }
   } else if (type === 'FILL_BLANK') {
     const correctAnswers = [
       ...(preview.correctAnswerText ? [preview.correctAnswerText] : []),
       ...(preview.acceptableAnswers || []),
-    ].filter(Boolean)
-    if (correctAnswers.length) payload.options = { correctAnswers }
+    ].filter(Boolean) as string[]
+    if (correctAnswers.length) {
+      payload.options = { 
+        question: preview.question.trim(),
+        explanation: preview.explanation,
+        blanks: correctAnswers.map(() => '___'),
+        correctAnswers: correctAnswers
+      }
+    }
   } else if (type === 'MATCH' && preview.pairs && preview.pairs.length > 0) {
     payload.options = {
-      leftItems: preview.pairs.map((p) => p.left).filter(Boolean),
-      rightItems: preview.pairs.map((p) => p.right).filter(Boolean),
+      question: preview.question.trim(),
+      explanation: preview.explanation,
+      leftItems: preview.pairs.map(p => p.left),
+      rightItems: preview.pairs.map(p => p.right),
     }
   }
 
@@ -385,13 +368,11 @@ function closeEditModal() {
 
 function submitUpdateActivity() {
   const id = editForm.value.activityId
-  if (id == null || !learningObject.value) return
+  if (id == null || !learningObject?.value) return
   const { options } = buildUpdatePayloadFromEditForm(editForm.value)
   const payload: UpdateActivityPayload = {
     type: editForm.value.type,
-    question: editForm.value.question?.trim(),
     options,
-    explanation: editForm.value.explanation,
     difficulty: editForm.value.difficulty,
     isApprovedByTeacher: editForm.value.isApprovedByTeacher,
     usedAsExample: editForm.value.usedAsExample,
@@ -421,7 +402,7 @@ function closeDeleteConfirm() {
 
 function doDeleteActivity() {
   const act = activityToDelete.value
-  if (!act || !learningObject.value) return
+  if (!act || !learningObject?.value) return
   deleteActivity(act.id, {
     onSuccess: () => {
       toast.success('Actividad eliminada.')
@@ -466,7 +447,7 @@ function closeAttemptModal() {
 
 function submitAttempt() {
   const act = activityToAttempt.value
-  if (!act || !learningObject.value) return
+  if (!act || !learningObject?.value) return
   let studentAnswer: CreateActivityAttemptPayload['studentAnswer']
   if (act.type === 'MULTIPLE_CHOICE' && typeof attemptAnswer.value.selectedOption === 'number') {
     studentAnswer = { selectedOption: attemptAnswer.value.selectedOption }
@@ -551,13 +532,13 @@ function submitAttempt() {
             <div class="min-w-0 flex-1">
               <span class="text-xs font-medium text-muted-foreground">{{ getActivityTypeLabel(act.type) }} · Dificultad {{ act.difficulty }}</span>
               <p class="mt-1 font-medium text-foreground">{{ act.question }}</p>
-              <div v-if="act.options && 'options' in act.options && Array.isArray((act.options as { options: string[] }).options)" class="mt-2 text-sm text-muted-foreground">
-                <span v-for="(opt, i) in (act.options as { options: string[] }).options" :key="i" :class="{ 'text-primary font-medium': i === act.selectedOption }">
-                  {{ i + 1 }}. {{ opt }}
+              <div v-if="act.options && 'options' in act.options && Array.isArray((act.options as any).options)" class="mt-2 text-sm text-muted-foreground">
+                <span v-for="(opt, i) in (act.options as any).options" :key="i" :class="{ 'text-primary font-medium': i === act.selectedOption }">
+                  {{ Number(i) + 1 }}. {{ opt }}
                 </span>
               </div>
               <div v-else-if="act.options && 'correctAnswer' in act.options" class="mt-2 text-sm text-muted-foreground">
-                Respuesta correcta: {{ (act.options as { correctAnswer: boolean }).correctAnswer ? 'Verdadero' : 'Falso' }}
+                Respuesta correcta: {{ (act.options as any).correctAnswer ? 'Verdadero' : 'Falso' }}
               </div>
             </div>
             <div class="flex flex-wrap items-center gap-2 shrink-0">
@@ -621,38 +602,38 @@ function submitAttempt() {
                 placeholder="Ej: ¿La respiración celular ocurre en las mitocondrias?"
               />
             </div>
-            <template v-if="createForm.type === 'MULTIPLE_CHOICE' && createForm.options && 'options' in createForm.options">
+            <template v-if="createForm.type === 'MULTIPLE_CHOICE' && createForm.options">
               <div class="space-y-2">
                 <Label>Opciones (indica cuál es la correcta abajo)</Label>
                 <div class="space-y-2">
                   <Input
-                    v-for="(_, i) in (createForm.options as MultipleChoiceActivityOptions).options"
+                    v-for="(_, i) in (createForm.options as any).options"
                     :key="i"
-                    v-model="(createForm.options as MultipleChoiceActivityOptions).options[i]"
-                    :placeholder="`Opción ${i + 1}`"
+                    v-model="(createForm.options as any).options[i]"
+                    :placeholder="`Opción ${Number(i) + 1}`"
                   />
                 </div>
                 <div class="flex items-center gap-2 mt-2">
                   <Label class="text-sm">Correcta:</Label>
                   <select
-                    v-model.number="(createForm.options as MultipleChoiceActivityOptions).correctAnswer"
+                    v-model.number="(createForm.options as any).correctAnswer"
                     class="flex h-9 rounded-md border border-input bg-transparent px-2 text-sm"
                   >
-                    <option v-for="(_, i) in (createForm.options as MultipleChoiceActivityOptions).options" :key="i" :value="i">{{ i + 1 }}</option>
+                    <option v-for="(_, i) in (createForm.options as any).options" :key="i" :value="i">{{ Number(i) + 1 }}</option>
                   </select>
                 </div>
               </div>
             </template>
-            <template v-else-if="createForm.type === 'TRUE_FALSE' && createForm.options && 'correctAnswer' in createForm.options">
+            <template v-else-if="createForm.type === 'TRUE_FALSE' && createForm.options">
               <div class="space-y-2">
                 <Label>Respuesta correcta</Label>
                 <div class="flex gap-4">
                   <label class="flex items-center gap-2 cursor-pointer">
-                    <input type="radio" :value="true" v-model="(createForm.options as TrueFalseActivityOptions).correctAnswer" />
+                    <input type="radio" :value="true" v-model="(createForm.options as any).correctAnswer" />
                     <span>Verdadero</span>
                   </label>
                   <label class="flex items-center gap-2 cursor-pointer">
-                    <input type="radio" :value="false" v-model="(createForm.options as TrueFalseActivityOptions).correctAnswer" />
+                    <input type="radio" :value="false" v-model="(createForm.options as any).correctAnswer" />
                     <span>Falso</span>
                   </label>
                 </div>
@@ -662,8 +643,8 @@ function submitAttempt() {
               <div class="space-y-2">
                 <Label>Respuestas correctas (una por línea o separadas por coma)</Label>
                 <textarea
-                  :value="(createForm.options as FillBlankActivityOptions).correctAnswers?.join('\n') ?? ''"
-                  @input="(e: Event) => { const o = createForm.options as FillBlankActivityOptions; if (!o.correctAnswers) o.correctAnswers = []; o.correctAnswers = (e.target as HTMLTextAreaElement).value.split(/[\n,]/).map(s => s.trim()).filter(Boolean) }"
+                  :value="(createForm.options as any).correctAnswers?.join('\n') ?? ''"
+                  @input="(e: Event) => { const o = createForm.options as any; if (!o.correctAnswers) o.correctAnswers = []; o.correctAnswers = (e.target as HTMLTextAreaElement).value.split(/[\n,]/).map(s => s.trim()).filter(Boolean) }"
                   rows="3"
                   class="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm"
                   placeholder="respuesta1&#10;respuesta2"
@@ -675,8 +656,8 @@ function submitAttempt() {
                 <div class="space-y-2">
                   <Label>Columna izquierda (una por línea)</Label>
                   <textarea
-                    :value="(createForm.options as MatchActivityOptions).leftItems?.join('\n') ?? ''"
-                    @input="(e: Event) => { const o = createForm.options as MatchActivityOptions; o.leftItems = (e.target as HTMLTextAreaElement).value.split('\n').map(s => s.trim()).filter(Boolean) }"
+                    :value="(createForm.options as any).leftItems?.join('\n') ?? ''"
+                    @input="(e: Event) => { const o = createForm.options as any; o.leftItems = (e.target as HTMLTextAreaElement).value.split('\n').map(s => s.trim()).filter(Boolean) }"
                     rows="4"
                     class="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm"
                   />
@@ -684,8 +665,8 @@ function submitAttempt() {
                 <div class="space-y-2">
                   <Label>Columna derecha (una por línea, mismo orden correcto)</Label>
                   <textarea
-                    :value="(createForm.options as MatchActivityOptions).rightItems?.join('\n') ?? ''"
-                    @input="(e: Event) => { const o = createForm.options as MatchActivityOptions; o.rightItems = (e.target as HTMLTextAreaElement).value.split('\n').map(s => s.trim()).filter(Boolean) }"
+                    :value="(createForm.options as any).rightItems?.join('\n') ?? ''"
+                    @input="(e: Event) => { const o = createForm.options as any; o.rightItems = (e.target as HTMLTextAreaElement).value.split('\n').map(s => s.trim()).filter(Boolean) }"
                     rows="4"
                     class="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm"
                   />
@@ -897,38 +878,38 @@ function submitAttempt() {
                 placeholder="Ej: ¿La respiración celular ocurre en las mitocondrias?"
               />
             </div>
-            <template v-if="editForm.type === 'MULTIPLE_CHOICE' && editForm.options && 'options' in editForm.options">
+            <template v-if="editForm.type === 'MULTIPLE_CHOICE' && editForm.options">
               <div class="space-y-2">
                 <Label>Opciones (indica cuál es la correcta abajo)</Label>
                 <div class="space-y-2">
                   <Input
-                    v-for="(_, i) in (editForm.options as MultipleChoiceActivityOptions).options"
+                    v-for="(_, i) in (editForm.options as any).options"
                     :key="i"
-                    v-model="(editForm.options as MultipleChoiceActivityOptions).options[i]"
-                    :placeholder="`Opción ${i + 1}`"
+                    v-model="(editForm.options as any).options[i]"
+                    :placeholder="`Opción ${Number(i) + 1}`"
                   />
                 </div>
                 <div class="flex items-center gap-2 mt-2">
                   <Label class="text-sm">Correcta:</Label>
                   <select
-                    v-model.number="(editForm.options as MultipleChoiceActivityOptions).correctAnswer"
+                    v-model.number="(editForm.options as any).correctAnswer"
                     class="flex h-9 rounded-md border border-input bg-transparent px-2 text-sm"
                   >
-                    <option v-for="(_, i) in (editForm.options as MultipleChoiceActivityOptions).options" :key="i" :value="i">{{ i + 1 }}</option>
+                    <option v-for="(_, i) in (editForm.options as any).options" :key="i" :value="i">{{ Number(i) + 1 }}</option>
                   </select>
                 </div>
               </div>
             </template>
-            <template v-else-if="editForm.type === 'TRUE_FALSE' && editForm.options && 'correctAnswer' in editForm.options">
+            <template v-else-if="editForm.type === 'TRUE_FALSE' && editForm.options">
               <div class="space-y-2">
                 <Label>Respuesta correcta</Label>
                 <div class="flex gap-4">
                   <label class="flex items-center gap-2 cursor-pointer">
-                    <input type="radio" :value="true" v-model="(editForm.options as TrueFalseActivityOptions).correctAnswer" />
+                    <input type="radio" :value="true" v-model="(editForm.options as any).correctAnswer" />
                     <span>Verdadero</span>
                   </label>
                   <label class="flex items-center gap-2 cursor-pointer">
-                    <input type="radio" :value="false" v-model="(editForm.options as TrueFalseActivityOptions).correctAnswer" />
+                    <input type="radio" :value="false" v-model="(editForm.options as any).correctAnswer" />
                     <span>Falso</span>
                   </label>
                 </div>
@@ -938,8 +919,8 @@ function submitAttempt() {
               <div class="space-y-2">
                 <Label>Respuestas correctas (una por línea o separadas por coma)</Label>
                 <textarea
-                  :value="(editForm.options as FillBlankActivityOptions).correctAnswers?.join('\n') ?? ''"
-                  @input="(e: Event) => { const o = editForm.options as FillBlankActivityOptions; if (!o.correctAnswers) o.correctAnswers = []; o.correctAnswers = (e.target as HTMLTextAreaElement).value.split(/[\n,]/).map(s => s.trim()).filter(Boolean) }"
+                  :value="(editForm.options as any).correctAnswers?.join('\n') ?? ''"
+                  @input="(e: Event) => { const o = editForm.options as any; if (!o.correctAnswers) o.correctAnswers = []; o.correctAnswers = (e.target as HTMLTextAreaElement).value.split(/[\n,]/).map(s => s.trim()).filter(Boolean) }"
                   rows="3"
                   class="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm"
                   placeholder="respuesta1&#10;respuesta2"
@@ -951,8 +932,8 @@ function submitAttempt() {
                 <div class="space-y-2">
                   <Label>Columna izquierda (una por línea)</Label>
                   <textarea
-                    :value="(editForm.options as MatchActivityOptions).leftItems?.join('\n') ?? ''"
-                    @input="(e: Event) => { const o = editForm.options as MatchActivityOptions; o.leftItems = (e.target as HTMLTextAreaElement).value.split('\n').map(s => s.trim()).filter(Boolean) }"
+                    :value="(editForm.options as any).leftItems?.join('\n') ?? ''"
+                    @input="(e: Event) => { const o = editForm.options as any; o.leftItems = (e.target as HTMLTextAreaElement).value.split('\n').map(s => s.trim()).filter(Boolean) }"
                     rows="4"
                     class="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm"
                   />
@@ -960,8 +941,8 @@ function submitAttempt() {
                 <div class="space-y-2">
                   <Label>Columna derecha (una por línea, mismo orden correcto)</Label>
                   <textarea
-                    :value="(editForm.options as MatchActivityOptions).rightItems?.join('\n') ?? ''"
-                    @input="(e: Event) => { const o = editForm.options as MatchActivityOptions; o.rightItems = (e.target as HTMLTextAreaElement).value.split('\n').map(s => s.trim()).filter(Boolean) }"
+                    :value="(editForm.options as any).rightItems?.join('\n') ?? ''"
+                    @input="(e: Event) => { const o = editForm.options as any; o.rightItems = (e.target as HTMLTextAreaElement).value.split('\n').map(s => s.trim()).filter(Boolean) }"
                     rows="4"
                     class="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm"
                   />

@@ -91,54 +91,65 @@ export function toEditOptionsShape(
 
 export function buildUpdatePayloadFromEditForm(editForm: {
   type: ActivityType
+  question: string
   options: ActivityOptionsByType
+  explanation?: string
 }): Pick<UpdateActivityPayload, 'options'> {
   const type = editForm.type
   const opts = editForm.options
+  const question = editForm.question.trim()
+  const explanation = editForm.explanation?.trim() || ''
+
+  let specificOptions = {}
+
   switch (type) {
     case 'MULTIPLE_CHOICE': {
       const mc = opts as MultipleChoiceActivityOptions
       const optionsList = mc.options?.filter(Boolean) ?? []
-      return {
-        options: {
-          options: optionsList.length >= 2 ? optionsList : mc.options ?? [],
-          correctAnswer: mc.correctAnswer ?? 0,
-        },
+      specificOptions = {
+        options: optionsList.length >= 2 ? optionsList : mc.options ?? [],
+        correctAnswer: mc.correctAnswer ?? 0,
       }
+      break
     }
     case 'TRUE_FALSE': {
       const tf = opts as TrueFalseActivityOptions
-      return {
-        options: {
-          correctAnswer: tf.correctAnswer ?? true,
-        },
+      specificOptions = {
+        statement: question,
+        correctAnswer: tf.correctAnswer ?? true,
       }
+      break
     }
     case 'FILL_BLANK': {
       const fb = opts as FillBlankActivityOptions
       const list = fb.correctAnswers ?? []
-      return {
-        options: {
-          correctAnswer: list.length > 0 ? list[0] : '',
-          acceptableAnswers: list,
-        },
+      specificOptions = {
+        sentence: question,
+        correctAnswer: list.length > 0 ? list[0] : '',
+        acceptableAnswers: list,
       }
+      break
     }
     case 'MATCH': {
       const m = opts as MatchActivityOptions
       const left = m.leftItems ?? []
       const right = m.rightItems ?? []
-      const pairs = left.map((l, i) => ({
-        left: l,
-        right: right[i] ?? '',
-      }))
-      return {
-        options: {
-          pairs,
-        },
+      specificOptions = {
+        instructions: question,
+        pairs: left.map((l, i) => ({
+          left: l,
+          right: right[i] ?? '',
+        })),
       }
+      break
     }
-    default:
-      return { options: {} }
+  }
+
+  return {
+    options: {
+      ...specificOptions,
+      question,
+      explanation,
+    },
   }
 }

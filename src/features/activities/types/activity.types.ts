@@ -17,9 +17,10 @@ export interface Activity {
   updatedAt: string
 }
 
-export type CreateActivityPayload = Pick<Activity, 'type' | 'question' | 'difficulty'> & {
-  options?: ActivityOptionsByType
-  explanation?: string
+export type CreateActivityPayload = {
+  type: ActivityType
+  options: ActivityOptionsByType & { question: string; explanation?: string }
+  difficulty?: number
   isApprovedByTeacher?: boolean
 }
 
@@ -31,10 +32,10 @@ export type CorrectAnswerPayload =
   | [number, number][]
   | Record<string, unknown>
 
-export type UpdateActivityPayload = Partial<
-  Pick<Activity, 'type' | 'question' | 'difficulty' | 'isApprovedByTeacher'>
-> & {
+export type UpdateActivityPayload = {
+  type?: ActivityType
   options?: Record<string, unknown>
-  explanation?: string
+  difficulty?: number
+  isApprovedByTeacher?: boolean
   usedAsExample?: boolean
 }
