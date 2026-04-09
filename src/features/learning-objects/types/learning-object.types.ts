@@ -44,4 +44,6 @@ export type UpdateLearningObjectPayload = Partial<
   hasManualEdits?: boolean
 }
 
-export type CreateLearningObjectPayload = Pick<LearningObject, "moduleId" | "title" | "isPublished">
+export type CreateLearningObjectPayload = Pick<LearningObject, "moduleId" | "title" | "isPublished"> & {
+  typeId: number
+}

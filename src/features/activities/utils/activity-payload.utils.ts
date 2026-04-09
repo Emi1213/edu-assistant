@@ -16,7 +16,7 @@ export function getOptionsAndCorrectAnswer(act: Activity): {
   if (!opts || typeof opts !== 'object') return { options: {} }
   switch (act.type) {
     case 'MULTIPLE_CHOICE': {
-      const mc = opts as any
+      const mc = opts as unknown as MultipleChoiceActivityOptions
       return {
         options: {
           options: mc.options ?? [],
@@ -25,7 +25,7 @@ export function getOptionsAndCorrectAnswer(act: Activity): {
       }
     }
     case 'TRUE_FALSE': {
-      const tf = opts as any
+      const tf = opts as unknown as TrueFalseActivityOptions
       return {
         options: {
           correctAnswer: tf.correctAnswer ?? true,
@@ -33,7 +33,7 @@ export function getOptionsAndCorrectAnswer(act: Activity): {
       }
     }
     case 'FILL_BLANK': {
-      const fb = opts as any
+      const fb = opts as unknown as (FillBlankActivityOptions & { acceptableAnswers?: string[]; correctAnswer?: string })
       const acceptableAnswers = fb.acceptableAnswers ?? fb.correctAnswers ?? []
       return {
         options: {
@@ -43,7 +43,7 @@ export function getOptionsAndCorrectAnswer(act: Activity): {
       }
     }
     case 'MATCH': {
-      const m = opts as any
+      const m = opts as unknown as (MatchActivityOptions & { pairs?: { left: string; right: string }[] })
       const pairs = m.pairs ?? []
       return {
         options: {
@@ -85,7 +85,7 @@ export function toEditOptionsShape(
       }
     }
     default:
-      return { options: [], correctAnswer: 0 } as any
+      return { options: [], correctAnswer: 0 } as MultipleChoiceActivityOptions
   }
 }
 

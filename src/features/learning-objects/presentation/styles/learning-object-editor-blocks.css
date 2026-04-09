@@ -1,5 +1,3 @@
-/* Bloques del editor: imagen, sugerencia de imagen, conceptos, enlaces */
-
 .editor-content :deep(.image-suggestion-block) {
   border: 1px solid var(--border);
   border-left: 4px solid #233a83;
@@ -91,7 +89,6 @@
   display: block;
 }
 
-/* Conceptos: cursiva + subrayado punteado (el enlace a página va sólido y en primary) */
 .editor-content :deep(.concept-term) {
   font-style: italic;
   font-weight: 500;
@@ -112,7 +109,6 @@
   color: inherit;
 }
 
-/* Relaciones / enlace a página: subrayado + azul primary */
 .editor-content :deep(.page-link-term) {
   border-bottom: none;
   text-decoration: underline;
@@ -133,7 +129,6 @@
   opacity: 0.88;
 }
 
-/* prose/strong global styles override parent color — keep link look inside marks */
 .editor-content :deep(.page-link-term strong),
 .editor-content :deep(.page-link-term em),
 .editor-content :deep(.page-link-term code) {

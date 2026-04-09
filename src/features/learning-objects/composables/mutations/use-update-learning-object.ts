@@ -14,9 +14,7 @@ export function useUpdateLearningObject(learningObjectIdRef: MaybeRef<number>) {
       learningObjectsDataSource.update(unref(learningObjectIdRef), payload),
     onSuccess: () => {
       const id = unref(learningObjectIdRef)
-      // Invalidamos el objeto específico
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.LEARNING_OBJECT(id) })
-      // Invalidamos TODAS las listas de objetos de aprendizaje para que se refresquen
       queryClient.invalidateQueries({ queryKey: ['learning-objects'], exact: false })
     },
   })

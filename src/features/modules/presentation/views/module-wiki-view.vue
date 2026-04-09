@@ -42,7 +42,6 @@ const {
 const { mutate: extractRelations } = useExtractRelations()
 const generatingRelationsLearningObjectId = ref<number | null>(null)
 
-// Lógica de publicación directa
 const publishingLoId = ref<number | null>(null)
 const loToPublish = computed(() => publishingLoId.value ?? 0)
 const { mutate: updateLO } = useUpdateLearningObject(loToPublish)
@@ -56,7 +55,7 @@ const handlePublishNow = (learningObject: LearningObject) => {
         toast.success(`"${learningObject.title}" publicado con éxito`)
         publishingLoId.value = null
       },
-      onError: (error: any) => {
+      onError: (error: Error) => {
         toast.error(error.message || 'Error al publicar')
         publishingLoId.value = null
       },
@@ -65,7 +64,7 @@ const handlePublishNow = (learningObject: LearningObject) => {
 }
 
 const goBack = () => {
-  router.push('/modules')
+  router.push({ name: 'modules' })
 }
 
 const handleGenerateRelations = (learningObject: LearningObject) => {
@@ -82,7 +81,11 @@ const handleGenerateRelations = (learningObject: LearningObject) => {
           /* ignore */
         }
         router.push({
-          path: `/modules/${moduleId.value}/learning-objects/${learningObject.id}/edit`,
+          name: 'learning-object-edit',
+          params: {
+            id: moduleId.value,
+            learningObjectId: learningObject.id,
+          },
           query: { applyRelations: '1' },
           state: { relations } as Record<string, unknown> as import('vue-router').HistoryState,
         })
@@ -119,14 +122,14 @@ const handleGenerateRelations = (learningObject: LearningObject) => {
 
     <div v-else-if="module" class="rounded-lg border border-border bg-card p-4 sm:p-6">
       <div class="flex flex-col sm:flex-row sm:items-start gap-4">
-        <div class="flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-lg bg-[#233a83] flex items-center justify-center overflow-hidden">
+        <div class="flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-lg bg-primary flex items-center justify-center overflow-hidden">
           <img
             v-if="module.logoUrl"
             :src="toFullAssetUrl(module.logoUrl)"
             :alt="module.title"
             class="w-full h-full object-cover"
           />
-          <BookOpen v-else class="size-8 sm:size-10 text-white" />
+          <BookOpen v-else class="size-8 sm:size-10 text-primary-foreground" />
         </div>
         <div class="flex-1 min-w-0">
           <h1 class="text-xl sm:text-2xl font-bold text-card-foreground mb-2 break-words">

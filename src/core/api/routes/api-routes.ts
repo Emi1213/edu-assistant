@@ -8,6 +8,8 @@ const AR_KEYS = {
     FILES: '/files',
     CONTENT_GENERATION: '/content',
     AI_CONFIG: '/ai/config',
+    PAGES: '/pages',
+    LEARNING_OBJECT_FEEDBACKS: '/learning-object-feedbacks',
 }
 
 export const API_ROUTES = {
@@ -43,19 +45,19 @@ export const API_ROUTES = {
             DELETE: (noteId: number) => `${AR_KEYS.LEARNING_OBJECTS}/notes/${noteId}`,
         },
         STUDENT_QUESTIONS: {
-            CREATE: `/pages/student-questions`,
-            UPDATE: (id: number) => `/pages/student-questions/${id}`,
-            DELETE: (id: number) => `/pages/student-questions/${id}`,
+            CREATE: `${AR_KEYS.PAGES}/student-questions`,
+            UPDATE: (id: number) => `${AR_KEYS.PAGES}/student-questions/${id}`,
+            DELETE: (id: number) => `${AR_KEYS.PAGES}/student-questions/${id}`,
         },
         QUESTION_REPLIES: {
-            CREATE: `/pages/question-replies`,
-            UPDATE: (id: number) => `/pages/question-replies/${id}`,
-            DELETE: (id: number) => `/pages/question-replies/${id}`,
+            CREATE: `${AR_KEYS.PAGES}/question-replies`,
+            UPDATE: (id: number) => `${AR_KEYS.PAGES}/question-replies/${id}`,
+            DELETE: (id: number) => `${AR_KEYS.PAGES}/question-replies/${id}`,
         },
         FEEDBACKS: {
-            CREATE: `/learning-object-feedbacks`,
-            UPDATE: (feedbackId: number) => `/learning-object-feedbacks/${feedbackId}`,
-            DELETE: (feedbackId: number) => `/learning-object-feedbacks/${feedbackId}`,
+            CREATE: `${AR_KEYS.LEARNING_OBJECT_FEEDBACKS}`,
+            UPDATE: (feedbackId: number) => `${AR_KEYS.LEARNING_OBJECT_FEEDBACKS}/${feedbackId}`,
+            DELETE: (feedbackId: number) => `${AR_KEYS.LEARNING_OBJECT_FEEDBACKS}/${feedbackId}`,
         },
         ACTIVITIES: {
             LIST: (learningObjectId: number) => `${AR_KEYS.LEARNING_OBJECTS}/${learningObjectId}/activities`,

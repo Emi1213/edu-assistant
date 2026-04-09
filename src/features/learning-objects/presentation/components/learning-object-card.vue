@@ -78,7 +78,7 @@ const isGeneratingRelations = computed(
         class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg bg-green-500/10 text-green-600 hover:bg-green-500/20 transition-all border border-green-500/20 disabled:opacity-50"
         title="Publicar para estudiantes"
       >
-        <Loader2 v-if="isPublishing" class="size-3.5 animate-spin" />
+        <div v-if="isPublishing" class="size-3.5 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
         <Zap v-else class="size-3.5" />
         Publicar
       </button>
@@ -90,7 +90,7 @@ const isGeneratingRelations = computed(
         class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg text-primary hover:bg-primary/10 transition-colors disabled:opacity-50"
         title="Generar relaciones con otros temas"
       >
-        <Loader2 v-if="isGeneratingRelations" class="size-3.5 animate-spin" />
+        <div v-if="isGeneratingRelations" class="size-3.5 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
         <Zap v-else class="size-3.5" />
         {{ isGeneratingRelations ? 'Procesando...' : 'Relaciones' }}
       </button>

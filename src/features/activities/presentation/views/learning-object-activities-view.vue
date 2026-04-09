@@ -50,7 +50,13 @@ const { mutate: createAttempt, isPending: isSubmittingAttempt } = useCreateActiv
 const activities = computed(() => activitiesData.value ?? [])
 
 const goBackToPage = () => {
-  router.push(`/modules/${moduleId.value}/learning-objects/${learningObjectId.value}`)
+  router.push({
+    name: 'learning-object-detail',
+    params: {
+      id: moduleId.value,
+      learningObjectId: learningObjectId.value,
+    },
+  })
 }
 
 const showCreateModal = ref(false)
@@ -248,6 +254,10 @@ function mapApiActivityToPreview(activity: Record<string, unknown>, requestedTyp
   }
 }
 
+function isActivityResponse(data: unknown): data is { activity: unknown } {
+  return data != null && typeof data === 'object' && 'activity' in data
+}
+
 function handleGenerateActivity() {
   if (!learningObject.value) return
   generateActivity(
@@ -260,9 +270,14 @@ function handleGenerateActivity() {
     },
     {
       onSuccess: (data: unknown) => {
-        const raw = data && typeof data === 'object' && 'activity' in data ? (data as { activity: unknown }).activity : data
+        let raw: unknown = data
+        if (isActivityResponse(data)) {
+          raw = data.activity
+        }
+        
         const one = Array.isArray(raw) ? raw[0] : raw
         const activity = one && typeof one === 'object' && one !== null ? (one as Record<string, unknown>) : null
+        
         if (activity) {
           const preview = mapApiActivityToPreview(activity, generateForm.value.type)
           if (preview) {

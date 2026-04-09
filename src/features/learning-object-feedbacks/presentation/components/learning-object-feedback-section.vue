@@ -3,6 +3,7 @@ import { ref, computed } from 'vue'
 import { useLearningObjectFeedback } from '../../composables/use-learning-object-feedback'
 import { MessageSquare, User as UserIcon, Send } from 'lucide-vue-next'
 import { useRoles } from '@/features/auth/composables/use-roles'
+import { formatLongDate } from '@/shared/utils/date.utils'
 import type { LearningObjectFeedback } from '../../types/learning-object-feedbacks.types'
 
 interface Props {
@@ -20,14 +21,6 @@ const { comment, isPending, handleSubmit } = useLearningObjectFeedback(props.lea
 const onSendFeedback = async () => {
   await handleSubmit()
   isFormVisible.value = false
-}
-
-const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString(undefined, {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  })
 }
 </script>
 
@@ -96,7 +89,7 @@ const formatDate = (dateString: string) => {
                 {{ f.user?.name }} {{ f.user?.lastName }}
               </span>
               <span class="text-xs text-muted-foreground">
-                {{ formatDate(f.createdAt) }}
+                {{ formatLongDate(f.createdAt) }}
               </span>
             </div>
           </div>

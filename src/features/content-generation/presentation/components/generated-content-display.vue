@@ -10,20 +10,20 @@ interface Props {
 defineProps<Props>()
 
 
+const normalizeAiLineBreaks = (text: string): string => {
+  return text
+    .replace(/\\n/g, '\n')
+    .replace(/\/n\//g, '\n')
+}
+
 const renderBlockContent = (block: ContentGenerationBlock) => {
   switch (block.type) {
     case 'TEXT': {
       const markdown = (block.content as TextBlock).markdown
       if (!markdown) return ''
       
-      // La IA a veces devuelve los saltos de línea como texto literal \n o incluso /n/
-      // Reemplazamos ambos para que marked los reconozca como saltos de línea reales
-      const sanitizedMarkdown = markdown
-        .replace(/\\n/g, '\n')
-        .replace(/\/n\//g, '\n')
+      const sanitizedMarkdown = normalizeAiLineBreaks(markdown)
       
-      // Convertir Markdown a HTML real. marked.parse es síncrono por defecto en v17
-      // si no se usan opciones asíncronas.
       return marked.parse(sanitizedMarkdown, {
         breaks: true,
         gfm: true,

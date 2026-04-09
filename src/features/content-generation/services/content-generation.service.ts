@@ -49,17 +49,21 @@ export class ContentGenerationDataSource {
             API_ROUTES.CONTENT_GENERATION.EXTRACT_RELATIONS,
             payload
         )
-        const inner = response.data
-        if (inner == null) return null
-        const raw = (inner as { relations?: unknown }).relations
-        const list = Array.isArray(raw) ? raw : []
-        const relations = list
-            .map((r: Record<string, unknown>) => ({
-                // Intenta mapear ambos por si las moscas, respetando lo que el back devuelva
-                targetPageId: Number(r.learningObjectId ?? r.learning_object_id ?? r.targetPageId ?? r.target_page_id ?? 0),
-                mentionText: String(r.mentionText ?? r.mention_text ?? '').trim(),
+        const responseData = response.data
+        if (responseData == null) return null
+        const rawRelations = (responseData as { relations?: unknown }).relations
+        const relationsList = Array.isArray(rawRelations) ? rawRelations : []
+        const relations = relationsList
+            .map((rawRelation: Record<string, unknown>) => ({
+                targetPageId: Number(
+                    rawRelation.learningObjectId ?? 
+                    rawRelation.learning_object_id ?? 
+                    rawRelation.targetPageId ?? 
+                    rawRelation.target_page_id ?? 0
+                ),
+                mentionText: String(rawRelation.mentionText ?? rawRelation.mention_text ?? '').trim(),
             }))
-            .filter((r) => r.targetPageId > 0 && r.mentionText.length > 0)
+            .filter((relation) => relation.targetPageId > 0 && relation.mentionText.length > 0)
         return { relations }
     }
 

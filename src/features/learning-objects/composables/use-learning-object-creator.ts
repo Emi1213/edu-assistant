@@ -1,27 +1,29 @@
 import { ref } from 'vue'
 import { useCreateLearningObject } from './mutations/use-create-learning-object'
 import { useToast } from '@/shared/composables/use-toast'
+import { useDisclosure } from '@/shared/composables/use-disclosure'
 import type { CreateLearningObjectPayload } from '../types'
 
 export function useLearningObjectCreator(moduleId: number) {
   const toast = useToast()
-  const isDialogOpen = ref(false)
   const learningObjectTitle = ref('')
   const isPublished = ref(false)
 
+  const resetForm = () => {
+    learningObjectTitle.value = ''
+    isPublished.value = false
+  }
+
+  const {
+    isOpen: isDialogOpen,
+    open: openDialog,
+    close: closeDialog,
+  } = useDisclosure(false, {
+    onOpen: resetForm,
+    onClose: resetForm,
+  })
+
   const { mutate: createLearningObject, isPending: isCreating } = useCreateLearningObject(moduleId)
-
-  const openDialog = () => {
-    isDialogOpen.value = true
-    learningObjectTitle.value = ''
-    isPublished.value = false
-  }
-
-  const closeDialog = () => {
-    isDialogOpen.value = false
-    learningObjectTitle.value = ''
-    isPublished.value = false
-  }
 
   const handleCreate = () => {
     if (!learningObjectTitle.value.trim()) {
@@ -33,6 +35,7 @@ export function useLearningObjectCreator(moduleId: number) {
       moduleId,
       title: learningObjectTitle.value.trim(),
       isPublished: isPublished.value,
+      typeId: 1,
     }
 
     createLearningObject(payload, {

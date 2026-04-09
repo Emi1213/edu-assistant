@@ -3,7 +3,7 @@ import { computed, unref } from 'vue'
 import { useLearningObjects } from './queries/use-learning-objects'
 
 const DEFAULT_PAGE = 1
-const DEFAULT_LIMIT = 100
+const DEFAULT_LIMIT = 10
 
 export function useLearningObjectsTable(moduleId: MaybeRef<number>) {
   const learningObjectParams = computed(() => ({
