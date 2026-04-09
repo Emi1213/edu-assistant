@@ -32,7 +32,6 @@ const { formData, errors, loading, handleSubmit, validateField } =
 
 const fileInputRef = ref<HTMLInputElement | null>(null)
 const isUploadingLogo = ref(false)
-/** Vista previa local (blob URL) mientras se sube o nada más elegir el archivo */
 const logoObjectUrl = ref<string | null>(null)
 
 const logoPreviewUrl = computed(() => {

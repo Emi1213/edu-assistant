@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { RouteLocationRaw } from 'vue-router'
 import type { LearningObject } from '../../types'
-import { FileText, Zap, Clock, Link2, Pencil, Loader2 } from 'lucide-vue-next'
+import { FileText, Zap, Clock, Link2, Pencil} from 'lucide-vue-next'
 import { computed } from 'vue'
 
 const props = defineProps<{

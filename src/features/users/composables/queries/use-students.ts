@@ -1,5 +1,4 @@
 import type { ComputedRef } from 'vue'
-import { computed } from 'vue'
 import { useQuery } from '@tanstack/vue-query'
 import type { StudentsQueryParams } from '../../types'
 import { QUERY_KEYS } from '@/shared/composables/query-key'

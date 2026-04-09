@@ -26,6 +26,8 @@ export type ModuleFormData = z.infer<typeof moduleFormSchema>
 export function useModuleForm(
   initialData?: Partial<CreateModule> | Partial<Module> | Partial<UpdateModule>
 ) {
+  const loading = ref(false)
+
   const {
     formData,
     errors,
@@ -43,14 +45,20 @@ export function useModuleForm(
   const handleSubmit = (
     onValid: (data: CreateModule | UpdateModule) => void | Promise<void>
   ) => {
-    return originalHandleSubmit((data: ModuleFormData) => {
-      onValid(data as CreateModule | UpdateModule)
+    return originalHandleSubmit(async (data: ModuleFormData) => {
+      loading.value = true
+      try {
+        await onValid(data as CreateModule | UpdateModule)
+      } finally {
+        loading.value = false
+      }
     })
   }
 
   return {
     formData,
     errors,
+    loading,
     handleSubmit,
     validateField,
     resetForm,
