@@ -122,7 +122,7 @@ onUnmounted(() => {
         class="flex items-center justify-center py-8"
       >
         <div v-if="isFetchingNextPage" class="flex items-center gap-2 text-muted-foreground">
-          <div class="w-5 h-5 border-2 border-[#233a83] border-t-transparent rounded-full animate-spin"></div>
+          <div class="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
           <span class="text-sm">Cargando más módulos...</span>
         </div>
         <div v-else-if="!hasNextPage && modules.length > 0" class="text-sm text-muted-foreground">

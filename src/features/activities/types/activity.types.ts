@@ -2,7 +2,7 @@ import type { ActivityOptionsByType, ActivityType } from './activity-options.typ
 
 export interface Activity {
   id: number
-  pageId: number
+  learningObjectId: number
   type: ActivityType
   question: string
   options: Record<string, unknown> | ActivityOptionsByType
@@ -35,7 +35,6 @@ export type UpdateActivityPayload = Partial<
   Pick<Activity, 'type' | 'question' | 'difficulty' | 'isApprovedByTeacher'>
 > & {
   options?: Record<string, unknown>
-  correctAnswer?: CorrectAnswerPayload
   explanation?: string
   usedAsExample?: boolean
 }

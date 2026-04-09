@@ -4,13 +4,13 @@ import { QUERY_KEYS } from '@/shared/composables/query-key'
 
 const dataSource = new ActivitiesDataSource()
 
-export function useDeleteActivity(pageId: number) {
+export function useDeleteActivity(learningObjectId: number) {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (activityId: number) =>
-      dataSource.delete(pageId, activityId),
+      dataSource.delete(learningObjectId, activityId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.ACTIVITIES(pageId) })
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.ACTIVITIES(learningObjectId) })
     },
   })
 }

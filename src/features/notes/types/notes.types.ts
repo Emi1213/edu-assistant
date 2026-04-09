@@ -1,11 +1,13 @@
 export interface Note {
   id: number
-  pageId: number
+  learningObjectId: number
   userId: number
   content: string
   createdAt: string
 }
 
-export interface CreateNote extends Omit<Note, 'id' | 'userId' | 'createdAt'> {}
 
-export interface UpdateNote extends Pick<Note, 'content'> {}
+export type CreateNote = Omit<Note, 'id' | 'userId' | 'createdAt'>
+
+export type UpdateNote = Pick<Note, 'content'>
+

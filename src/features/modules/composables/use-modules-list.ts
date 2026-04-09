@@ -52,7 +52,8 @@ export function useModulesList() {
       const payload = buildUpdateModulePayload(data)
       await updateModule.mutateAsync({ id: initialData.value.id, payload })
     } else {
-      const { isActive: _, ...createPayload } = data as CreateModule & { isActive?: boolean }
+      const createPayload = { ...data } as CreateModule & { isActive?: boolean }
+      delete createPayload.isActive
       await createModule.mutateAsync(createPayload as CreateModule)
     }
     drawerOpen.value = false

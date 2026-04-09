@@ -16,35 +16,35 @@ export class ActivitiesDataSource {
     this.httpClient = httpClient
   }
 
-  async getByPageId(pageId: number): Promise<Activity[] | null> {
+  async getByLearningObjectId(learningObjectId: number): Promise<Activity[] | null> {
     const response = await this.httpClient.get<Activity[]>(
-      API_ROUTES.PAGES.ACTIVITIES.LIST(pageId)
+      API_ROUTES.LEARNING_OBJECTS.ACTIVITIES.LIST(learningObjectId)
     )
     return response.data ?? null
   }
 
-  async create(pageId: number, payload: CreateActivityPayload): Promise<Activity | null> {
+  async create(learningObjectId: number, payload: CreateActivityPayload): Promise<Activity | null> {
     const response = await this.httpClient.post<Activity>(
-      API_ROUTES.PAGES.ACTIVITIES.CREATE(pageId),
+      API_ROUTES.LEARNING_OBJECTS.ACTIVITIES.CREATE(learningObjectId),
       payload
     )
     return response.data ?? null
   }
 
   async update(
-    pageId: number,
+    learningObjectId: number,
     activityId: number,
     payload: UpdateActivityPayload
   ): Promise<Activity | null> {
     const response = await this.httpClient.patch<Activity>(
-      API_ROUTES.PAGES.ACTIVITIES.BY_ID(pageId, activityId),
+      API_ROUTES.LEARNING_OBJECTS.ACTIVITIES.BY_ID(learningObjectId, activityId),
       payload
     )
     return response.data ?? null
   }
 
-  async delete(pageId: number, activityId: number): Promise<void> {
-    await this.httpClient.delete(API_ROUTES.PAGES.ACTIVITIES.BY_ID(pageId, activityId))
+  async delete(learningObjectId: number, activityId: number): Promise<void> {
+    await this.httpClient.delete(API_ROUTES.LEARNING_OBJECTS.ACTIVITIES.BY_ID(learningObjectId, activityId))
   }
 
   async createAttempt(

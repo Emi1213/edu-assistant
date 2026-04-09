@@ -8,9 +8,8 @@ import { UsersDataSource } from '../../services/users.service'
 const usersDataSource = new UsersDataSource()
 
 export function useStudents(params: ComputedRef<StudentsQueryParams>) {
-  const queryKey = computed(() => QUERY_KEYS.STUDENTS(params.value))
   const query = useQuery({
-    queryKey,
+    queryKey: QUERY_KEYS.STUDENTS(params.value),
     queryFn: () => usersDataSource.getStudents(params.value!),
     enabled: () => params.value != null,
   })

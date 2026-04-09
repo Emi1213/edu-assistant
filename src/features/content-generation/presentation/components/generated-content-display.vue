@@ -1,17 +1,34 @@
 <script setup lang="ts">
 import { Code2, ImageIcon, Lightbulb } from 'lucide-vue-next'
+import { marked } from 'marked'
 import type { ContentGeneration, ContentGenerationBlock, CodeBlock, ImageSuggestionBlock, TextBlock } from '../../types'
 
 interface Props {
   content: ContentGeneration
 }
 
-const props = defineProps<Props>()
+defineProps<Props>()
+
+
+const normalizeAiLineBreaks = (text: string): string => {
+  return text
+    .replace(/\\n/g, '\n')
+    .replace(/\/n\//g, '\n')
+}
 
 const renderBlockContent = (block: ContentGenerationBlock) => {
   switch (block.type) {
-    case 'TEXT':
-      return (block.content as TextBlock).markdown
+    case 'TEXT': {
+      const markdown = (block.content as TextBlock).markdown
+      if (!markdown) return ''
+      
+      const sanitizedMarkdown = normalizeAiLineBreaks(markdown)
+      
+      return marked.parse(sanitizedMarkdown, {
+        breaks: true,
+        gfm: true,
+      }) as string
+    }
     case 'CODE':
       return block.content
     case 'IMAGE_SUGGESTION':

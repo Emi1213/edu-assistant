@@ -6,7 +6,7 @@ import ConfirmationDialog from '@/shared/components/confirmation-dialog.vue'
 import type { Note } from '../../types/notes.types'
 
 interface Props {
-  pageId: number
+  learningObjectId: number
   notes: Note[] | null | undefined
 }
 
@@ -36,7 +36,8 @@ const {
   cancelDelete,
   confirmDelete,
   formatDate,
-} = useNotesPanel(props.pageId, notesRef)
+} = useNotesPanel(props.learningObjectId, notesRef)
+
 </script>
 
 <template>

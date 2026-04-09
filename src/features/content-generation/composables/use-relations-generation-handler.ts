@@ -7,21 +7,21 @@ import type { ExtractRelationsRelation } from '../types'
 
 function normalizeRelations(raw: readonly unknown[]): ExtractRelationsRelation[] {
   return raw
-    .map((r) => {
-      const o = r as Record<string, unknown>
+    .map((rawRelation) => {
+      const relationData = rawRelation as Record<string, unknown>
       return {
-        targetPageId: Number(o.targetPageId ?? o.target_page_id ?? 0),
-        mentionText: String(o.mentionText ?? o.mention_text ?? '').trim(),
+        targetPageId: Number(relationData.targetPageId ?? relationData.target_page_id ?? 0),
+        mentionText: String(relationData.mentionText ?? relationData.mention_text ?? '').trim(),
       }
     })
-    .filter((r) => r.targetPageId > 0 && r.mentionText.length > 0)
+    .filter((relation) => relation.targetPageId > 0 && relation.mentionText.length > 0)
 }
 
 function rangesOverlap(
-  a: { from: number; to: number },
-  b: { from: number; to: number }
+  rangeA: { from: number; to: number },
+  rangeB: { from: number; to: number }
 ): boolean {
-  return a.from < b.to && b.from < a.to
+  return rangeA.from < rangeB.to && rangeB.from < rangeA.to
 }
 
 function applyRelationsToEditor(
@@ -45,35 +45,35 @@ function applyRelationsToEditor(
 
   candidates.sort((a, b) => (b.to - b.from) - (a.to - a.from))
   const replacements: typeof candidates = []
-  for (const r of candidates) {
-    const overlaps = replacements.some((added) => rangesOverlap(r, added))
-    if (!overlaps) replacements.push(r)
+  for (const candidate of candidates) {
+    const overlaps = replacements.some((added) => rangesOverlap(candidate, added))
+    if (!overlaps) replacements.push(candidate)
   }
 
   replacements.sort((a, b) => b.from - a.from)
 
-  for (const r of replacements) {
+  for (const replacement of replacements) {
     const state = editor.state
-    const slice = state.doc.slice(r.from, r.to)
+    const slice = state.doc.slice(replacement.from, replacement.to)
     if (slice.content.size === 0) continue
     const pageLinkType = state.schema.nodes.pageLink
     if (!pageLinkType) continue
-    const actualText = state.doc.textBetween(r.from, r.to)
+    const actualText = state.doc.textBetween(replacement.from, replacement.to)
     const node = pageLinkType.create(
       {
-        targetPageId: r.targetPageId,
+        targetPageId: replacement.targetPageId,
         mentionText: actualText,
       },
       slice.content.size > 0
         ? slice.content
         : Fragment.from(state.schema.text(actualText))
     )
-    editor.view.dispatch(state.tr.replaceWith(r.from, r.to, node))
+    editor.view.dispatch(state.tr.replaceWith(replacement.from, replacement.to, node))
   }
 }
 
 export function useRelationsGenerationHandler(
-  pageId: number,
+  learningObjectId: number,
   editor: Ref<Editor | undefined>
 ) {
   const { mutate: extractRelations, isPending: isExtracting } = useExtractRelations()
@@ -95,7 +95,7 @@ export function useRelationsGenerationHandler(
     }
 
     extractRelations(
-      { pageId },
+      { learningObjectId },
       {
         onSuccess: (data) => {
           if (!data?.relations?.length) {
