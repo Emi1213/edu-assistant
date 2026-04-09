@@ -3,6 +3,7 @@ import type { IHttpHandler } from '@/core/interfaces/IHttpHandler'
 import type {
   LearningObject,
   LearningObjectQueryParams,
+  LearningObjectType,
   UpdateLearningObjectContentPayload,
   UpdateLearningObjectPayload,
   CreateLearningObjectPayload,
@@ -55,5 +56,12 @@ export class LearningObjectsDataSource {
       payload
     )
     return response.data
+  }
+
+  async getTypes(): Promise<LearningObjectType[]> {
+    const response = await this.httpClient.get<LearningObjectType[]>(
+      API_ROUTES.LEARNING_OBJECT_TYPES.GET_ALL
+    )
+    return response.data ?? []
   }
 }
