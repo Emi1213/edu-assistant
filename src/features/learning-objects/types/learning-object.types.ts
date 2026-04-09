@@ -32,6 +32,7 @@ export interface LearningObjectQueryParams {
   page?: number
   limit?: number
   search?: string
+  typeId?: number
 }
 
 export interface LearningObjectsQueryParams extends LearningObjectQueryParams {

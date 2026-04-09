@@ -4,10 +4,13 @@ import { useToast } from '@/shared/composables/use-toast'
 import { useDisclosure } from '@/shared/composables/use-disclosure'
 import type { CreateLearningObjectPayload } from '../types'
 
+const DEFAULT_TYPE_ID = 1
+
 export function useLearningObjectCreator(moduleId: number) {
   const toast = useToast()
   const learningObjectTitle = ref('')
   const isPublished = ref(false)
+  const currentTypeId = ref<number>(DEFAULT_TYPE_ID)
 
   const resetForm = () => {
     learningObjectTitle.value = ''
@@ -16,12 +19,17 @@ export function useLearningObjectCreator(moduleId: number) {
 
   const {
     isOpen: isDialogOpen,
-    open: openDialog,
+    open: openDialogInternal,
     close: closeDialog,
   } = useDisclosure(false, {
     onOpen: resetForm,
     onClose: resetForm,
   })
+
+  const openDialog = (typeId?: number) => {
+    currentTypeId.value = typeId ?? DEFAULT_TYPE_ID
+    openDialogInternal()
+  }
 
   const { mutate: createLearningObject, isPending: isCreating } = useCreateLearningObject(moduleId)
 
@@ -35,7 +43,7 @@ export function useLearningObjectCreator(moduleId: number) {
       moduleId,
       title: learningObjectTitle.value.trim(),
       isPublished: isPublished.value,
-      typeId: 1,
+      typeId: currentTypeId.value,
     }
 
     createLearningObject(payload, {

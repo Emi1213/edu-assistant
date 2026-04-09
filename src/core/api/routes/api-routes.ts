@@ -2,6 +2,7 @@ const AR_KEYS = {
     AUTH: '/auth',
     MODULES: '/modules',
     LEARNING_OBJECTS: '/learning-objects',
+    LEARNING_OBJECT_TYPES: '/learning-object-types',
     ACTIVITIES: '/activities',
     ENROLLMENTS: '/enrollments',
     USERS: '/users',
@@ -31,6 +32,9 @@ export const API_ROUTES = {
         GET_AVAILABLE: `${AR_KEYS.MODULES}/available`,
         GET_BY_ID: (id: number) => `${AR_KEYS.MODULES}/${id}`,
         UPDATE: (id: number) => `${AR_KEYS.MODULES}/${id}`,
+    },
+    LEARNING_OBJECT_TYPES: {
+        GET_ALL: AR_KEYS.LEARNING_OBJECT_TYPES,
     },
     LEARNING_OBJECTS: {
         CREATE: `${AR_KEYS.LEARNING_OBJECTS}`,

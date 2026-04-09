@@ -1,10 +1,12 @@
-export type { 
-    LearningObject, 
-    LearningObjectsQueryParams, 
-    UpdateLearningObjectPayload, 
+export type {
+    LearningObject,
+    LearningObjectsQueryParams,
+    UpdateLearningObjectPayload,
     CreateLearningObjectPayload,
     LearningObjectQueryParams
 } from "./learning-object.types"
+export type { LearningObjectType } from "./learning-object-type.types"
+export type { LearningObjectTypeConfig } from "./learning-object-type-config.types"
 export type { LOFeedback as LearningObjectFeedback } from "./learning-object-feedback.types"
 export type { CreateConceptPayload, LOConcept as Concept, ConceptSuggestion, Relation } from "./concepts.types"
 
