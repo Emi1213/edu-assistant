@@ -1,6 +1,0 @@
-export * from './types/page-feedbacks.types'
-export * from './services/page-feedbacks.service'
-export * from './composables/mutations/use-create-feedback'
-export * from './composables/mutations/use-update-feedback'
-export * from './composables/mutations/use-delete-feedback'
-export * from './composables/use-page-feedback'

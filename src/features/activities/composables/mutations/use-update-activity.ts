@@ -5,13 +5,13 @@ import type { UpdateActivityPayload } from '../../types'
 
 const dataSource = new ActivitiesDataSource()
 
-export function useUpdateActivity(pageId: number) {
+export function useUpdateActivity(learningObjectId: number) {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: ({ activityId, payload }: { activityId: number; payload: UpdateActivityPayload }) =>
-      dataSource.update(pageId, activityId, payload),
+      dataSource.update(learningObjectId, activityId, payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.ACTIVITIES(pageId) })
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.ACTIVITIES(learningObjectId) })
     },
   })
 }

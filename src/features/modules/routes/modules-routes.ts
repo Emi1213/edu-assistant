@@ -1,5 +1,16 @@
 import type { RouteRecordRaw } from 'vue-router';
 
+export const MODULES_ROUTES_NAMES = {
+  MODULES: 'modules',
+  MODULE_WIKI: 'module-wiki',
+  MODULE_STUDENTS: 'module-students',
+  LEARNING_OBJECT_DETAIL: 'learning-object-detail',
+  PAGE_DETAIL: 'page-detail',
+  LEARNING_OBJECT_ACTIVITIES: 'learning-object-activities',
+  LEARNING_OBJECT_EDIT: 'learning-object-edit',
+  ALL_MODULES: 'all-modules',
+} as const;
+
 export const modulesRoutes: RouteRecordRaw[] = [
   {
     path: '/modules',
@@ -7,7 +18,7 @@ export const modulesRoutes: RouteRecordRaw[] = [
     children: [
       {
         path: '',
-        name: 'modules',
+        name: MODULES_ROUTES_NAMES.MODULES,
         component: () => import('../presentation/containers/modules-list-container.vue'),
         meta: {
           layout: 'dashboard',
@@ -17,7 +28,7 @@ export const modulesRoutes: RouteRecordRaw[] = [
       },
       {
         path: ':id/wiki',
-        name: 'module-wiki',
+        name: MODULES_ROUTES_NAMES.MODULE_WIKI,
         component: () => import('../presentation/views/module-wiki-view.vue'),
         meta: {
           layout: 'dashboard',
@@ -27,7 +38,7 @@ export const modulesRoutes: RouteRecordRaw[] = [
       },
       {
         path: ':id/students',
-        name: 'module-students',
+        name: MODULES_ROUTES_NAMES.MODULE_STUDENTS,
         component: () => import('@/features/enrollments/presentation/views/module-students-view.vue'),
         meta: {
           layout: 'dashboard',
@@ -36,9 +47,9 @@ export const modulesRoutes: RouteRecordRaw[] = [
         },
       },
       {
-        path: ':id/pages/:pageId',
-        name: 'page-detail',
-        component: () => import('@/features/pages/presentation/views/page-detail-view.vue'),
+        path: ':id/learning-objects/:learningObjectId',
+        name: MODULES_ROUTES_NAMES.LEARNING_OBJECT_DETAIL,
+        component: () => import('@/features/learning-objects/presentation/views/learning-object-detail-view.vue'),
         meta: {
           layout: 'dashboard',
           requiresAuth: true,
@@ -46,9 +57,9 @@ export const modulesRoutes: RouteRecordRaw[] = [
         },
       },
       {
-        path: ':id/pages/:pageId/activities',
-        name: 'page-activities',
-        component: () => import('@/features/activities/presentation/views/page-activities-view.vue'),
+        path: ':id/pages/:learningObjectId',
+        name: MODULES_ROUTES_NAMES.PAGE_DETAIL,
+        component: () => import('@/features/learning-objects/presentation/views/learning-object-detail-view.vue'),
         meta: {
           layout: 'dashboard',
           requiresAuth: true,
@@ -56,15 +67,26 @@ export const modulesRoutes: RouteRecordRaw[] = [
         },
       },
       {
-        path: ':id/pages/:pageId/edit',
-        name: 'page-edit',
-        component: () => import('@/features/pages/presentation/views/page-editor-view.vue'),
+        path: ':id/learning-objects/:learningObjectId/activities',
+        name: MODULES_ROUTES_NAMES.LEARNING_OBJECT_ACTIVITIES,
+        component: () => import('@/features/activities/presentation/views/learning-object-activities-view.vue'),
+        meta: {
+          layout: 'dashboard',
+          requiresAuth: true,
+          roles: ['TEACHER', 'STUDENT'],
+        },
+      },
+      {
+        path: ':id/learning-objects/:learningObjectId/edit',
+        name: MODULES_ROUTES_NAMES.LEARNING_OBJECT_EDIT,
+        component: () => import('@/features/learning-objects/presentation/views/learning-object-editor-view.vue'),
         meta: {
           layout: 'minimal',
           requiresAuth: true,
           roles: ['TEACHER'], 
         },
       }
+
     ]
   },
   {
@@ -73,7 +95,7 @@ export const modulesRoutes: RouteRecordRaw[] = [
     children: [
       {
         path: '',
-        name: 'all-modules',
+        name: MODULES_ROUTES_NAMES.ALL_MODULES,
         component: () => import('../presentation/views/available-modules-list-view.vue'),
         meta: {
           layout: 'dashboard',

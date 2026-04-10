@@ -38,7 +38,7 @@ const handleUnenroll = (e: Event) => {
 
 <template>
   <div
-    class="group relative rounded-lg border border-border bg-card overflow-hidden shadow-sm hover:shadow-xl hover:border-[#233a83] dark:hover:border-[#121a3d] transition-all duration-200"
+    class="group relative rounded-lg border border-border bg-card overflow-hidden shadow-sm hover:shadow-xl hover:border-primary dark:hover:border-primary/50 transition-all duration-200"
     :class="{ 'cursor-pointer': props.to || props.onClick }"
   >
     <component
@@ -47,21 +47,21 @@ const handleUnenroll = (e: Event) => {
       class="block no-underline text-inherit"
       @click="!props.to && props.onClick && props.onClick(props.module)"
     >
-      <div class="absolute left-0 top-0 bottom-0 w-1 bg-[#233a83]"></div>
+      <div class="absolute left-0 top-0 bottom-0 w-1 bg-primary"></div>
       <div class="p-5 pb-0">
       <div class="flex items-start gap-3 mb-3">
-        <div class="flex-shrink-0 w-10 h-10 rounded-md bg-[#233a83] flex items-center justify-center overflow-hidden transition-all duration-200 group-hover:scale-105">
+        <div class="flex-shrink-0 w-10 h-10 rounded-md bg-primary flex items-center justify-center overflow-hidden transition-all duration-200 group-hover:scale-105">
           <img
             v-if="module.logoUrl"
             :src="toFullAssetUrl(module.logoUrl)"
             :alt="module.title"
             class="w-full h-full object-cover transition-transform duration-200 group-hover:rotate-3"
           />
-          <BookOpen v-else class="size-5 text-white transition-transform duration-200 group-hover:rotate-3" />
+          <BookOpen v-else class="size-5 text-primary-foreground transition-transform duration-200 group-hover:rotate-3" />
         </div>
         <div class="flex-1 min-w-0">
           <div class="flex items-start justify-between gap-2">
-            <h3 class="text-lg font-bold text-card-foreground line-clamp-2 leading-snug group-hover:text-[#233a83] dark:group-hover:text-[#9fb3ff] transition-colors">
+            <h3 class="text-lg font-bold text-card-foreground line-clamp-2 leading-snug group-hover:text-primary dark:group-hover:text-primary/80 transition-colors">
               {{ module.title }}
             </h3>
             <component
@@ -69,7 +69,7 @@ const handleUnenroll = (e: Event) => {
               class="size-4 flex-shrink-0 mt-1"
               :class="module.isPublic 
                 ? 'text-blue-500 dark:text-blue-400' 
-                : 'text-gray-400 dark:text-gray-500'"
+                : 'text-muted-foreground/60'"
             />
           </div>
         </div>

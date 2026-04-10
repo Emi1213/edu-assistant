@@ -6,7 +6,7 @@ import ConfirmationDialog from '@/shared/components/confirmation-dialog.vue'
 import type { Note } from '../../types/notes.types'
 
 interface Props {
-  pageId: number
+  learningObjectId: number
   notes: Note[] | null | undefined
 }
 
@@ -36,7 +36,8 @@ const {
   cancelDelete,
   confirmDelete,
   formatDate,
-} = useNotesPanel(props.pageId, notesRef)
+} = useNotesPanel(props.learningObjectId, notesRef)
+
 </script>
 
 <template>
@@ -157,7 +158,7 @@ const {
               <button
                 @click="openDeleteDialog(note.id)"
                 :disabled="isDeletingNote"
-                class="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded transition-all duration-200 disabled:opacity-50"
+                class="p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded transition-all duration-200 disabled:opacity-50"
                 title="Eliminar"
               >
                 <Trash2 class="size-4" />

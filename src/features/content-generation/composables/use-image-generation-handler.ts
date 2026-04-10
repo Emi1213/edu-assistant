@@ -9,8 +9,9 @@ export function useImageGenerationHandler(editor: Ref<Editor | undefined>) {
   const toast = useToast()
 
   const handleGenerateImage = (event: Event) => {
-    const button = event.target as HTMLElement
-    if (!button.classList.contains('generate-image-btn')) return
+    const target = event.target as HTMLElement | null
+    const button = target?.closest?.('.generate-image-btn') as HTMLButtonElement | null
+    if (!button) return
 
     const prompt = button.getAttribute('data-prompt')
     if (!prompt || !editor.value) return
@@ -18,7 +19,13 @@ export function useImageGenerationHandler(editor: Ref<Editor | undefined>) {
     const suggestionBlock = button.closest('[data-type="image-suggestion"]')
     if (!suggestionBlock) return
 
-    button.textContent = '⏳ Generando...'
+    const labelEl = button.querySelector('.generate-image-btn-label')
+    const defaultLabel = button.getAttribute('data-default-label') ?? 'Generar imagen'
+    if (labelEl) {
+      labelEl.textContent = 'Generando…'
+    } else {
+      button.textContent = 'Generando…'
+    }
     button.setAttribute('disabled', 'true')
 
     generateImage(
@@ -53,9 +60,14 @@ export function useImageGenerationHandler(editor: Ref<Editor | undefined>) {
             }
           }
         },
-        onError: (error: any) => {
-          toast.error(error.message || 'Error al generar la imagen')
-          button.textContent = '🎨 Generar Imagen'
+        onError: (error: unknown) => {
+          toast.error((error as { message?: string }).message || 'Error al generar la imagen')
+          const restoreLabel = button.querySelector('.generate-image-btn-label')
+          if (restoreLabel) {
+            restoreLabel.textContent = defaultLabel
+          } else {
+            button.textContent = defaultLabel
+          }
           button.removeAttribute('disabled')
         },
       }
@@ -63,8 +75,9 @@ export function useImageGenerationHandler(editor: Ref<Editor | undefined>) {
   }
 
   const handleRemoveSuggestion = (event: Event) => {
-    const button = event.target as HTMLElement
-    if (!button.classList.contains('remove-image-suggestion-btn')) return
+    const target = event.target as HTMLElement | null
+    const button = target?.closest?.('.remove-image-suggestion-btn') as HTMLButtonElement | null
+    if (!button) return
 
     const suggestionBlock = button.closest('[data-type="image-suggestion"]')
     if (!suggestionBlock || !editor.value) return

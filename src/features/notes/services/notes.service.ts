@@ -9,7 +9,7 @@ class NotesService {
 
   async createNote(payload: CreateNote): Promise<Note> {
     const response: IHttpResponse<Note> = await this.httpClient.post(
-      API_ROUTES.PAGES.NOTES.CREATE,
+      API_ROUTES.LEARNING_OBJECTS.NOTES.CREATE,
       payload
     )
     if (!response.data) {
@@ -20,7 +20,7 @@ class NotesService {
 
   async updateNote(noteId: number, payload: UpdateNote): Promise<Note> {
     const response: IHttpResponse<Note> = await this.httpClient.patch(
-      API_ROUTES.PAGES.NOTES.UPDATE(noteId),
+      API_ROUTES.LEARNING_OBJECTS.NOTES.UPDATE(noteId),
       payload
     )
     
@@ -32,7 +32,7 @@ class NotesService {
   }
 
   async deleteNote(noteId: number): Promise<void> {
-    await this.httpClient.delete(API_ROUTES.PAGES.NOTES.DELETE(noteId))
+    await this.httpClient.delete(API_ROUTES.LEARNING_OBJECTS.NOTES.DELETE(noteId))
   }
 }
 

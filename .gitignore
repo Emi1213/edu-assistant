@@ -39,3 +39,7 @@ __screenshots__/
 
 # Lockfiles
 package-lock.json
+
+# Docs files
+.superpowers
+.claude

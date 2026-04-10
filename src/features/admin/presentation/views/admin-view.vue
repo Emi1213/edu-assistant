@@ -227,7 +227,7 @@ const saveEmails = () => {
             <button
               type="button"
               @click="removeEmail(index)"
-              class="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded"
+              class="p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded"
               title="Quitar"
             >
               <Trash2 class="size-4" />

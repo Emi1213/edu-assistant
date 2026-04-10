@@ -1,4 +1,5 @@
-import type { Ref } from 'vue'
+import type { MaybeRefOrGetter, Ref } from 'vue'
+import { toValue } from 'vue'
 import type { Editor } from '@tiptap/vue-3'
 import { useExtractConcepts } from './mutations/use-extract-concepts'
 import { findFirstOccurrenceRange } from '../utils/find-first-occurrence'
@@ -64,7 +65,7 @@ function applyConceptsToEditor(
 }
 
 export function useConceptsGenerationHandler(
-  pageId: number,
+  learningObjectId: MaybeRefOrGetter<number>,
   editor: Ref<Editor | undefined>
 ) {
   const { mutate: extractConcepts, isPending: isExtracting } = useExtractConcepts()
@@ -76,7 +77,7 @@ export function useConceptsGenerationHandler(
     }
 
     extractConcepts(
-      { pageId },
+      { learningObjectId: toValue(learningObjectId) },
       {
         onSuccess: (data) => {
           if (!data?.terms?.length) {

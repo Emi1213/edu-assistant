@@ -1,4 +1,8 @@
-import type { ActivityType, ActivityOptionsByType } from '../types'
+import type {
+  ActivityType,
+  ActivityOptionsByType,
+  CreateActivityOptionsDto,
+} from '../types'
 
 export const ACTIVITY_TYPE_LABELS: Record<string, string> = {
   MULTIPLE_CHOICE: 'Opción múltiple',
@@ -23,5 +27,43 @@ export function getDefaultOptionsForType(t: ActivityType): ActivityOptionsByType
       return { leftItems: [], rightItems: [], correctPairs: [] }
     default:
       return { options: ['', '', '', ''], correctAnswer: 0 }
+  }
+}
+
+export function getDefaultCreateOptionsForType(t: ActivityType): CreateActivityOptionsDto {
+  switch (t) {
+    case 'MULTIPLE_CHOICE':
+      return {
+        question: '',
+        options: ['', '', '', ''] as [string, string, string, string],
+        correctAnswer: 0,
+        explanation: '',
+      }
+    case 'TRUE_FALSE':
+      return {
+        statement: '',
+        correctAnswer: true,
+        explanation: '',
+      }
+    case 'FILL_BLANK':
+      return {
+        sentence: '',
+        correctAnswer: '',
+        acceptableAnswers: [],
+        explanation: '',
+      }
+    case 'MATCH':
+      return {
+        instructions: '',
+        pairs: [],
+        explanation: '',
+      }
+    default:
+      return {
+        question: '',
+        options: ['', '', '', ''] as [string, string, string, string],
+        correctAnswer: 0,
+        explanation: '',
+      }
   }
 }

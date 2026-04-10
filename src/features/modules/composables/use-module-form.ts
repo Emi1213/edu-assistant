@@ -43,15 +43,12 @@ export function useModuleForm(
   })
 
   const handleSubmit = (
-    onValid: (data: CreateModule | UpdateModule) => Promise<void>
+    onValid: (data: CreateModule | UpdateModule) => void | Promise<void>
   ) => {
     return originalHandleSubmit(async (data: ModuleFormData) => {
-      if (loading.value) return
       loading.value = true
       try {
         await onValid(data as CreateModule | UpdateModule)
-      } catch (error) {
-
       } finally {
         loading.value = false
       }

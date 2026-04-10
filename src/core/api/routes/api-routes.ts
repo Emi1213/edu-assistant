@@ -1,13 +1,16 @@
 const AR_KEYS = {
     AUTH: '/auth',
     MODULES: '/modules',
-    PAGES: '/pages',
+    LEARNING_OBJECTS: '/learning-objects',
+    LEARNING_OBJECT_TYPES: '/learning-object-types',
     ACTIVITIES: '/activities',
     ENROLLMENTS: '/enrollments',
     USERS: '/users',
     FILES: '/files',
     CONTENT_GENERATION: '/content',
     AI_CONFIG: '/ai/config',
+    PAGES: '/pages',
+    LEARNING_OBJECT_FEEDBACKS: '/learning-object-feedbacks',
 }
 
 export const API_ROUTES = {
@@ -30,17 +33,21 @@ export const API_ROUTES = {
         GET_BY_ID: (id: number) => `${AR_KEYS.MODULES}/${id}`,
         UPDATE: (id: number) => `${AR_KEYS.MODULES}/${id}`,
     },
-    PAGES: {
-        CREATE: `${AR_KEYS.PAGES}`,
-        GET_BY_MODULE_ID: (moduleId: number) => `${AR_KEYS.PAGES}/module/${moduleId}`,
-        GET_BY_ID: (id: number) => `${AR_KEYS.PAGES}/${id}`,
-        UPDATE: (id: number) => `${AR_KEYS.PAGES}/${id}`,
-        UPDATE_CONTENT: (id: number) => `${AR_KEYS.PAGES}/${id}/content`,
-        CREATE_CONCEPT: (pageId: number) => `${AR_KEYS.PAGES}/${pageId}/concepts`,
+    LEARNING_OBJECT_TYPES: {
+        GET_ALL: AR_KEYS.LEARNING_OBJECT_TYPES,
+    },
+    LEARNING_OBJECTS: {
+        CREATE: `${AR_KEYS.LEARNING_OBJECTS}`,
+        REORDER: `${AR_KEYS.LEARNING_OBJECTS}/reorder`,
+        GET_BY_MODULE_ID: (moduleId: number) => `${AR_KEYS.LEARNING_OBJECTS}/module/${moduleId}`,
+        GET_BY_ID: (id: number) => `${AR_KEYS.LEARNING_OBJECTS}/${id}`,
+        UPDATE: (id: number) => `${AR_KEYS.LEARNING_OBJECTS}/${id}`,
+        UPDATE_CONTENT: (id: number) => `${AR_KEYS.LEARNING_OBJECTS}/${id}/content`,
+        CREATE_CONCEPT: (learningObjectId: number) => `${AR_KEYS.LEARNING_OBJECTS}/${learningObjectId}/concepts`,
         NOTES: {
-            CREATE: `${AR_KEYS.PAGES}/notes`,
-            UPDATE: (noteId: number) => `${AR_KEYS.PAGES}/notes/${noteId}`,
-            DELETE: (noteId: number) => `${AR_KEYS.PAGES}/notes/${noteId}`,
+            CREATE: `${AR_KEYS.LEARNING_OBJECTS}/notes`,
+            UPDATE: (noteId: number) => `${AR_KEYS.LEARNING_OBJECTS}/notes/${noteId}`,
+            DELETE: (noteId: number) => `${AR_KEYS.LEARNING_OBJECTS}/notes/${noteId}`,
         },
         STUDENT_QUESTIONS: {
             CREATE: `${AR_KEYS.PAGES}/student-questions`,
@@ -53,14 +60,14 @@ export const API_ROUTES = {
             DELETE: (id: number) => `${AR_KEYS.PAGES}/question-replies/${id}`,
         },
         FEEDBACKS: {
-            CREATE: `page-feedbacks`,
-            UPDATE: (feedbackId: number) => `page-feedbacks/${feedbackId}`,
-            DELETE: (feedbackId: number) => `page-feedbacks/${feedbackId}`,
+            CREATE: `${AR_KEYS.LEARNING_OBJECT_FEEDBACKS}`,
+            UPDATE: (feedbackId: number) => `${AR_KEYS.LEARNING_OBJECT_FEEDBACKS}/${feedbackId}`,
+            DELETE: (feedbackId: number) => `${AR_KEYS.LEARNING_OBJECT_FEEDBACKS}/${feedbackId}`,
         },
         ACTIVITIES: {
-            LIST: (pageId: number) => `${AR_KEYS.PAGES}/${pageId}/activities`,
-            CREATE: (pageId: number) => `${AR_KEYS.PAGES}/${pageId}/activities`,
-            BY_ID: (pageId: number, activityId: number) => `${AR_KEYS.PAGES}/${pageId}/activities/${activityId}`,
+            LIST: (learningObjectId: number) => `${AR_KEYS.LEARNING_OBJECTS}/${learningObjectId}/activities`,
+            CREATE: (learningObjectId: number) => `${AR_KEYS.LEARNING_OBJECTS}/${learningObjectId}/activities`,
+            BY_ID: (learningObjectId: number, activityId: number) => `${AR_KEYS.LEARNING_OBJECTS}/${learningObjectId}/activities/${activityId}`,
         },
     },
     ACTIVITIES: {

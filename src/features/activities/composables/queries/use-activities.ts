@@ -4,10 +4,10 @@ import { QUERY_KEYS } from '@/shared/composables/query-key'
 
 const dataSource = new ActivitiesDataSource()
 
-export function useActivities(pageId: number) {
+export function useActivities(learningObjectId: number) {
   return useQuery({
-    queryKey: QUERY_KEYS.ACTIVITIES(pageId),
-    queryFn: () => dataSource.getByPageId(pageId),
-    enabled: !!pageId,
+    queryKey: QUERY_KEYS.ACTIVITIES(learningObjectId),
+    queryFn: () => dataSource.getByLearningObjectId(learningObjectId),
+    enabled: !!learningObjectId,
   })
 }
