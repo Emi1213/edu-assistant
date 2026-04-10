@@ -13,6 +13,7 @@ import {
   Zap,
   ChevronLeft,
   ChevronRight,
+  Wand2,
 } from 'lucide-vue-next'
 import { MODULES_ROUTES_NAMES } from '@/features/modules/routes/modules-routes'
 import { Button } from '@/components/ui/button'

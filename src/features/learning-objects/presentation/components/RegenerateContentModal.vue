@@ -9,6 +9,7 @@ import {
   DialogTitle 
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
+import { Sparkles, Loader2 } from 'lucide-vue-next'
 
 const { open, isLoading } = defineProps<{
   open: boolean
@@ -47,7 +48,9 @@ const handleRegenerate = () => {
 
       <DialogFooter>
         <Button variant="outline" @click="emit('update:open', false)">Cancelar</Button>
-        <Button :disabled="isLoading" @click="handleRegenerate">
+        <Button :disabled="isLoading || !instructions.trim()" @click="handleRegenerate" class="flex items-center gap-2">
+          <Loader2 v-if="isLoading" class="size-4 animate-spin" />
+          <Sparkles v-else class="size-4" />
           {{ isLoading ? 'Regenerando...' : 'Regenerar Contenido' }}
         </Button>
       </DialogFooter>
