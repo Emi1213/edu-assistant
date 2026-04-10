@@ -19,6 +19,7 @@ import LearningObjectFeedbackSection from '@/features/learning-object-feedbacks/
 import StudentQuestionsPanel from '@/features/student-questions/presentation/components/student-questions-panel.vue';
 import Skeleton from '@/components/ui/skeleton/Skeleton.vue'
 import { Button } from '@/components/ui/button'
+import { MODULES_ROUTES_NAMES } from '@/features/modules/routes/modules-routes'
 
 const route = useRoute()
 const router = useRouter()
@@ -53,15 +54,24 @@ const userFeedback = computed(() => {
 })
 
 const goBack = () => {
-  router.push(`/modules/${moduleId.value}/wiki`)
+  router.push({
+    name: MODULES_ROUTES_NAMES.MODULE_WIKI,
+    params: { id: moduleId.value },
+  })
 }
 
 const goToEditor = () => {
-  router.push(`/modules/${moduleId.value}/learning-objects/${learningObjectId.value}/edit`)
+  router.push({
+    name: MODULES_ROUTES_NAMES.LEARNING_OBJECT_EDIT,
+    params: { id: moduleId.value, learningObjectId: learningObjectId.value },
+  })
 }
 
 const goToActivities = () => {
-  router.push(`/modules/${moduleId.value}/learning-objects/${learningObjectId.value}/activities`)
+  router.push({
+    name: MODULES_ROUTES_NAMES.LEARNING_OBJECT_ACTIVITIES,
+    params: { id: moduleId.value, learningObjectId: learningObjectId.value },
+  })
 }
 
 const hasAdjacentNavigation = computed(() => {
