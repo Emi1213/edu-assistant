@@ -62,7 +62,7 @@ export function useAuth() {
 
       authStore.login(userProfile, tokenParam)
       
-      toast.success('Bienvenido a Nous AI ' + userProfile.displayName || "usuario")
+      toast.success(`Bienvenido a Nous AI, ${userProfile.displayName || 'usuario'}`)
       const redirect = router.currentRoute.value.query.redirect as string | undefined
       const defaultRoute =
         userProfile.role === 'ADMIN' ? { name: 'admin' as const } : { name: 'modules' as const }

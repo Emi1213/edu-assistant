@@ -1,9 +1,10 @@
-import { ref } from 'vue'
+import type { MaybeRefOrGetter } from 'vue'
+import { ref, toValue } from 'vue'
 import { marked } from 'marked'
 import { useGenerateContent } from './mutations/use-generate-content'
 import { normalizeConceptMarkersInMarkdown } from '../utils/normalize-concept-markers'
 
-export function useAIContentGeneration(learningObjectId: number) {
+export function useAIContentGeneration(learningObjectId: MaybeRefOrGetter<number>) {
   const showAIModal = ref(false)
   const aiInstructions = ref('')
   const isGenerating = ref(false)
@@ -75,7 +76,7 @@ export function useAIContentGeneration(learningObjectId: number) {
 
     generateContent(
       {
-        learningObjectId,
+        learningObjectId: toValue(learningObjectId),
         instructions: aiInstructions.value,
       },
       {

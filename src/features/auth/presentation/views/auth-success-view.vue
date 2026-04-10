@@ -2,16 +2,28 @@
 import { onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuth } from '../../composables/use-auth'
+import { useToast } from '@/shared/composables/use-toast'
+import { messageForOAuthCallbackQuery } from '../../utils/oauth-callback-errors'
 
 const route = useRoute()
 const router = useRouter()
+const toast = useToast()
 const { handleCallback, loading, error } = useAuth()
 
 onMounted(async () => {
+  const oauthErr = route.query.error as string | undefined
+  const oauthErrDesc = route.query.error_description as string | undefined
+  if (oauthErr || oauthErrDesc) {
+    toast.error(messageForOAuthCallbackQuery(oauthErr, oauthErrDesc))
+    await router.replace({ name: 'login' })
+    return
+  }
+
   const token = route.query.token as string | undefined
 
   if (!token) {
-    await router.push({ name: 'login' })
+    toast.error('No se recibió la confirmación de inicio de sesión. Vuelve a intentarlo.')
+    await router.replace({ name: 'login' })
     return
   }
 

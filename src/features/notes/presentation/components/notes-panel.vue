@@ -158,7 +158,7 @@ const {
               <button
                 @click="openDeleteDialog(note.id)"
                 :disabled="isDeletingNote"
-                class="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded transition-all duration-200 disabled:opacity-50"
+                class="p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded transition-all duration-200 disabled:opacity-50"
                 title="Eliminar"
               >
                 <Trash2 class="size-4" />

@@ -1,4 +1,5 @@
-import type { Ref } from 'vue'
+import type { MaybeRefOrGetter, Ref } from 'vue'
+import { toValue } from 'vue'
 import type { Editor } from '@tiptap/vue-3'
 import { Fragment } from '@tiptap/pm/model'
 import { useExtractRelations } from './mutations/use-extract-relations'
@@ -73,7 +74,7 @@ function applyRelationsToEditor(
 }
 
 export function useRelationsGenerationHandler(
-  learningObjectId: number,
+  learningObjectId: MaybeRefOrGetter<number>,
   editor: Ref<Editor | undefined>
 ) {
   const { mutate: extractRelations, isPending: isExtracting } = useExtractRelations()
@@ -95,7 +96,7 @@ export function useRelationsGenerationHandler(
     }
 
     extractRelations(
-      { learningObjectId },
+      { learningObjectId: toValue(learningObjectId) },
       {
         onSuccess: (data) => {
           if (!data?.relations?.length) {

@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import type { Editor } from '@tiptap/vue-3'
-import { Bold, Italic, Strikethrough, List, ListOrdered, Code, Quote, Minus, Undo, Redo, BookOpen, Link2, Image } from 'lucide-vue-next'
+import { Bold, Italic, Strikethrough, List, ListOrdered, Code, Quote, Minus, Undo, Redo, BookOpen, Link2, Image, ExternalLink } from 'lucide-vue-next'
 
 interface Props {
   editor: Editor | undefined
   onInsertConcept?: () => void
   onInsertPageLink?: () => void
+  onInsertExternalLink?: () => void
   onInsertImage?: () => void
 }
 
@@ -126,7 +127,7 @@ defineProps<Props>()
 
     <div class="toolbar-divider"></div>
 
-    <div v-if="onInsertConcept || onInsertPageLink || onInsertImage" class="toolbar-group">
+    <div v-if="onInsertConcept || onInsertPageLink || onInsertExternalLink || onInsertImage" class="toolbar-group">
       <button
         v-if="onInsertConcept"
         type="button"
@@ -144,6 +145,16 @@ defineProps<Props>()
         @click="onInsertPageLink()"
       >
         <Link2 class="size-4" />
+      </button>
+      <button
+        v-if="onInsertExternalLink"
+        type="button"
+        class="toolbar-btn"
+        :class="{ 'is-active': editor.isActive('link') }"
+        title="Enlace web (YouTube, artículos, etc.)"
+        @click="onInsertExternalLink()"
+      >
+        <ExternalLink class="size-4" />
       </button>
       <button
         v-if="onInsertImage"

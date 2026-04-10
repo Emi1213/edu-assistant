@@ -17,7 +17,7 @@
     "prepare": "husky"
   },
   "lint-staged": {
-    "*.{ts,vue}": "vue-tsc --noEmit --skipLibCheck",
+    "*.{ts,vue}": "bash -c 'vue-tsc --noEmit --skipLibCheck'",
     "*.{ts,vue,js}": "eslint --fix"
   },
   "dependencies": {
@@ -25,6 +25,7 @@
     "@tanstack/vue-query": "^5.92.6",
     "@tiptap/extension-code-block-lowlight": "^3.19.0",
     "@tiptap/extension-image": "^3.19.0",
+    "@tiptap/extension-link": "^3.22.3",
     "@tiptap/starter-kit": "^3.18.0",
     "@tiptap/vue-3": "^3.18.0",
     "@vueuse/core": "^14.2.0",

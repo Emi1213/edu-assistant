@@ -1,10 +1,25 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { EditorContent } from '@tiptap/vue-3'
-import { ArrowLeft, Sparkles, Loader2, X, Save, BookOpen, Image, Zap } from 'lucide-vue-next'
+import {
+  ArrowLeft,
+  Sparkles,
+  Loader2,
+  X,
+  Save,
+  BookOpen,
+  Image,
+  Zap,
+  ChevronLeft,
+  ChevronRight,
+} from 'lucide-vue-next'
+import { MODULES_ROUTES_NAMES } from '@/features/modules/routes/modules-routes'
+import { Button } from '@/components/ui/button'
 import { useLearningObjectEditorView } from '../../composables/editor/use-learning-object-editor-view'
 import { useLearningObjectEditorConceptModal } from '../../composables/editor/use-learning-object-editor-concept-modal'
 import { useLearningObjectEditorLinkModal } from '../../composables/editor/use-learning-object-editor-learning-object-link-modal'
+import { useLearningObjectEditorExternalLinkModal } from '../../composables/editor/use-learning-object-editor-external-link-modal'
 import { useLearningObjectEditorImageModal } from '../../composables/editor/use-learning-object-editor-image-modal'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { useConceptDefinitionHoverTooltip } from '../../composables/use-concept-definition-hover-tooltip'
@@ -12,9 +27,12 @@ import ConceptDefinitionHoverLayer from '../components/concept-definition-hover-
 import EditorToolbar from '../components/editor-toolbar.vue'
 import Skeleton from '@/components/ui/skeleton/Skeleton.vue'
 
+const router = useRouter()
+
 const {
   learningObjectId,
   moduleId,
+  learningObject,
   isLoadingLearningObject,
   editor,
   isSaving,
@@ -36,6 +54,23 @@ const {
   isExtractingRelations,
 } = useLearningObjectEditorView()
 
+const hasAdjacentNavigation = computed(() => {
+  const lo = learningObject.value
+  if (!lo) return false
+  return lo.previousLoId != null || lo.nextLoId != null
+})
+
+const goToAdjacentEdit = (targetId: number) => {
+  if (!Number.isFinite(targetId) || targetId <= 0) return
+  router.push({
+    name: MODULES_ROUTES_NAMES.LEARNING_OBJECT_EDIT,
+    params: {
+      id: String(moduleId.value),
+      learningObjectId: String(targetId),
+    },
+  })
+}
+
 const {
   showConceptModal,
   conceptForm,
@@ -43,7 +78,7 @@ const {
   closeConceptModal,
   submitConcept,
   isCreatingConcept,
-} = useLearningObjectEditorConceptModal(learningObjectId.value, editor)
+} = useLearningObjectEditorConceptModal(learningObjectId, editor)
 
 const {
   showPageLinkModal,
@@ -53,6 +88,15 @@ const {
   closePageLinkModal,
   submitPageLink,
 } = useLearningObjectEditorLinkModal(editor, learningObjectId, moduleId)
+
+const {
+  showExternalLinkModal,
+  externalLinkForm,
+  openExternalLinkModal,
+  closeExternalLinkModal,
+  submitExternalLink,
+  removeExternalLink,
+} = useLearningObjectEditorExternalLinkModal(editor)
 
 const {
   showImagePromptModal,
@@ -126,6 +170,38 @@ const { visible: conceptTooltipVisible, text: conceptTooltipText, style: concept
       </div>
     </div>
 
+    <div
+      v-if="!isLoadingLearningObject && learningObject && hasAdjacentNavigation"
+      class="border-b border-border bg-card px-4 sm:px-6 py-3"
+    >
+      <div class="max-w-7xl mx-auto grid w-full grid-cols-2 items-center gap-3">
+        <div class="flex min-w-0 justify-start">
+          <Button
+            v-if="learningObject.previousLoId != null"
+            variant="outline"
+            size="sm"
+            class="gap-2 max-w-full"
+            @click="goToAdjacentEdit(learningObject.previousLoId)"
+          >
+            <ChevronLeft class="size-4 shrink-0" />
+            <span class="truncate">Anterior</span>
+          </Button>
+        </div>
+        <div class="flex min-w-0 justify-end">
+          <Button
+            v-if="learningObject.nextLoId != null"
+            variant="outline"
+            size="sm"
+            class="gap-2 max-w-full"
+            @click="goToAdjacentEdit(learningObject.nextLoId)"
+          >
+            <span class="truncate">Siguiente</span>
+            <ChevronRight class="size-4 shrink-0" />
+          </Button>
+        </div>
+      </div>
+    </div>
+
     <div v-if="isLoadingLearningObject" class="flex-1 overflow-y-auto min-w-0">
       <div class="px-4 sm:px-6 py-6 sm:py-8 space-y-4">
         <Skeleton class="h-12 w-3/4" />
@@ -143,6 +219,7 @@ const { visible: conceptTooltipVisible, text: conceptTooltipText, style: concept
             :editor="editor"
             :on-insert-concept="openConceptModal"
             :on-insert-page-link="openPageLinkModal"
+            :on-insert-external-link="openExternalLinkModal"
             :on-insert-image="openImagePromptModal"
           />
         </div>
@@ -162,12 +239,14 @@ const { visible: conceptTooltipVisible, text: conceptTooltipText, style: concept
               <span
                 v-for="(keyword, index) in learningObjectKeywords"
                 :key="index"
-                class="inline-flex items-center gap-1 text-xs font-medium px-3 py-1 rounded-full bg-primary/10 text-primary"
+                class="keyword-badge keyword-badge-editable inline-flex items-center gap-1"
               >
                 {{ keyword }}
                 <button
+                  type="button"
                   @click="learningObjectKeywords.splice(index, 1)"
-                  class="p-0.5 hover:bg-primary/20 rounded-full transition-colors"
+                  class="keyword-badge-remove p-0.5 rounded transition-colors"
+                  aria-label="Quitar palabra clave"
                 >
                   <X class="size-3" />
                 </button>
@@ -335,6 +414,56 @@ const { visible: conceptTooltipVisible, text: conceptTooltipText, style: concept
         </div>
       </div>
 
+      <!-- Enlace externo (web / YouTube / etc.) -->
+      <div v-if="showExternalLinkModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+        <div class="bg-card rounded-xl shadow-2xl w-full max-w-lg mx-4 p-6 animate-scale-in">
+          <h3 class="text-xl font-bold mb-4">Enlace externo</h3>
+          <p class="text-sm text-muted-foreground mb-4">
+            Pega una URL (YouTube, artículo, etc.). Si no hay texto seleccionado, puedes escribir el texto del enlace.
+          </p>
+          <div class="space-y-4 mb-6">
+            <div>
+              <label class="block text-sm font-medium mb-1">URL</label>
+              <input
+                v-model="externalLinkForm.href"
+                type="url"
+                placeholder="https://www.youtube.com/watch?v=…"
+                class="w-full p-2 rounded border bg-background"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-1">Texto a mostrar (si el cursor está vacío)</label>
+              <input
+                v-model="externalLinkForm.label"
+                type="text"
+                placeholder="Ver video en YouTube"
+                class="w-full p-2 rounded border bg-background"
+              />
+            </div>
+          </div>
+          <div class="flex flex-wrap justify-end gap-3">
+            <button
+              v-if="editor?.isActive('link')"
+              type="button"
+              @click="removeExternalLink"
+              class="px-4 py-2 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded mr-auto"
+            >
+              Quitar enlace
+            </button>
+            <button @click="closeExternalLinkModal" class="px-4 py-2 text-muted-foreground hover:bg-muted/50 rounded">
+              Cancelar
+            </button>
+            <button
+              @click="submitExternalLink"
+              :disabled="!externalLinkForm.href.trim()"
+              class="px-4 py-2 bg-primary text-primary-foreground rounded disabled:opacity-50"
+            >
+              Aplicar
+            </button>
+          </div>
+        </div>
+      </div>
+
       <!-- Image Generation Modal -->
       <div v-if="showImagePromptModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
         <div class="bg-card rounded-xl shadow-2xl w-full max-w-2xl mx-4 p-6 animate-scale-in">
@@ -375,5 +504,250 @@ const { visible: conceptTooltipVisible, text: conceptTooltipText, style: concept
 </template>
 
 <style scoped>
-/* ... (styles are identical) */
+/* Alineado con la vista de lectura (wiki-page / page-header / page-content) */
+.editor-page-wrapper {
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 0 1rem 2rem;
+}
+
+@media (min-width: 768px) {
+  .editor-page-wrapper {
+    padding: 0 1rem 2.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .editor-page-wrapper {
+    max-width: min(100%, 1200px);
+    padding: 0 2rem 3rem;
+  }
+}
+
+@media (min-width: 1536px) {
+  .editor-page-wrapper {
+    max-width: min(100%, 1400px);
+  }
+}
+
+.editor-toolbar-wrapper {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  margin: 0 -1rem 1.25rem;
+  padding: 0.625rem 1rem;
+  background-color: var(--card);
+  border-bottom: 1px solid var(--border);
+}
+
+@media (min-width: 1024px) {
+  .editor-toolbar-wrapper {
+    margin: 0 0 1.5rem;
+    padding-left: 0;
+    padding-right: 0;
+    border-radius: 0.5rem;
+    border: 1px solid var(--border);
+  }
+}
+
+.editor-main-container {
+  min-width: 0;
+}
+
+.page-header-editor {
+  background-color: var(--card);
+  padding: 2rem 2rem 1.5rem;
+  border-radius: 0;
+  margin-bottom: 2rem;
+}
+
+.page-title-input input {
+  width: 100%;
+  font-size: 1.875rem;
+  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--foreground);
+}
+
+@media (min-width: 1024px) {
+  .page-title-input input {
+    font-size: 3rem;
+  }
+}
+
+.keyword-badge {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.375rem;
+  background-color: var(--muted);
+  color: var(--muted-foreground);
+  transition: background-color 0.2s ease;
+}
+
+.keyword-badge-editable:hover {
+  background-color: var(--accent);
+}
+
+.keyword-badge-remove {
+  color: var(--muted-foreground);
+}
+
+.keyword-badge-remove:hover {
+  color: var(--foreground);
+  background-color: var(--muted);
+}
+
+.editor-content {
+  background-color: transparent;
+  padding: 0 0.25rem 1rem;
+}
+
+.editor-content :deep(.ProseMirror) {
+  color: var(--foreground);
+  outline: none;
+  min-height: 50vh;
+}
+
+.editor-content :deep(.ProseMirror h1) {
+  font-size: 1.875rem;
+  line-height: 2.25rem;
+  font-weight: 700;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  color: var(--foreground);
+}
+
+.editor-content :deep(.ProseMirror h2) {
+  font-size: 1.5rem;
+  line-height: 2rem;
+  font-weight: 700;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+  color: var(--foreground);
+}
+
+.editor-content :deep(.ProseMirror h3) {
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+  font-weight: 600;
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+  color: var(--foreground);
+}
+
+.editor-content :deep(.ProseMirror h4) {
+  font-size: 1.125rem;
+  line-height: 1.75rem;
+  font-weight: 600;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+  color: var(--foreground);
+}
+
+.editor-content :deep(.ProseMirror p) {
+  font-size: 1rem;
+  line-height: 1.75rem;
+  margin-bottom: 1rem;
+  color: var(--foreground);
+  opacity: 0.9;
+}
+
+.editor-content :deep(.ProseMirror ul),
+.editor-content :deep(.ProseMirror ol) {
+  margin-bottom: 1rem;
+  margin-left: 1.5rem;
+}
+
+.editor-content :deep(.ProseMirror ul) {
+  list-style-type: disc;
+}
+
+.editor-content :deep(.ProseMirror ol) {
+  list-style-type: decimal;
+}
+
+.editor-content :deep(.ProseMirror li) {
+  font-size: 1rem;
+  color: var(--foreground);
+  opacity: 0.9;
+  margin-bottom: 0.5rem;
+}
+
+.editor-content :deep(.ProseMirror code) {
+  background-color: var(--muted);
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+  color: var(--foreground);
+}
+
+.editor-content :deep(.ProseMirror pre) {
+  background-color: var(--muted);
+  padding: 1rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+  margin-bottom: 1rem;
+}
+
+.editor-content :deep(.ProseMirror pre code) {
+  background-color: transparent;
+  padding: 0;
+}
+
+.editor-content :deep(.ProseMirror blockquote) {
+  border-left: 4px solid #233a83;
+  padding-left: 1rem;
+  font-style: italic;
+  margin: 1rem 0;
+  color: var(--muted-foreground);
+}
+
+.editor-content :deep(.ProseMirror a) {
+  color: #233a83;
+  text-decoration: underline;
+}
+
+:global(.dark) .editor-content :deep(.ProseMirror a) {
+  color: #9fb3ff;
+}
+
+.editor-content :deep(.ProseMirror strong) {
+  font-weight: 700;
+  color: var(--foreground);
+}
+
+.editor-content :deep(.ProseMirror em) {
+  font-style: italic;
+}
+
+.editor-content :deep(.ProseMirror table) {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1rem;
+}
+
+.editor-content :deep(.ProseMirror th),
+.editor-content :deep(.ProseMirror td) {
+  border: 1px solid var(--border);
+  padding: 0.5rem;
+  text-align: left;
+}
+
+.editor-content :deep(.ProseMirror th) {
+  background-color: var(--muted);
+  font-weight: 600;
+}
+
+.editor-content :deep(.ProseMirror img) {
+  max-width: 100%;
+  height: auto;
+  max-height: 360px;
+  object-fit: contain;
+  border-radius: 0.5rem;
+  margin: 1rem auto;
+  display: block;
+}
 </style>

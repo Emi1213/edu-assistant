@@ -1,7 +1,15 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ArrowLeft, Edit3, MessageSquare, MessageCircleQuestion, ClipboardList } from 'lucide-vue-next'
+import {
+  ArrowLeft,
+  ChevronLeft,
+  ChevronRight,
+  Edit3,
+  MessageSquare,
+  MessageCircleQuestion,
+  ClipboardList,
+} from 'lucide-vue-next'
 import { useLearningObject } from '../../composables/queries/use-learning-object'
 import { useRoles } from '@/features/auth/composables/use-roles'
 import { useAuthStore } from '@/features/auth/context/auth-store'
@@ -17,7 +25,7 @@ const router = useRouter()
 const learningObjectId = computed(() => Number(route.params.learningObjectId))
 const moduleId = computed(() => Number(route.params.id))
 
-const { data: learningObject, isLoading } = useLearningObject(learningObjectId.value)
+const { data: learningObject, isLoading } = useLearningObject(learningObjectId)
 const { canEdit, isStudent } = useRoles()
 const authStore = useAuthStore()
 
@@ -54,6 +62,20 @@ const goToEditor = () => {
 
 const goToActivities = () => {
   router.push(`/modules/${moduleId.value}/learning-objects/${learningObjectId.value}/activities`)
+}
+
+const hasAdjacentNavigation = computed(() => {
+  const lo = learningObject.value
+  if (!lo) return false
+  return lo.previousLoId != null || lo.nextLoId != null
+})
+
+const goToLearningObject = (targetId: number) => {
+  if (!Number.isFinite(targetId) || targetId <= 0 || !route.name) return
+  router.push({
+    name: route.name,
+    params: { ...route.params, learningObjectId: String(targetId) },
+  })
 }
 
 
@@ -93,6 +115,36 @@ const scrollToQuestions = () => {
       </button>
     </div>
 
+    <div
+      v-if="!isLoading && learningObject && isProfessor && hasAdjacentNavigation"
+      class="grid w-full grid-cols-2 items-center gap-3"
+      role="navigation"
+      aria-label="Navegación entre páginas del módulo"
+    >
+      <div class="flex min-w-0 justify-start">
+        <Button
+          v-if="learningObject.previousLoId != null"
+          variant="outline"
+          class="gap-2 max-w-full"
+          @click="goToLearningObject(learningObject.previousLoId)"
+        >
+          <ChevronLeft class="size-4 shrink-0" />
+          <span class="truncate">Anterior</span>
+        </Button>
+      </div>
+      <div class="flex min-w-0 justify-end">
+        <Button
+          v-if="learningObject.nextLoId != null"
+          variant="outline"
+          class="gap-2 max-w-full"
+          @click="goToLearningObject(learningObject.nextLoId)"
+        >
+          <span class="truncate">Siguiente</span>
+          <ChevronRight class="size-4 shrink-0" />
+        </Button>
+      </div>
+    </div>
+
     <div v-if="isLoading" class="space-y-4">
       <Skeleton class="h-10 w-3/4" />
       <Skeleton class="h-4 w-full" />
@@ -100,7 +152,11 @@ const scrollToQuestions = () => {
       <Skeleton class="h-4 w-2/3" />
     </div>
 
-    <div v-else-if="learningObject" class="flex flex-col lg:flex-row gap-0 min-w-0">
+    <div
+      v-else-if="learningObject"
+      :key="learningObject.id"
+      class="flex flex-col lg:flex-row gap-0 min-w-0"
+    >
       <div class="flex-1 min-w-0 overflow-x-auto">
         <div class="wiki-page">
           <div class="page-header">

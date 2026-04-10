@@ -9,6 +9,7 @@ import type {
   CreateLearningObjectPayload,
   CreateConceptPayload,
   Concept,
+  ReorderLearningObjectsPayload,
 } from '../types'
 import type { IHttpPaginatedResponse } from '@/shared/types/http-response.types'
 import { API_ROUTES } from '@/core/api/routes/api-routes'
@@ -48,6 +49,10 @@ export class LearningObjectsDataSource {
   async create(payload: CreateLearningObjectPayload): Promise<LearningObject | null> {
     const response = await this.httpClient.post<LearningObject>(API_ROUTES.LEARNING_OBJECTS.CREATE, payload)
     return response.data
+  }
+
+  async reorder(payload: ReorderLearningObjectsPayload): Promise<void> {
+    await this.httpClient.patch(API_ROUTES.LEARNING_OBJECTS.REORDER, payload)
   }
 
   async createConcept(learningObjectId: number, payload: CreateConceptPayload): Promise<Concept | null> {
