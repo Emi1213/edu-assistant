@@ -13,6 +13,7 @@ export type {
   ImageSuggestionBlock,
 } from './types'
 export { useGenerateContent } from './composables/mutations/use-generate-content'
+export { useRegenerateContent } from './composables/mutations/use-regenerate-content'
 
 export {
   TiptapEditor,

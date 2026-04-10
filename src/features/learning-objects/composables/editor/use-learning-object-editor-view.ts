@@ -3,13 +3,13 @@ import { useRoute, useRouter } from 'vue-router'
 import { useLearningObject } from '../queries/use-learning-object'
 import { useLearningObjectEditor } from './use-learning-object-editor'
 import { useUpdateLearningObject } from '../mutations/use-update-learning-object'
-import { useRegenerateContentMutation } from '../mutations/use-regenerate-content'
+import { useRegenerateContent } from '@/features/content-generation'
 import { processContentBlocks } from '@/features/content-generation/utils/process-content-blocks'
 import { useAIContentGeneration } from '@/features/content-generation/composables/use-ai-content-generation'
 import { useImageGenerationHandler } from '@/features/content-generation/composables/use-image-generation-handler'
 import { useConceptsGenerationHandler } from '@/features/content-generation/composables/use-concepts-generation-handler'
 import { useRelationsGenerationHandler } from '@/features/content-generation/composables/use-relations-generation-handler'
-import type { ExtractRelationsRelation } from '@/features/content-generation/types'
+import type { ExtractRelationsRelation} from '@/features/content-generation/types'
 import { useToast } from '@/shared/composables/use-toast'
 
 export function useLearningObjectEditorView() {
@@ -25,7 +25,7 @@ export function useLearningObjectEditorView() {
   const learningObjectKeywords = ref<string[]>([])
 
   const { mutateAsync: updateLearningObject, isPending: isUpdatingLearningObject } = useUpdateLearningObject(learningObjectId)
-  const { mutateAsync: regenerateContent, isPending: isRegenerating } = useRegenerateContentMutation(learningObjectId)
+  const { mutateAsync: regenerateContent, isPending: isRegenerating } = useRegenerateContent(learningObjectId)
 
   const {
     editor,
@@ -42,21 +42,7 @@ export function useLearningObjectEditorView() {
     try {
       const result = await regenerateContent({ instructions })
       if (result && result.blocks && editor.value) {
-       const blocksFixed = result.blocks.map((block: typeof result.blocks[number]) => ({
-       ...block,
-       content: (typeof block.content === 'object' && block.content !== null)
-         ? Object.fromEntries(
-             Object.entries(block.content).map(([k, v]) => [
-               k,
-               typeof v === 'string' ? v.replace(/\\n/g, '\n') : v
-             ])
-          )
-        : block.content
-    }));
-
-        const { content, imageSuggestions } = processContentBlocks(
-         blocksFixed as Parameters<typeof processContentBlocks>[0]
-)
+        const { content, imageSuggestions } = processContentBlocks(result.blocks)
 
         editor.value.commands.clearContent()
         editor.value.commands.setContent(content)

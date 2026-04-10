@@ -1,17 +1,3 @@
-interface GeneratedContentResponse {
-  blocks: Array<{
-    type: 'TEXT' | 'CODE' | 'IMAGE_SUGGESTION'; 
-    content: {
-      markdown?: string;
-      code?: string;
-      language?: string;
-      prompt?: string;
-      reason?: string;
-    } 
-  }>;
-  title: string;
-  keywords: string[];
-}
 import { httpClient } from '@/core/infraestructure/http'
 import type { IHttpHandler } from '@/core/interfaces/IHttpHandler'
 
@@ -58,14 +44,6 @@ export class LearningObjectsDataSource {
 
   async updateContent(id: number, payload: UpdateLearningObjectContentPayload): Promise<LearningObject | null> {
     const response = await this.httpClient.patch<LearningObject>(API_ROUTES.LEARNING_OBJECTS.UPDATE_CONTENT(id), payload)
-    return response.data
-  }
-
-  async regenerateContent(id: number, payload: { instructions: string }): Promise<GeneratedContentResponse | null> {
-    const response = await this.httpClient.post<GeneratedContentResponse>(API_ROUTES.CONTENT_GENERATION.REGENERATE_CONTENT, {
-      learningObjectId: id,
-      ...payload
-    })
     return response.data
   }
 
