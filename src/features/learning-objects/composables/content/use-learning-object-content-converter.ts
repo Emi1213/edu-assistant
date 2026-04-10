@@ -13,6 +13,13 @@ interface TiptapNode {
 
 
 export function useLearningObjectContentConverter() {
+  const extractRawText = (node: TiptapNode | undefined): string => {
+    if (!node) return ''
+    if (node.type === 'text') return node.text || ''
+    if (!node.content || node.content.length === 0) return ''
+    return node.content.map((child) => extractRawText(child)).join('')
+  }
+
   const convertEditorToBlocks = (editor: Editor | undefined): LOContentBlock[] => {
     if (!editor) return []
 
@@ -46,11 +53,13 @@ export function useLearningObjectContentConverter() {
       switch (tNode.type) {
         case 'codeBlock':
           flushTextNodes()
+          // A code block can contain multiple text nodes; keep full source.
+          const fullCode = (tNode.content || []).map((child) => extractRawText(child)).join('')
           blocks.push({
             orderIndex: blocks.length,
             type: 'CODE',
             content: {
-              code: tNode.content?.[0]?.text || '',
+              code: fullCode,
               language: tNode.attrs?.language || 'javascript',
             },
             tipTapContent: {
