@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { useRouter } from 'vue-router'
 import { EditorContent } from '@tiptap/vue-3'
 import {
   ArrowLeft,
@@ -11,11 +10,7 @@ import {
   BookOpen,
   Image,
   Zap,
-  ChevronLeft,
-  ChevronRight,
 } from 'lucide-vue-next'
-import { MODULES_ROUTES_NAMES } from '@/features/modules/routes/modules-routes'
-import { Button } from '@/components/ui/button'
 import { useLearningObjectEditorView } from '../../composables/editor/use-learning-object-editor-view'
 import { useLearningObjectEditorConceptModal } from '../../composables/editor/use-learning-object-editor-concept-modal'
 import { useLearningObjectEditorLinkModal } from '../../composables/editor/use-learning-object-editor-learning-object-link-modal'
@@ -33,12 +28,9 @@ import ConceptDefinitionHoverLayer from '../components/concept-definition-hover-
 import EditorToolbar from '../components/editor-toolbar.vue'
 import Skeleton from '@/components/ui/skeleton/Skeleton.vue'
 
-const router = useRouter()
-
 const {
   learningObjectId,
   moduleId,
-  learningObject,
   isLoadingLearningObject,
   editor,
   isSaving,
@@ -72,23 +64,6 @@ const currentAiActionLabel = computed(() => {
   if (isExtractingRelations.value) return 'Procesando relaciones...'
   return 'Selección De Herramienta'
 })
-
-const hasAdjacentNavigation = computed(() => {
-  const lo = learningObject.value
-  if (!lo) return false
-  return lo.previousLoId != null || lo.nextLoId != null
-})
-
-const goToAdjacentEdit = (targetId: number) => {
-  if (!Number.isFinite(targetId) || targetId <= 0) return
-  router.push({
-    name: MODULES_ROUTES_NAMES.LEARNING_OBJECT_EDIT,
-    params: {
-      id: String(moduleId.value),
-      learningObjectId: String(targetId),
-    },
-  })
-}
 
 const {
   showConceptModal,
@@ -180,38 +155,6 @@ const { visible: conceptTooltipVisible, text: conceptTooltipText, style: concept
             <Save v-else class="size-4" />
             <span class="hidden sm:inline">{{ isSaving ? 'Guardando...' : 'Guardar' }}</span>
           </button>
-        </div>
-      </div>
-    </div>
-
-    <div
-      v-if="!isLoadingLearningObject && learningObject && hasAdjacentNavigation"
-      class="border-b border-border bg-card px-4 sm:px-6 py-3"
-    >
-      <div class="max-w-7xl mx-auto grid w-full grid-cols-2 items-center gap-3">
-        <div class="flex min-w-0 justify-start">
-          <Button
-            v-if="learningObject.previousLoId != null"
-            variant="outline"
-            size="sm"
-            class="gap-2 max-w-full"
-            @click="goToAdjacentEdit(learningObject.previousLoId)"
-          >
-            <ChevronLeft class="size-4 shrink-0" />
-            <span class="truncate">Anterior</span>
-          </Button>
-        </div>
-        <div class="flex min-w-0 justify-end">
-          <Button
-            v-if="learningObject.nextLoId != null"
-            variant="outline"
-            size="sm"
-            class="gap-2 max-w-full"
-            @click="goToAdjacentEdit(learningObject.nextLoId)"
-          >
-            <span class="truncate">Siguiente</span>
-            <ChevronRight class="size-4 shrink-0" />
-          </Button>
         </div>
       </div>
     </div>

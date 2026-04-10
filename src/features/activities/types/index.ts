@@ -10,6 +10,12 @@ export type {
 export type {
   Activity,
   CreateActivityPayload,
+  CreateActivityOptionsDto,
+  CreateActivityMultipleChoiceDto,
+  CreateActivityTrueFalseDto,
+  CreateActivityFillBlankDto,
+  CreateActivityMatchDto,
+  CreateActivityMatchPairDto,
   UpdateActivityPayload,
   CorrectAnswerPayload,
 } from './activity.types'
