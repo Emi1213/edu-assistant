@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { EditorContent } from '@tiptap/vue-3'
-import { ArrowLeft, Sparkles, Loader2, X, Save, BookOpen, Image } from 'lucide-vue-next'
+import { ArrowLeft, Sparkles, Loader2, X, Save, BookOpen, Image, Zap } from 'lucide-vue-next'
 import { useLearningObjectEditorView } from '../../composables/editor/use-learning-object-editor-view'
 import { useLearningObjectEditorConceptModal } from '../../composables/editor/use-learning-object-editor-concept-modal'
 import { useLearningObjectEditorLinkModal } from '../../composables/editor/use-learning-object-editor-learning-object-link-modal'
@@ -32,6 +32,8 @@ const {
   generationError,
   handleGenerateConcepts,
   isExtractingConcepts,
+  handleGenerateRelations,
+  isExtractingRelations,
 } = useLearningObjectEditorView()
 
 const {
@@ -98,6 +100,17 @@ const { visible: conceptTooltipVisible, text: conceptTooltipText, style: concept
             <Loader2 v-if="isExtractingConcepts" class="size-4 animate-spin" />
             <BookOpen v-else class="size-4" />
             <span>{{ isExtractingConcepts ? 'Generando...' : 'Generar conceptos' }}</span>
+          </button>
+
+          <button
+            @click="handleGenerateRelations"
+            :disabled="isExtractingRelations"
+            type="button"
+            class="flex items-center gap-2 px-4 py-2.5 bg-muted text-foreground rounded-lg font-medium transition-all duration-200 hover:bg-muted/80 hover:shadow-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none"
+          >
+            <Loader2 v-if="isExtractingRelations" class="size-4 animate-spin" />
+            <Zap v-else class="size-4" />
+            <span>{{ isExtractingRelations ? 'Procesando...' : 'Relaciones' }}</span>
           </button>
 
           <button
