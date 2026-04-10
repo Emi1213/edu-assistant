@@ -16,10 +16,6 @@
     "format": "prettier --write src/",
     "prepare": "husky"
   },
-  "lint-staged": {
-    "*.{ts,vue}": "bash -c 'vue-tsc --noEmit --skipLibCheck'",
-    "*.{ts,vue,js}": "eslint --fix"
-  },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.18",
     "@tanstack/vue-query": "^5.92.6",
