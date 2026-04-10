@@ -1,4 +1,12 @@
 import type { ActivityOptionsByType, ActivityType } from './activity-options.types'
+import type {
+  CreateActivityOptionsDto,
+  CreateActivityMultipleChoiceDto,
+  CreateActivityTrueFalseDto,
+  CreateActivityFillBlankDto,
+  CreateActivityMatchDto,
+  CreateActivityMatchPairDto,
+} from './activity-create-dto.types'
 
 export interface Activity {
   id: number
@@ -17,10 +25,20 @@ export interface Activity {
   updatedAt: string
 }
 
-export type CreateActivityPayload = Pick<Activity, 'type' | 'question' | 'difficulty'> & {
-  options?: ActivityOptionsByType
-  explanation?: string
+export type CreateActivityPayload = {
+  type: ActivityType
+  options: CreateActivityOptionsDto
+  difficulty?: number
   isApprovedByTeacher?: boolean
+}
+
+export type {
+  CreateActivityOptionsDto,
+  CreateActivityMultipleChoiceDto,
+  CreateActivityTrueFalseDto,
+  CreateActivityFillBlankDto,
+  CreateActivityMatchDto,
+  CreateActivityMatchPairDto,
 }
 
 export type CorrectAnswerPayload =
@@ -32,9 +50,7 @@ export type CorrectAnswerPayload =
   | Record<string, unknown>
 
 export type UpdateActivityPayload = Partial<
-  Pick<Activity, 'type' | 'question' | 'difficulty' | 'isApprovedByTeacher'>
+  Pick<Activity, 'type' | 'difficulty' | 'isApprovedByTeacher' | 'usedAsExample'>
 > & {
-  options?: Record<string, unknown>
-  explanation?: string
-  usedAsExample?: boolean
+  options?: CreateActivityOptionsDto
 }
