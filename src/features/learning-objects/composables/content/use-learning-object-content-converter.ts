@@ -199,6 +199,7 @@ export function useLearningObjectContentConverter() {
       case 'text':
         return node.text || ''
       case 'learningObjectLink':
+      case 'pageLink':
         if (node.content?.length) {
           return node.content.map((c) => learningObjectLinkPlainText(c)).join('')
         }
@@ -247,8 +248,9 @@ export function useLearningObjectContentConverter() {
         const term = node.content?.length ? conceptPlainText(node) : (node.attrs?.term ?? '')
         return term ? `[[concept:${id}|${term}]]` : ''
       }
-      case 'learningObjectLink': {
-        const id = node.attrs?.targetLearningObjectId ?? 0
+      case 'learningObjectLink':
+      case 'pageLink': {
+        const id = node.attrs?.targetLearningObjectId ?? node.attrs?.targetPageId ?? 0
         const text = node.content?.length
           ? node.content.map((c) => inlineToMarkdown(c)).join('')
           : (node.attrs?.mentionText ?? '')
@@ -273,8 +275,9 @@ export function useLearningObjectContentConverter() {
         return term ? `[[concept:${id}|${term}]]` : ''
       }
 
-      case 'learningObjectLink': {
-        const id = node.attrs?.targetLearningObjectId ?? 0
+      case 'learningObjectLink':
+      case 'pageLink': {
+        const id = node.attrs?.targetLearningObjectId ?? node.attrs?.targetPageId ?? 0
         const text = node.content?.length ? learningObjectLinkPlainText(node) : (node.attrs?.mentionText ?? '')
         return text ? `[[learning-object:${id}|${text}]]` : ''
       }
