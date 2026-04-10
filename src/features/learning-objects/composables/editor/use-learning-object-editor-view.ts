@@ -67,7 +67,24 @@ export function useLearningObjectEditorView() {
     }
   }
 
-  const { generateRelations } = useRelationsGenerationHandler(learningObjectId, editor)
+  const { generateRelations, isExtracting: isExtractingRelations } = useRelationsGenerationHandler(
+    learningObjectId.value,
+    editor
+  )
+
+  const handleGenerateRelations = async () => {
+    try {
+      // Guardar antes para asegurar que el backend tenga el contenido actualizado
+      await saveLearningObject()
+
+      generateRelations(
+        () => toast.success('Relaciones generadas y aplicadas'),
+        (msg) => toast.error(msg)
+      )
+    } catch {
+      // Error ya manejado en saveLearningObject
+    }
+  }
 
   const relationsStorageKey = (id: number) => `learning-object-relations-${id}`
 
@@ -203,5 +220,7 @@ export function useLearningObjectEditorView() {
     generationError,
     handleGenerateConcepts,
     isExtractingConcepts,
+    handleGenerateRelations,
+    isExtractingRelations,
   }
 }
