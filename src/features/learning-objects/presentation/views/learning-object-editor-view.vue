@@ -21,6 +21,12 @@ import { useLearningObjectEditorConceptModal } from '../../composables/editor/us
 import { useLearningObjectEditorLinkModal } from '../../composables/editor/use-learning-object-editor-learning-object-link-modal'
 import { useLearningObjectEditorExternalLinkModal } from '../../composables/editor/use-learning-object-editor-external-link-modal'
 import { useLearningObjectEditorImageModal } from '../../composables/editor/use-learning-object-editor-image-modal'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { useConceptDefinitionHoverTooltip } from '../../composables/use-concept-definition-hover-tooltip'
 import ConceptDefinitionHoverLayer from '../components/concept-definition-hover-layer.vue'
@@ -53,6 +59,19 @@ const {
   handleGenerateRelations,
   isExtractingRelations,
 } = useLearningObjectEditorView()
+
+const isAnyAiActionLoading = computed(
+  () =>
+    isGenerating.value ||
+    isExtractingConcepts.value ||
+    isExtractingRelations.value,
+)
+const currentAiActionLabel = computed(() => {
+  if (isGenerating.value) return 'Generando contenido...'
+  if (isExtractingConcepts.value) return 'Generando conceptos...'
+  if (isExtractingRelations.value) return 'Procesando relaciones...'
+  return 'Selección De Herramienta'
+})
 
 const hasAdjacentNavigation = computed(() => {
   const lo = learningObject.value
@@ -125,37 +144,32 @@ const { visible: conceptTooltipVisible, text: conceptTooltipText, style: concept
         </button>
 
         <div class="flex flex-wrap items-center justify-center sm:justify-end gap-2 sm:gap-3 order-1 sm:order-2">
-          <button
-            @click="openAIModal"
-            :disabled="isGenerating"
-            class="flex items-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-lg font-medium transition-all duration-200 hover:bg-primary/90 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none"
-          >
-            <Loader2 v-if="isGenerating" class="size-4 animate-spin" />
-            <Sparkles v-else class="size-4" />
-            <span>{{ isGenerating ? 'Generando...' : 'Generar con IA' }}</span>
-          </button>
-
-          <button
-            @click="handleGenerateConcepts"
-            :disabled="isExtractingConcepts"
-            type="button"
-            class="flex items-center gap-2 px-4 py-2.5 bg-muted text-foreground rounded-lg font-medium transition-all duration-200 hover:bg-muted/80 hover:shadow-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none"
-          >
-            <Loader2 v-if="isExtractingConcepts" class="size-4 animate-spin" />
-            <BookOpen v-else class="size-4" />
-            <span>{{ isExtractingConcepts ? 'Generando...' : 'Generar conceptos' }}</span>
-          </button>
-
-          <button
-            @click="handleGenerateRelations"
-            :disabled="isExtractingRelations"
-            type="button"
-            class="flex items-center gap-2 px-4 py-2.5 bg-muted text-foreground rounded-lg font-medium transition-all duration-200 hover:bg-muted/80 hover:shadow-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none"
-          >
-            <Loader2 v-if="isExtractingRelations" class="size-4 animate-spin" />
-            <Zap v-else class="size-4" />
-            <span>{{ isExtractingRelations ? 'Procesando...' : 'Relaciones' }}</span>
-          </button>
+          <DropdownMenu>
+            <DropdownMenuTrigger as-child>
+              <button
+                :disabled="isAnyAiActionLoading"
+                class="flex items-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-lg font-medium transition-all duration-200 hover:bg-primary/90 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none"
+              >
+                <Loader2 v-if="isAnyAiActionLoading" class="size-4 animate-spin" />
+                <Zap v-else class="size-4" />
+                <span>{{ currentAiActionLabel }}</span>
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" class="w-56">
+              <DropdownMenuItem @click="openAIModal" :disabled="isGenerating">
+                <Sparkles class="mr-2 size-4" />
+                <span>Generar con IA</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem @click="handleGenerateConcepts" :disabled="isExtractingConcepts">
+                <BookOpen class="mr-2 size-4" />
+                <span>Generar conceptos</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem @click="handleGenerateRelations" :disabled="isExtractingRelations">
+                <Zap class="mr-2 size-4" />
+                <span>Relaciones</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           <button
             @click="saveContent"
