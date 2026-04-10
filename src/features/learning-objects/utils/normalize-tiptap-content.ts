@@ -11,8 +11,15 @@ function normalizeSingleNode(node: TiptapNode): TiptapNode {
 
   if (normalizedType === 'learningObjectLink') {
     const targetPageId = attrs.targetPageId
-    if (attrs.targetLearningObjectId == null && typeof targetPageId === 'number') {
-      attrs.targetLearningObjectId = targetPageId
+    if (attrs.targetLearningObjectId == null) {
+      if (typeof targetPageId === 'number') {
+        attrs.targetLearningObjectId = targetPageId
+      } else if (typeof targetPageId === 'string') {
+        const parsed = Number(targetPageId)
+        if (Number.isFinite(parsed) && parsed > 0) {
+          attrs.targetLearningObjectId = parsed
+        }
+      }
     }
     delete attrs.targetPageId
   }

@@ -250,7 +250,8 @@ export function useLearningObjectContentConverter() {
       }
       case 'learningObjectLink':
       case 'pageLink': {
-        const id = node.attrs?.targetLearningObjectId ?? node.attrs?.targetPageId ?? 0
+        const rawId = node.attrs?.targetLearningObjectId ?? node.attrs?.targetPageId ?? 0
+        const id = Number(rawId) || 0
         const text = node.content?.length
           ? node.content.map((c) => inlineToMarkdown(c)).join('')
           : (node.attrs?.mentionText ?? '')
@@ -277,7 +278,8 @@ export function useLearningObjectContentConverter() {
 
       case 'learningObjectLink':
       case 'pageLink': {
-        const id = node.attrs?.targetLearningObjectId ?? node.attrs?.targetPageId ?? 0
+        const rawId = node.attrs?.targetLearningObjectId ?? node.attrs?.targetPageId ?? 0
+        const id = Number(rawId) || 0
         const text = node.content?.length ? learningObjectLinkPlainText(node) : (node.attrs?.mentionText ?? '')
         return text ? `[[learning-object:${id}|${text}]]` : ''
       }
