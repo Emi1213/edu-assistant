@@ -7,6 +7,8 @@ export interface ProcessedContent {
   imageSuggestions: Array<{ prompt: string; reason: string }>
 }
 
+const fixNewlines = (text: string) => text.replace(/\\n/g, '\n')
+
 export const processContentBlocks = (blocks: ContentGenerationBlock[]): ProcessedContent => {
   let contentToInsert = ''
   const imageSuggestions: Array<{ prompt: string; reason: string }> = []
@@ -15,13 +17,15 @@ export const processContentBlocks = (blocks: ContentGenerationBlock[]): Processe
     switch (b.type) {
       case 'TEXT':
         if (b.content && 'markdown' in b.content) {
-          const normalized = normalizeConceptMarkersInMarkdown(b.content.markdown)
+          const fixedMarkdown = fixNewlines(b.content.markdown)
+          const normalized = normalizeConceptMarkersInMarkdown(fixedMarkdown)
           contentToInsert += marked.parse(normalized) as string
         }
         break
       case 'CODE':
         if (b.content && 'code' in b.content) {
-          const escapedCode = b.content.code
+          const fixedCode = fixNewlines(b.content.code)
+          const escapedCode = fixedCode
             .replace(/&/g, '&amp;')
             .replace(/</g, '&lt;')
             .replace(/>/g, '&gt;')
@@ -32,8 +36,8 @@ export const processContentBlocks = (blocks: ContentGenerationBlock[]): Processe
       case 'IMAGE_SUGGESTION':
         if (b.content && 'prompt' in b.content) {
           imageSuggestions.push({
-            prompt: b.content.prompt,
-            reason: ('reason' in b.content ? b.content.reason : '') || '',
+            prompt: fixNewlines(b.content.prompt),
+            reason: (('reason' in b.content ? b.content.reason : '') || '').replace(/\\n/g, '\n'),
           })
         }
         break
