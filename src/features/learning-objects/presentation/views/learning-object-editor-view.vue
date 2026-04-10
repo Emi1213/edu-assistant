@@ -30,6 +30,7 @@ import {
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { useConceptDefinitionHoverTooltip } from '../../composables/use-concept-definition-hover-tooltip'
 import ConceptDefinitionHoverLayer from '../components/concept-definition-hover-layer.vue'
+import RegenerateContentModal from '../components/RegenerateContentModal.vue'
 import EditorToolbar from '../components/editor-toolbar.vue'
 import Skeleton from '@/components/ui/skeleton/Skeleton.vue'
 
@@ -52,6 +53,9 @@ const {
   closeAIModal,
   handleGenerateContent,
   handleKeyDown,
+  handleRegenerateContent,
+  showRegenerateModal,
+  isRegenerating,
   isGenerating,
   generationError,
   handleGenerateConcepts,
@@ -159,6 +163,10 @@ const { visible: conceptTooltipVisible, text: conceptTooltipText, style: concept
               <DropdownMenuItem @click="openAIModal" :disabled="isGenerating">
                 <Sparkles class="mr-2 size-4" />
                 <span>Generar con IA</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem @click="showRegenerateModal = true" :disabled="isRegenerating">
+                <Wand2 class="mr-2 size-4" />
+                <span>Regenerar contenido</span>
               </DropdownMenuItem>
               <DropdownMenuItem @click="handleGenerateConcepts" :disabled="isExtractingConcepts">
                 <BookOpen class="mr-2 size-4" />
@@ -514,6 +522,11 @@ const { visible: conceptTooltipVisible, text: conceptTooltipText, style: concept
         </div>
       </div>
     </Teleport>
+    <RegenerateContentModal
+      v-model:open="showRegenerateModal"
+      :is-loading="isRegenerating"
+      @regenerate="handleRegenerateContent"
+    />
   </div>
 </template>
 
