@@ -3,11 +3,13 @@ import { useRoute, useRouter } from 'vue-router'
 import { useLearningObject } from '../queries/use-learning-object'
 import { useLearningObjectEditor } from './use-learning-object-editor'
 import { useUpdateLearningObject } from '../mutations/use-update-learning-object'
+import { useRegenerateContent } from '@/features/content-generation'
+import { processContentBlocks } from '@/features/content-generation/utils/process-content-blocks'
 import { useAIContentGeneration } from '@/features/content-generation/composables/use-ai-content-generation'
 import { useImageGenerationHandler } from '@/features/content-generation/composables/use-image-generation-handler'
 import { useConceptsGenerationHandler } from '@/features/content-generation/composables/use-concepts-generation-handler'
 import { useRelationsGenerationHandler } from '@/features/content-generation/composables/use-relations-generation-handler'
-import type { ExtractRelationsRelation } from '@/features/content-generation/types'
+import type { ExtractRelationsRelation} from '@/features/content-generation/types'
 import { useToast } from '@/shared/composables/use-toast'
 import { MODULES_ROUTES_NAMES } from '@/features/modules/routes/modules-routes'
 
@@ -24,6 +26,8 @@ export function useLearningObjectEditorView() {
   const learningObjectKeywords = ref<string[]>([])
 
   const { mutateAsync: updateLearningObject, isPending: isUpdatingLearningObject } = useUpdateLearningObject(learningObjectId)
+  const { mutateAsync: regenerateContent, isPending: isRegenerating } = useRegenerateContent(learningObjectId)
+
   const {
     editor,
     isMounted,
@@ -32,6 +36,38 @@ export function useLearningObjectEditorView() {
     insertContent,
     saveContent,
   } = useLearningObjectEditor(learningObjectId)
+
+  const showRegenerateModal = ref(false)
+
+  const handleRegenerateContent = async (instructions: string) => {
+    try {
+      const result = await regenerateContent({ instructions })
+      if (result && result.blocks && editor.value) {
+        const { content, imageSuggestions } = processContentBlocks(result.blocks)
+
+        editor.value.commands.clearContent()
+        editor.value.commands.setContent(content)
+
+        if (imageSuggestions.length > 0) {
+          imageSuggestions.forEach((suggestion) => {
+            editor.value?.commands.setImageSuggestion(suggestion.prompt, suggestion.reason)
+          })
+        }
+
+        if (result.title) learningObjectTitle.value = result.title
+        if (result.keywords) learningObjectKeywords.value = result.keywords
+
+        toast.success('Contenido regenerado exitosamente')
+        showRegenerateModal.value = false
+      } else if (learningObject.value) {
+        setContentFromLearningObject(learningObject.value)
+        toast.error('No se recibió contenido válido de la IA')
+      }
+    } catch (e) {
+      console.error('Error al regenerar:', e)
+      toast.error('Error al regenerar contenido')
+    }
+  }
 
   const saveLearningObject = async () => {
     await updateLearningObject({ title: learningObjectTitle.value, keywords: learningObjectKeywords.value })
@@ -56,15 +92,13 @@ export function useLearningObjectEditorView() {
   )
   const handleGenerateConcepts = async () => {
     try {
-      // Save before extracting to ensure backend has blocks
       await saveLearningObject()
-      
+
       generateConcepts(
         () => toast.success('Conceptos generados'),
         (msg) => toast.error(msg)
       )
     } catch {
-      // Error already handled in saveLearningObject/saveContent
     }
   }
 
@@ -75,7 +109,6 @@ export function useLearningObjectEditorView() {
 
   const handleGenerateRelations = async () => {
     try {
-      // Guardar antes para asegurar que el backend tenga el contenido actualizado
       await saveLearningObject()
 
       generateRelations(
@@ -83,7 +116,6 @@ export function useLearningObjectEditorView() {
         (msg) => toast.error(msg)
       )
     } catch {
-      // Error ya manejado en saveLearningObject
     }
   }
 
@@ -221,6 +253,9 @@ export function useLearningObjectEditorView() {
     handleGenerateContent,
     handleKeyDown,
     isGenerating,
+    handleRegenerateContent,
+    showRegenerateModal,
+    isRegenerating,
     generationError,
     handleGenerateConcepts,
     isExtractingConcepts,
@@ -228,3 +263,4 @@ export function useLearningObjectEditorView() {
     isExtractingRelations,
   }
 }
+
