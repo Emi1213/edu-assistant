@@ -28,7 +28,6 @@ function handleDragStart(e: DragEvent, index: number) {
   e.dataTransfer?.setData('text/plain', String(index))
   if (e.dataTransfer) {
     e.dataTransfer.effectAllowed = 'move'
-    // Optional: make the ghost image look better
     const target = e.target as HTMLElement
     if (target) target.style.opacity = '0.5'
   }

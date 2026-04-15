@@ -21,6 +21,6 @@ export function buildReorderPayloadAfterMove(
 
   return {
     id: movedLo.id,
-    orderIndex: toIndex + 1, // API uses 1-based index
+    orderIndex: toIndex + 1, 
   }
 }
