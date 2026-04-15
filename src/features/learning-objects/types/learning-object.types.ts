@@ -49,6 +49,4 @@ export interface ReorderLearningObjectItem {
   orderIndex: number
 }
 
-export interface ReorderLearningObjectsPayload {
-  los: ReorderLearningObjectItem[]
-}
+export type ReorderLearningObjectsPayload = ReorderLearningObjectItem

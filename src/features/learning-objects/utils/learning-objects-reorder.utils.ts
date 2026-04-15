@@ -15,11 +15,12 @@ export function buildReorderPayloadAfterMove(
   if (fromIndex === toIndex) return null
   if (fromIndex < 0 || fromIndex >= sorted.length) return null
   if (toIndex < 0 || toIndex >= sorted.length) return null
-  const next = [...sorted]
-  const [removed] = next.splice(fromIndex, 1)
-  if (removed === undefined) return null
-  next.splice(toIndex, 0, removed)
+
+  const movedLo = sorted[fromIndex]
+  if (!movedLo) return null
+
   return {
-    los: next.map((lo, i) => ({ id: lo.id, orderIndex: i + 1 })),
+    id: movedLo.id,
+    orderIndex: toIndex + 1, // API uses 1-based index
   }
 }
