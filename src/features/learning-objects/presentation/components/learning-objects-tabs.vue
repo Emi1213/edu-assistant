@@ -21,6 +21,7 @@ const props = defineProps<{
   onUpdateLearningObject?: (learningObject: LearningObject) => void
   onGenerateRelations?: (learningObject: LearningObject) => void
   onPublishNow?: (learningObject: LearningObject) => void
+  onChat?: (learningObject: LearningObject) => void
 }>()
 
 const emit = defineEmits<{
@@ -122,6 +123,7 @@ const buildDetailRoute = (learningObject: LearningObject): RouteLocationRaw => (
       :on-update-learning-object="onUpdateLearningObject"
       :on-generate-relations="onGenerateRelations"
       :on-publish-now="onPublishNow"
+      :on-chat="onChat"
     />
   </div>
 </template>

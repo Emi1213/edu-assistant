@@ -18,6 +18,7 @@ const props = defineProps<{
   onUpdateLearningObject?: (learningObject: LearningObject) => void
   onGenerateRelations?: (learningObject: LearningObject) => void
   onPublishNow?: (learningObject: LearningObject) => void
+  onChat?: (learningObject: LearningObject) => void
 }>()
 
 const dragFromIndex = ref<number | null>(null)
@@ -113,6 +114,7 @@ function rowDrop(toIndex: number, e: DragEvent) {
             :on-update-learning-object="canEdit ? onUpdateLearningObject : undefined"
             :on-generate-relations="canEdit ? onGenerateRelations : undefined"
             :on-publish-now="canEdit ? onPublishNow : undefined"
+            :on-chat="onChat"
           />
         </div>
       </div>

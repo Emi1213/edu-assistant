@@ -15,6 +15,8 @@ import UpdateLearningObjectDialog from '@/features/learning-objects/presentation
 import Skeleton from '@/components/ui/skeleton/Skeleton.vue'
 import type { LearningObject } from '@/features/learning-objects/types'
 import { useUpdateLearningObject } from '@/features/learning-objects/composables/mutations/use-update-learning-object'
+import { Sheet, SheetContent } from '@/components/ui/sheet'
+import ChatPanel from '@/features/chat/presentation/components/chat-panel.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -22,7 +24,10 @@ const toast = useToast()
 const moduleId = computed(() => Number(route.params.id))
 
 const { data: module, isLoading: isLoadingModule } = useModule(moduleId.value)
-const { canEdit } = useRoles()
+const { canEdit, isStudent } = useRoles()
+
+const isChatOpen = ref(false)
+const selectedLearningObjectId = ref<number | null>(null)
 
 const { data: learningObjectTypes, isLoading: isLoadingTypes } = useLearningObjectTypes()
 const types = computed(() => learningObjectTypes.value ?? [])
@@ -66,6 +71,11 @@ const handlePublishNow = (learningObject: LearningObject) => {
 
 const goBack = () => {
   router.push({ name: 'modules' })
+}
+
+const handleChat = (learningObject: LearningObject) => {
+  selectedLearningObjectId.value = learningObject.id
+  isChatOpen.value = true
 }
 
 const handleGenerateRelations = (learningObject: LearningObject) => {
@@ -176,6 +186,7 @@ const handleGenerateRelations = (learningObject: LearningObject) => {
         :on-update-learning-object="openUpdateLearningObject"
         :on-generate-relations="handleGenerateRelations"
         :on-publish-now="handlePublishNow"
+        :on-chat="isStudent ? handleChat : undefined"
         @create="openDialog"
       />
 
@@ -202,5 +213,16 @@ const handleGenerateRelations = (learningObject: LearningObject) => {
       :learning-object="learningObjectToUpdate"
       @close="closeUpdateLearningObject"
     />
+
+    <Sheet :open="isChatOpen" @update:open="isChatOpen = $event">
+      <SheetContent side="right" class="w-[400px] sm:w-[540px] p-0">
+        <ChatPanel 
+          v-if="selectedLearningObjectId" 
+          :learning-object-id="selectedLearningObjectId"
+          @close="isChatOpen = false" 
+        />
+      </SheetContent>
+    </Sheet>
+
   </div>
 </template>

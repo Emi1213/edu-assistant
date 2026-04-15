@@ -69,6 +69,15 @@ export const API_ROUTES = {
             CREATE: (learningObjectId: number) => `${AR_KEYS.LEARNING_OBJECTS}/${learningObjectId}/activities`,
             BY_ID: (learningObjectId: number, activityId: number) => `${AR_KEYS.LEARNING_OBJECTS}/${learningObjectId}/activities/${activityId}`,
         },
+        SESSIONS: {
+            CREATE_OR_GET: (learningObjectId: number) => `${AR_KEYS.LEARNING_OBJECTS}/${learningObjectId}/sessions`,
+        },
+    },
+    CHAT: {
+        SESSIONS: {
+            LIST_MESSAGES: (sessionId: number) => `/sessions/${sessionId}/messages`,
+            SEND_MESSAGE: (sessionId: number) => `/sessions/${sessionId}/messages`,
+        },
     },
     ACTIVITIES: {
         ATTEMPTS: (activityId: number) => `${AR_KEYS.ACTIVITIES}/${activityId}/attempts`,

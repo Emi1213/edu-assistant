@@ -24,5 +24,8 @@ export const QUERY_KEYS = {
     ACTIVITIES: (learningObjectId: number) => ['activities', learningObjectId],
     AI_CONFIG: () => ['ai-config'],
     TEACHERS_EMAILS: () => ['teachers-emails'],
-    } 
- 
+
+    // Chat
+    CHAT_SESSIONS: (learningObjectId: number) => ['chat-sessions', learningObjectId],
+    CHAT_MESSAGES: (sessionId: number) => ['chat-messages', sessionId],
+    }

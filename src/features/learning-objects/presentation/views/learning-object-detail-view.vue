@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
   ArrowLeft,
@@ -9,6 +9,7 @@ import {
   MessageSquare,
   MessageCircleQuestion,
   ClipboardList,
+  Bot,
 } from 'lucide-vue-next'
 import { useLearningObject } from '../../composables/queries/use-learning-object'
 import { useRoles } from '@/features/auth/composables/use-roles'
@@ -20,6 +21,8 @@ import StudentQuestionsPanel from '@/features/student-questions/presentation/com
 import Skeleton from '@/components/ui/skeleton/Skeleton.vue'
 import { Button } from '@/components/ui/button'
 import { MODULES_ROUTES_NAMES } from '@/features/modules/routes/modules-routes'
+import { Sheet, SheetContent } from '@/components/ui/sheet'
+import ChatPanel from '@/features/chat/presentation/components/chat-panel.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -29,6 +32,8 @@ const moduleId = computed(() => Number(route.params.id))
 const { data: learningObject, isLoading } = useLearningObject(learningObjectId)
 const { canEdit, isStudent } = useRoles()
 const authStore = useAuthStore()
+
+const isChatOpen = ref(false)
 
 const pageNotes = computed(() => {
   if (!learningObject.value) return []
@@ -72,6 +77,10 @@ const goToActivities = () => {
     name: MODULES_ROUTES_NAMES.LEARNING_OBJECT_ACTIVITIES,
     params: { id: moduleId.value, learningObjectId: learningObjectId.value },
   })
+}
+
+const goToChat = () => {
+  isChatOpen.value = true
 }
 
 const hasAdjacentNavigation = computed(() => {
@@ -185,6 +194,15 @@ const scrollToQuestions = () => {
             
             <div class="mt-4 flex flex-wrap gap-2">
               <button
+                v-if="isStudent"
+                @click="goToChat"
+                class="inline-flex items-center gap-2 px-4 py-2 text-sm font-bold bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
+              >
+                <Bot class="size-4" />
+                <span>Chat con IA</span>
+              </button>
+
+              <button
                 @click="scrollToFeedback"
                 class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-primary hover:text-primary/80 hover:bg-primary/10 rounded-lg transition-all duration-200"
               >
@@ -236,6 +254,16 @@ const scrollToQuestions = () => {
     <div v-else class="rounded-md bg-card px-6 py-12 text-center">
       <p class="text-muted-foreground">Objeto de aprendizaje no encontrado</p>
     </div>
+
+    <Sheet :open="isChatOpen" @update:open="isChatOpen = $event">
+      <SheetContent side="right" class="w-[400px] sm:w-[540px] p-0">
+        <ChatPanel 
+          v-if="learningObject" 
+          :learning-object-id="learningObject.id"
+          @close="isChatOpen = false" 
+        />
+      </SheetContent>
+    </Sheet>
 
   </div>
 </template>

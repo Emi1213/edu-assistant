@@ -19,6 +19,7 @@ export interface LearningObject {
   loFeedbacks?: LOFeedback[] | null
   notes?: Note[] | null
   blocks?: LOContentBlock[]
+  chatSessionId: number | null
   previousLoId: number | null
   nextLoId: number | null
 }
