@@ -1,5 +1,6 @@
 import type { Editor } from '@tiptap/vue-3'
 import type { LearningObject, LOContentBlock } from '../../types'
+import { normalizeTiptapContent } from '../../utils/normalize-tiptap-content'
 
 interface TiptapDoc {
   type: 'doc'
@@ -23,14 +24,15 @@ export function useLearningObjectContentLoader() {
 
     learningObject.blocks.forEach((block: LOContentBlock) => {
       if (block.tipTapContent && block.tipTapContent.content) {
+        const normalizedNodes = normalizeTiptapContent(block.tipTapContent.content)
         if (filterImageSuggestions) {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const filteredContent = block.tipTapContent.content.filter((node: any) => 
+          const filteredContent = normalizedNodes.filter((node: any) => 
             node.type !== 'imageSuggestion'
           )
           combinedContent.content.push(...filteredContent)
         } else {
-          combinedContent.content.push(...block.tipTapContent.content)
+          combinedContent.content.push(...normalizedNodes)
         }
       }
     })

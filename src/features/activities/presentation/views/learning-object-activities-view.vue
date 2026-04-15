@@ -20,6 +20,7 @@ import ActivityAttemptModal from '@/features/activities/presentation/components/
 import { Button } from '@/components/ui/button'
 import Skeleton from '@/components/ui/skeleton/Skeleton.vue'
 import { LANGUAGE_OPTIONS } from '@/features/modules/constants/modules.constants'
+import { MODULES_ROUTES_NAMES } from '@/features/modules/routes/modules-routes'
 import { getActivityTypeLabel } from '@/features/activities/constants/activity.constants'
 import { useToast } from '@/shared/composables/use-toast'
 
@@ -40,8 +41,12 @@ const { mutate: createAttempt, isPending: isSubmittingAttempt } = useCreateActiv
 const activities = computed(() => activitiesData.value ?? [])
 
 const goBackToPage = () => {
+  const detailRouteName =
+    route.name === MODULES_ROUTES_NAMES.PAGE_DETAIL
+      ? MODULES_ROUTES_NAMES.PAGE_DETAIL
+      : MODULES_ROUTES_NAMES.LEARNING_OBJECT_DETAIL
   router.push({
-    name: 'learning-object-detail',
+    name: detailRouteName,
     params: {
       id: moduleId.value,
       learningObjectId: learningObjectId.value,

@@ -9,6 +9,7 @@ import { useConceptsGenerationHandler } from '@/features/content-generation/comp
 import { useRelationsGenerationHandler } from '@/features/content-generation/composables/use-relations-generation-handler'
 import type { ExtractRelationsRelation } from '@/features/content-generation/types'
 import { useToast } from '@/shared/composables/use-toast'
+import { MODULES_ROUTES_NAMES } from '@/features/modules/routes/modules-routes'
 
 export function useLearningObjectEditorView() {
   const route = useRoute()
@@ -168,7 +169,10 @@ export function useLearningObjectEditorView() {
   )
 
   const goBack = () => {
-    router.push(`/modules/${moduleId.value}/learning-objects/${learningObjectId.value}`)
+    router.push({
+      name: MODULES_ROUTES_NAMES.LEARNING_OBJECT_DETAIL,
+      params: { id: moduleId.value, learningObjectId: learningObjectId.value },
+    })
   }
 
   const handleGenerateContent = () => {

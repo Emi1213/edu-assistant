@@ -6,6 +6,7 @@ import { useLearningObjectContentViewer } from '../../composables/content/use-le
 import { useConceptDefinitionHoverTooltip } from '../../composables/use-concept-definition-hover-tooltip'
 import ConceptDefinitionHoverLayer from './concept-definition-hover-layer.vue'
 import type { LearningObject, LOContentBlock } from '../../types'
+import { normalizeTiptapContent } from '../../utils/normalize-tiptap-content'
 
 interface Props {
   learningObject: LearningObject
@@ -40,8 +41,9 @@ const editorContent = computed(() => {
 
     props.learningObject.blocks.forEach((block: LOContentBlock) => {
       if (block.tipTapContent && block.tipTapContent.content) {
+        const normalizedNodes = normalizeTiptapContent(block.tipTapContent.content)
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const filteredContent = block.tipTapContent.content.filter((node: any) =>
+        const filteredContent = normalizedNodes.filter((node: any) =>
           node.type !== 'imageSuggestion'
         )
         combinedContent.content.push(...filteredContent)
