@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { ref, onMounted, computed, nextTick, watch } from 'vue'
+import { ref, computed, nextTick, watch } from 'vue'
 import { MessageSquare, Sparkles, X, Send, Loader2, Bot } from 'lucide-vue-next'
-import { useCreateChatSession } from '../../composables/mutations/use-create-chat-session'
 import { useChatMessages } from '../../composables/queries/use-chat-messages'
 import { useSendChatMessage } from '../../composables/mutations/use-send-chat-message'
 import { Button } from '@/components/ui/button'
@@ -10,23 +9,21 @@ import { useQueryClient } from '@tanstack/vue-query'
 import { QUERY_KEYS } from '@/shared/composables/query-key'
 
 interface Props {
-  learningObjectId: number
+  sessionId: number
 }
 
 const props = defineProps<Props>()
 const emit = defineEmits(['close'])
 
 const queryClient = useQueryClient()
-const { mutate: createChatSession, isPending: isStartingSession } = useCreateChatSession(props.learningObjectId)
-const sessionId = ref<number | undefined>()
 const currentMessage = ref('')
 const pendingUserMessage = ref('')
 const messagesEndRef = ref<HTMLElement | null>(null)
 
-const { data: messagesResponse } = useChatMessages(sessionId)
+const { data: messagesResponse } = useChatMessages(computed(() => props.sessionId))
 const messages = computed(() => messagesResponse.value?.records ?? [])
 
-const { mutate: sendChatMessage, isPending: isSendingMessage } = useSendChatMessage(sessionId)
+const { mutate: sendChatMessage, isPending: isSendingMessage } = useSendChatMessage(props.sessionId)
 
 const scrollToBottom = async () => {
   await nextTick()
@@ -37,21 +34,10 @@ const scrollToBottom = async () => {
 
 watch([messages, isSendingMessage], () => {
   scrollToBottom()
-}, { deep: true })
-
-onMounted(() => {
-  createChatSession({}, {
-    onSuccess: (session) => {
-      if (session) {
-        sessionId.value = session.id
-        scrollToBottom()
-      }
-    }
-  })
-})
+}, { deep: true, immediate: true })
 
 const handleSendMessage = () => {
-  if (!currentMessage.value.trim() || isSendingMessage.value || !sessionId.value) return
+  if (!currentMessage.value.trim() || isSendingMessage.value) return
 
   const messageText = currentMessage.value.trim()
   pendingUserMessage.value = messageText
@@ -61,7 +47,7 @@ const handleSendMessage = () => {
     { message: messageText },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.CHAT_MESSAGES(sessionId.value!) })
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.CHAT_MESSAGES(props.sessionId) })
         pendingUserMessage.value = ''
       },
       onError: () => {
@@ -85,12 +71,7 @@ const handleSendMessage = () => {
       </button>
     </div>
     
-    <div v-if="isStartingSession" class="flex-1 flex flex-col items-center justify-center p-6 text-center space-y-4">
-      <Loader2 class="size-10 text-primary animate-spin" />
-      <p class="text-muted-foreground font-medium">Iniciando sesión con el asistente...</p>
-    </div>
-
-    <div v-else-if="sessionId" class="flex-1 flex flex-col min-h-0">
+    <div class="flex-1 flex flex-col min-h-0">
       <!-- Messages List -->
       <div class="flex-1 overflow-y-auto p-4 space-y-4">
         <div v-if="messages.length === 0 && !pendingUserMessage" class="flex flex-col items-center justify-center h-full text-center space-y-4 opacity-60">
@@ -161,17 +142,10 @@ const handleSendMessage = () => {
             :disabled="!currentMessage.trim() || isSendingMessage"
           >
             <Send v-if="!isSendingMessage" class="size-4" />
-            <Loader2 v-else class="size-4 animate-spin" />
+            <Loader2 class="size-4 animate-spin" />
           </Button>
         </form>
       </div>
-    </div>
-
-    <div v-else class="flex-1 flex flex-col items-center justify-center p-6 text-center space-y-4">
-      <div class="size-12 bg-destructive/10 text-destructive rounded-full flex items-center justify-center">
-        <X class="size-6" />
-      </div>
-      <p class="text-muted-foreground">No se pudo iniciar la sesión de chat. Intenta de nuevo.</p>
     </div>
   </div>
 </template>

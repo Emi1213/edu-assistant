@@ -23,6 +23,8 @@ import { Button } from '@/components/ui/button'
 import { MODULES_ROUTES_NAMES } from '@/features/modules/routes/modules-routes'
 import { Sheet, SheetContent } from '@/components/ui/sheet'
 import ChatPanel from '@/features/chat/presentation/components/chat-panel.vue'
+import { useCreateChatSession } from '@/features/chat/composables/mutations/use-create-chat-session'
+import { Loader2, X } from 'lucide-vue-next'
 
 const route = useRoute()
 const router = useRouter()
@@ -34,6 +36,8 @@ const { canEdit, isStudent } = useRoles()
 const authStore = useAuthStore()
 
 const isChatOpen = ref(false)
+const chatSessionId = ref<number | null>(null)
+const { mutate: createChatSession, isPending: isStartingSession } = useCreateChatSession(learningObjectId)
 
 const pageNotes = computed(() => {
   if (!learningObject.value) return []
@@ -81,6 +85,13 @@ const goToActivities = () => {
 
 const goToChat = () => {
   isChatOpen.value = true
+  if (!chatSessionId.value) {
+    createChatSession({}, {
+      onSuccess: (session) => {
+        if (session) chatSessionId.value = session.id
+      }
+    })
+  }
 }
 
 const hasAdjacentNavigation = computed(() => {
@@ -257,11 +268,22 @@ const scrollToQuestions = () => {
 
     <Sheet :open="isChatOpen" @update:open="isChatOpen = $event">
       <SheetContent side="right" class="w-[400px] sm:w-[540px] p-0">
+        <div v-if="isStartingSession" class="h-full flex flex-col items-center justify-center p-6 text-center space-y-4">
+          <Loader2 class="size-10 text-primary animate-spin" />
+          <p class="text-muted-foreground font-medium">Iniciando sesión con el asistente...</p>
+        </div>
         <ChatPanel 
-          v-if="learningObject" 
-          :learning-object-id="learningObject.id"
+          v-else-if="chatSessionId" 
+          :session-id="chatSessionId"
           @close="isChatOpen = false" 
         />
+        <div v-else class="h-full flex flex-col items-center justify-center p-6 text-center space-y-4">
+          <div class="size-12 bg-destructive/10 text-destructive rounded-full flex items-center justify-center">
+            <X class="size-6" />
+          </div>
+          <p class="text-muted-foreground">No se pudo iniciar la sesión de chat. Intenta de nuevo.</p>
+          <Button variant="outline" @click="goToChat">Reintentar</Button>
+        </div>
       </SheetContent>
     </Sheet>
 
