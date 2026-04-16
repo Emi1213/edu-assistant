@@ -20,12 +20,13 @@ const queryClient = useQueryClient()
 const { mutate: createChatSession, isPending: isStartingSession } = useCreateChatSession(props.learningObjectId)
 const sessionId = ref<number | undefined>()
 const currentMessage = ref('')
+const pendingUserMessage = ref('')
 const messagesEndRef = ref<HTMLElement | null>(null)
 
 const { data: messagesResponse } = useChatMessages(sessionId)
 const messages = computed(() => messagesResponse.value?.records ?? [])
 
-const { mutate: sendChatMessage, isPending: isSendingMessage } = useSendChatMessage(sessionId.value ?? 0)
+const { mutate: sendChatMessage, isPending: isSendingMessage } = useSendChatMessage(sessionId)
 
 const scrollToBottom = async () => {
   await nextTick()
@@ -34,7 +35,7 @@ const scrollToBottom = async () => {
   }
 }
 
-watch(messages, () => {
+watch([messages, isSendingMessage], () => {
   scrollToBottom()
 }, { deep: true })
 
@@ -53,6 +54,7 @@ const handleSendMessage = () => {
   if (!currentMessage.value.trim() || isSendingMessage.value || !sessionId.value) return
 
   const messageText = currentMessage.value.trim()
+  pendingUserMessage.value = messageText
   currentMessage.value = ''
 
   sendChatMessage(
@@ -60,9 +62,11 @@ const handleSendMessage = () => {
     {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: QUERY_KEYS.CHAT_MESSAGES(sessionId.value!) })
+        pendingUserMessage.value = ''
       },
       onError: () => {
         currentMessage.value = messageText // Restore if failed
+        pendingUserMessage.value = ''
       }
     }
   )
@@ -89,7 +93,7 @@ const handleSendMessage = () => {
     <div v-else-if="sessionId" class="flex-1 flex flex-col min-h-0">
       <!-- Messages List -->
       <div class="flex-1 overflow-y-auto p-4 space-y-4">
-        <div v-if="messages.length === 0" class="flex flex-col items-center justify-center h-full text-center space-y-4 opacity-60">
+        <div v-if="messages.length === 0 && !pendingUserMessage" class="flex flex-col items-center justify-center h-full text-center space-y-4 opacity-60">
           <div class="size-16 bg-primary/10 rounded-full flex items-center justify-center">
             <MessageSquare class="size-8 text-primary" />
           </div>
@@ -113,6 +117,16 @@ const handleSendMessage = () => {
           <div :class="['rounded-2xl px-4 py-2 text-sm shadow-sm', msg.role === 'user' ? 'bg-primary text-primary-foreground rounded-tr-none' : 'bg-muted text-foreground rounded-tl-none']">
             <p class="whitespace-pre-wrap">{{ msg.content }}</p>
             <span class="text-[10px] opacity-50 mt-1 block">{{ new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }}</span>
+          </div>
+        </div>
+
+        <div v-if="pendingUserMessage" class="flex gap-3 max-w-[85%] ml-auto flex-row-reverse">
+          <div class="size-8 rounded-full shrink-0 flex items-center justify-center bg-primary text-primary-foreground">
+            <span class="text-xs font-bold">U</span>
+          </div>
+          <div class="bg-primary text-primary-foreground rounded-2xl rounded-tr-none px-4 py-2 text-sm shadow-sm">
+            <p class="whitespace-pre-wrap">{{ pendingUserMessage }}</p>
+            <span class="text-[10px] opacity-70 mt-1 block">Enviando...</span>
           </div>
         </div>
 
