@@ -53,8 +53,8 @@ const sortedLearningObjects = computed(() => sortLearningObjectsByOrderIndex(lea
 
 const { reorderByDrag, isReorderingLearningObjects } = useLearningObjectsListReorder(props.moduleId)
 
-function handleReorderDrag(fromIndex: number, toIndex: number) {
-  reorderByDrag(sortedLearningObjects.value, fromIndex, toIndex)
+function handleReorderDrag(movedLo: LearningObject, targetLo: LearningObject) {
+  reorderByDrag(movedLo, targetLo)
 }
 
 const activeType = computed(() =>

@@ -17,10 +17,11 @@ export function buildReorderPayloadAfterMove(
   if (toIndex < 0 || toIndex >= sorted.length) return null
 
   const movedLo = sorted[fromIndex]
-  if (!movedLo) return null
+  const targetLo = sorted[toIndex]
+  if (!movedLo || !targetLo) return null
 
   return {
     id: movedLo.id,
-    orderIndex: toIndex + 1, 
+    orderIndex: targetLo.orderIndex,
   }
 }

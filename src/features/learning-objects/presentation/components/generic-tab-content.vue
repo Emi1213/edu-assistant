@@ -11,7 +11,7 @@ const props = defineProps<{
   isLoading: boolean
   canEdit: boolean
   reorderPending?: boolean
-  onReorderDrag?: (fromIndex: number, toIndex: number) => void
+  onReorderDrag?: (movedLo: LearningObject, targetLo: LearningObject) => void
   generatingRelationsLearningObjectId?: number | null
   publishingLearningObjectId?: number | null
   buildDetailRoute?: (learningObject: LearningObject) => RouteLocationRaw
@@ -57,7 +57,12 @@ function handleDrop(e: DragEvent, toIndex: number) {
   if (fromIndex === null || Number.isNaN(fromIndex)) return
   if (fromIndex === toIndex) return
   
-  props.onReorderDrag?.(fromIndex, toIndex)
+  const movedLo = props.learningObjects[fromIndex]
+  const targetLo = props.learningObjects[toIndex]
+
+  if (movedLo && targetLo) {
+    props.onReorderDrag?.(movedLo, targetLo)
+  }
 }
 
 function handleDragEnd(e: DragEvent) {
