@@ -98,6 +98,7 @@ export const API_ROUTES = {
     },
     CONTENT_GENERATION: {
         GENERATE: `${AR_KEYS.CONTENT_GENERATION}/generate-content`,
+        REGENERATE_CONTENT: `${AR_KEYS.CONTENT_GENERATION}/regenerate-content`,
         GENERATE_IMAGE: `${AR_KEYS.CONTENT_GENERATION}/generate-image`,
         GENERATE_ACTIVITY: `${AR_KEYS.CONTENT_GENERATION}/generate-activity`,
         EXTRACT_CONCEPTS: `${AR_KEYS.CONTENT_GENERATION}/extract-concepts`,

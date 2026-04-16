@@ -27,6 +27,14 @@ export class ContentGenerationDataSource {
         return response.data
     }
 
+    async regenerateContent(payload: CreateContentGeneration): Promise<ContentGeneration | null> {
+        const response = await this.httpClient.post<ContentGeneration>(
+            API_ROUTES.CONTENT_GENERATION.REGENERATE_CONTENT,
+            payload
+        )
+        return response.data ?? null
+    }
+
     async generateImage(payload: GenerateImagePayload): Promise<string | null> {
         const response = await this.httpClient.post<GenerateImageResponse>(
             API_ROUTES.CONTENT_GENERATION.GENERATE_IMAGE,
