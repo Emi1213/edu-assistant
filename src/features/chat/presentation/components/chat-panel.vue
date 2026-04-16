@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, nextTick, watch } from 'vue'
+import { ref, computed, nextTick, watch, toRef } from 'vue'
 import { MessageSquare, Sparkles, X, Send, Loader2, Bot } from 'lucide-vue-next'
 import { useChatMessages } from '../../composables/queries/use-chat-messages'
 import { useSendChatMessage } from '../../composables/mutations/use-send-chat-message'
@@ -20,7 +20,7 @@ const currentMessage = ref('')
 const pendingUserMessage = ref('')
 const messagesEndRef = ref<HTMLElement | null>(null)
 
-const { data: messagesResponse } = useChatMessages(computed(() => props.sessionId))
+const { data: messagesResponse } = useChatMessages(toRef(props, 'sessionId'))
 const messages = computed(() => messagesResponse.value?.records ?? [])
 
 const { mutate: sendChatMessage, isPending: isSendingMessage } = useSendChatMessage(props.sessionId)
@@ -142,7 +142,7 @@ const handleSendMessage = () => {
             :disabled="!currentMessage.trim() || isSendingMessage"
           >
             <Send v-if="!isSendingMessage" class="size-4" />
-            <Loader2 class="size-4 animate-spin" />
+            <Loader2 v-else class="size-4 animate-spin" />
           </Button>
         </form>
       </div>

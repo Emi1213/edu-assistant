@@ -273,7 +273,7 @@ const scrollToQuestions = () => {
           <p class="text-muted-foreground font-medium">Iniciando sesión con el asistente...</p>
         </div>
         <ChatPanel 
-          v-else-if="chatSessionId" 
+          v-else-if="chatSessionId !== null" 
           :session-id="chatSessionId"
           @close="isChatOpen = false" 
         />
@@ -546,3 +546,4 @@ const scrollToQuestions = () => {
   display: block;
 }
 </style>
+/style>

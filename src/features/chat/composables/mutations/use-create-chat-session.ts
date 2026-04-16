@@ -1,7 +1,7 @@
 import { useMutation } from '@tanstack/vue-query'
 import { chatService } from '../../services/chat.service'
 import type { CreateOrGetSessionPayload } from '../../types'
-import { type Ref, unref } from 'vue'
+import { unref, type Ref } from 'vue'
 
 export function useCreateChatSession(learningObjectId: number | Ref<number>) {
   return useMutation({
