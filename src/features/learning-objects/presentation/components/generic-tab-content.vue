@@ -11,50 +11,65 @@ const props = defineProps<{
   isLoading: boolean
   canEdit: boolean
   reorderPending?: boolean
-  onReorderDrag?: (fromIndex: number, toIndex: number) => void
+  onReorderDrag?: (movedLo: LearningObject, targetLo: LearningObject) => void
   generatingRelationsLearningObjectId?: number | null
   publishingLearningObjectId?: number | null
   buildDetailRoute?: (learningObject: LearningObject) => RouteLocationRaw
   onUpdateLearningObject?: (learningObject: LearningObject) => void
   onGenerateRelations?: (learningObject: LearningObject) => void
   onPublishNow?: (learningObject: LearningObject) => void
+  onChat?: (learningObject: LearningObject) => void
 }>()
 
 const dragFromIndex = ref<number | null>(null)
+const dragOverIndex = ref<number | null>(null)
 
 function handleDragStart(e: DragEvent, index: number) {
   dragFromIndex.value = index
   e.dataTransfer?.setData('text/plain', String(index))
-  if (e.dataTransfer) e.dataTransfer.effectAllowed = 'move'
+  if (e.dataTransfer) {
+    e.dataTransfer.effectAllowed = 'move'
+    const target = e.target as HTMLElement
+    if (target) target.style.opacity = '0.5'
+  }
 }
 
-function handleDragOver(e: DragEvent) {
+function handleDragOver(e: DragEvent, index: number) {
   e.preventDefault()
+  if (dragFromIndex.value !== null && dragFromIndex.value !== index) {
+    dragOverIndex.value = index
+  }
   if (e.dataTransfer) e.dataTransfer.dropEffect = 'move'
+}
+
+function handleDragLeave() {
+  dragOverIndex.value = null
 }
 
 function handleDrop(e: DragEvent, toIndex: number) {
   e.preventDefault()
+  dragOverIndex.value = null
   const raw = e.dataTransfer?.getData('text/plain')
   const fromParsed = raw !== '' && raw != null ? Number(raw) : NaN
   const fromIndex = Number.isFinite(fromParsed) ? fromParsed : dragFromIndex.value
+  
   dragFromIndex.value = null
   if (fromIndex === null || Number.isNaN(fromIndex)) return
-  props.onReorderDrag?.(fromIndex, toIndex)
+  if (fromIndex === toIndex) return
+  
+  const movedLo = props.learningObjects[fromIndex]
+  const targetLo = props.learningObjects[toIndex]
+
+  if (movedLo && targetLo) {
+    props.onReorderDrag?.(movedLo, targetLo)
+  }
 }
 
-function handleDragEnd() {
+function handleDragEnd(e: DragEvent) {
   dragFromIndex.value = null
-}
-
-function rowDragOver(e: DragEvent) {
-  if (!props.onReorderDrag) return
-  handleDragOver(e)
-}
-
-function rowDrop(toIndex: number, e: DragEvent) {
-  if (!props.onReorderDrag) return
-  handleDrop(e, toIndex)
+  dragOverIndex.value = null
+  const target = e.target as HTMLElement
+  if (target) target.style.opacity = '1'
 }
 </script>
 
@@ -83,9 +98,13 @@ function rowDrop(toIndex: number, e: DragEvent) {
       <div
         v-for="(learningObject, index) in learningObjects"
         :key="learningObject.id"
-        class="flex min-w-0 gap-2"
-        @dragover="rowDragOver"
-        @drop="rowDrop(index, $event)"
+        class="flex min-w-0 gap-2 transition-all duration-200"
+        :class="[
+          dragOverIndex === index ? 'translate-y-1 scale-[1.02] ring-2 ring-primary ring-offset-2 rounded-lg' : ''
+        ]"
+        @dragover="(e) => onReorderDrag && handleDragOver(e, index)"
+        @dragleave="handleDragLeave"
+        @drop="(e) => onReorderDrag && handleDrop(e, index)"
       >
         <div
           v-if="onReorderDrag"
@@ -96,7 +115,7 @@ function rowDrop(toIndex: number, e: DragEvent) {
             draggable="true"
             aria-label="Arrastrar para reordenar"
             :disabled="reorderPending"
-            class="cursor-grab rounded-md p-1 text-muted-foreground active:cursor-grabbing disabled:pointer-events-none disabled:opacity-40"
+            class="cursor-grab rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-accent-foreground active:cursor-grabbing disabled:pointer-events-none disabled:opacity-40 transition-colors"
             @dragstart="(e) => handleDragStart(e, index)"
             @dragend="handleDragEnd"
             @click.prevent.stop
@@ -113,6 +132,7 @@ function rowDrop(toIndex: number, e: DragEvent) {
             :on-update-learning-object="canEdit ? onUpdateLearningObject : undefined"
             :on-generate-relations="canEdit ? onGenerateRelations : undefined"
             :on-publish-now="canEdit ? onPublishNow : undefined"
+            :on-chat="onChat"
           />
         </div>
       </div>

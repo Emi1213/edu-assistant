@@ -11,6 +11,7 @@ const AR_KEYS = {
     AI_CONFIG: '/ai/config',
     PAGES: '/pages',
     LEARNING_OBJECT_FEEDBACKS: '/learning-object-feedbacks',
+    CHAT: '/sessions',
 }
 
 export const API_ROUTES = {
@@ -68,6 +69,15 @@ export const API_ROUTES = {
             LIST: (learningObjectId: number) => `${AR_KEYS.LEARNING_OBJECTS}/${learningObjectId}/activities`,
             CREATE: (learningObjectId: number) => `${AR_KEYS.LEARNING_OBJECTS}/${learningObjectId}/activities`,
             BY_ID: (learningObjectId: number, activityId: number) => `${AR_KEYS.LEARNING_OBJECTS}/${learningObjectId}/activities/${activityId}`,
+        },
+        SESSIONS: {
+            CREATE_OR_GET: (learningObjectId: number) => `${AR_KEYS.LEARNING_OBJECTS}/${learningObjectId}/sessions`,
+        },
+    },
+    CHAT: {
+        SESSIONS: {
+            LIST_MESSAGES: (sessionId: number) => `${AR_KEYS.CHAT}/${sessionId}/messages`,
+            SEND_MESSAGE: (sessionId: number) => `${AR_KEYS.CHAT}/${sessionId}/messages`,
         },
     },
     ACTIVITIES: {
