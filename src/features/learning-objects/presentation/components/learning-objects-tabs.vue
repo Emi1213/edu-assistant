@@ -66,7 +66,7 @@ const activeConfig = computed(() =>
 )
 
 const resolveLabel = (type: LearningObjectType) =>
-  LEARNING_OBJECT_TYPE_CONFIG[type.name]?.label ?? type.name
+  LEARNING_OBJECT_TYPE_CONFIG[type.name]?.tabLabel ?? type.name
 
 const buildDetailRoute = (learningObject: LearningObject): RouteLocationRaw => ({
   name: activeConfig.value?.detailRouteName ?? FALLBACK_DETAIL_ROUTE_NAME,
@@ -107,7 +107,7 @@ const buildDetailRoute = (learningObject: LearningObject): RouteLocationRaw => (
         class="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 hover:shadow-md transition-all duration-200 w-full sm:w-auto"
       >
         <Plus class="size-4" />
-        <span>Crear {{ activeConfig?.label ?? activeType.name }}</span>
+        <span>Crear {{ activeConfig?.createLabel ?? activeType.name }}</span>
       </button>
     </div>
 
