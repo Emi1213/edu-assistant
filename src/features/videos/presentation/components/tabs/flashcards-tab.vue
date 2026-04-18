@@ -1,5 +1,5 @@
 <template>
-  <div class="video-section-enter mx-auto w-full max-w-xl flex flex-col items-stretch gap-8">
+  <div class="video-section-enter mx-auto w-full max-w-xl flex flex-col items-stretch gap-6 sm:gap-8 min-w-0">
     <div v-if="!current" class="p-8 text-center text-muted-foreground">Sin flashcards</div>
 
     <template v-else>
@@ -14,7 +14,7 @@
           class="absolute inset-x-3 top-2 h-4 rounded-t-xl bg-[color:var(--paper)] border border-border border-b-0"
         />
 
-        <div class="video-flip-stage relative" style="height: 320px">
+        <div class="video-flip-stage relative h-[280px] sm:h-[320px]">
           <button
             type="button"
             class="video-flip-inner rounded-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--accent-ink)] focus-visible:ring-offset-4"
@@ -24,7 +24,7 @@
           >
             <!-- FRONT -->
             <div
-              class="video-flip-face rounded-2xl bg-[color:var(--paper)] border border-border shadow-[0_1px_0_rgba(0,0,0,0.02),0_12px_32px_-18px_rgba(23,26,58,0.25)] px-8 py-8 flex flex-col"
+              class="video-flip-face rounded-2xl bg-[color:var(--paper)] border border-border shadow-[0_1px_0_rgba(0,0,0,0.02),0_12px_32px_-18px_rgba(23,26,58,0.25)] px-5 py-6 sm:px-8 sm:py-8 flex flex-col"
             >
               <div class="flex items-start justify-between">
                 <div class="flex items-center gap-2">
@@ -40,8 +40,8 @@
                 </span>
               </div>
 
-              <div class="flex-1 flex items-center justify-center px-2">
-                <p class="video-display-serif font-bold text-foreground text-2xl text-center leading-[1.2]">
+              <div class="flex-1 flex items-center justify-center px-1 sm:px-2 min-w-0">
+                <p class="video-display-serif font-bold text-foreground text-lg sm:text-2xl text-center leading-[1.25] break-words">
                   {{ current.front }}
                 </p>
               </div>
@@ -58,7 +58,7 @@
 
             <!-- BACK -->
             <div
-              class="video-flip-face video-flip-back rounded-2xl border border-[color:var(--accent-ink)]/30 px-8 py-8 flex flex-col"
+              class="video-flip-face video-flip-back rounded-2xl border border-[color:var(--accent-ink)]/30 px-5 py-6 sm:px-8 sm:py-8 flex flex-col"
               style="background-color: var(--accent-ink-wash)"
             >
               <div class="flex items-center gap-2">
@@ -68,8 +68,8 @@
                 </span>
               </div>
 
-              <div class="flex-1 flex items-center justify-center px-2">
-                <p class="video-display-serif italic text-primary text-xl text-center leading-snug">
+              <div class="flex-1 flex items-center justify-center px-1 sm:px-2 min-w-0">
+                <p class="video-display-serif italic text-primary text-base sm:text-xl text-center leading-snug break-words">
                   {{ current.back }}
                 </p>
               </div>

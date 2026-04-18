@@ -1,13 +1,13 @@
 <template>
-  <div class="video-section-enter max-w-5xl w-full">
-    <header class="flex flex-wrap items-end justify-between gap-4 mb-6">
-      <div>
+  <div class="video-section-enter max-w-5xl w-full min-w-0">
+    <header class="flex flex-wrap items-end justify-between gap-3 sm:gap-4 mb-6">
+      <div class="min-w-0">
         <p class="text-[10px] font-semibold uppercase tracking-[0.18em] text-[color:var(--accent-ink)]">
           Índice
         </p>
-        <h2 class="video-display-serif font-semibold text-primary text-2xl leading-tight">
+        <h2 class="video-display-serif font-semibold text-primary text-xl sm:text-2xl leading-tight">
           {{ content.terms.length }}
-          <span class="text-muted-foreground font-normal text-base italic">términos</span>
+          <span class="text-muted-foreground font-normal text-sm sm:text-base italic">términos</span>
         </h2>
       </div>
 
@@ -29,10 +29,10 @@
 
     <div class="space-y-10">
       <section v-for="group in groups" :key="group.letter">
-        <header class="flex items-center gap-4 mb-4">
+        <header class="flex items-center gap-3 sm:gap-4 mb-4">
           <h3
             :id="`glossary-${group.letter}`"
-            class="video-display-serif font-bold text-primary text-4xl leading-none"
+            class="video-display-serif font-bold text-primary text-3xl sm:text-4xl leading-none"
             style="scroll-margin-top: 96px"
           >
             {{ group.letter }}
@@ -47,16 +47,16 @@
           <div
             v-for="(term, idx) in group.terms"
             :key="idx"
-            class="group relative bg-[color:var(--paper)] rounded-lg border border-border p-4 transition-all hover:border-[color:var(--accent-ink)]/40 hover:shadow-sm"
+            class="group relative bg-[color:var(--paper)] rounded-lg border border-border p-4 transition-all hover:border-[color:var(--accent-ink)]/40 hover:shadow-sm min-w-0"
           >
-            <dt class="video-display-serif font-semibold text-primary text-[15px] leading-tight">
+            <dt class="video-display-serif font-semibold text-primary text-[15px] leading-tight break-words">
               {{ term.term }}
             </dt>
             <div class="mt-2 flex items-center gap-2">
               <span class="w-1 h-1 rounded-full bg-[color:var(--accent-ink)]" aria-hidden="true" />
               <span class="h-px bg-[color:var(--accent-ink)]/20 flex-1" aria-hidden="true" />
             </div>
-            <dd class="mt-2 text-muted-foreground text-[13px] leading-relaxed">
+            <dd class="mt-2 text-muted-foreground text-[13px] leading-relaxed break-words">
               {{ term.definition }}
             </dd>
           </div>

@@ -6,7 +6,7 @@ import type { LearningObjectsQueryParams } from '../../types'
 
 export function useLearningObjectEditorLinkModal(
   editor: Ref<Editor | undefined>,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+   
   _learningObjectId: Ref<number>,
   moduleId: Ref<number>
 ) {

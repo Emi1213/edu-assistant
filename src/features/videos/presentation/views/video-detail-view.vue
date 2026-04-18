@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-4xl mx-auto p-4 space-y-4">
+  <div class="max-w-4xl mx-auto p-4 space-y-4 min-w-0">
     <router-link :to="backRoute" class="text-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1">
       <ArrowLeft class="w-4 h-4" />
       Volver al módulo
@@ -88,21 +88,38 @@
       />
 
       <VideoErrorScreen
-        v-else-if="effectiveStatus === 'FAILED'"
+        v-else-if="isFullFailure"
         :error-message="errorMessage"
         @retry="handleRetry"
         @delete="handleDelete"
       />
 
-      <VideoContentTabs
-        v-else-if="video.blocks?.length"
-        :blocks="video.blocks"
-        :can-edit="canEditVideo"
-        @regenerate-tab="openRetryForTab"
-      />
-      <div v-else class="rounded-lg border bg-card p-6 text-center text-muted-foreground">
-        Sin contenido aún.
-      </div>
+      <template v-else>
+        <VideoPartialFailureBanner
+          v-if="isPartial && failedTypes.length"
+          :failed-types="failedTypes"
+          :can-retry="canEditVideo"
+          :is-submitting="retryMutation.isPending.value"
+          @retry="openRetryForPartial"
+        />
+
+        <VideoContentTabs
+          v-if="video.blocks?.length || failedTypes.length"
+          ref="tabsRef"
+          :blocks="video.blocks ?? []"
+          :can-edit="canEditVideo"
+          :is-saving="updateMutation.isPending.value"
+          :failed-types="failedTypes"
+          @regenerate-tab="openRetryForTab"
+          @save="onSaveTab"
+        />
+        <div
+          v-else
+          class="rounded-lg border bg-card p-6 text-center text-muted-foreground"
+        >
+          Sin contenido aún.
+        </div>
+      </template>
 
       <RetryVideoDialog
         :is-open="retryOpen"
@@ -131,13 +148,16 @@ import VideoPlayer from '../components/video-player.vue'
 import VideoSourceBadge from '../components/video-source-badge.vue'
 import VideoProcessingScreen from '../components/video-processing-screen.vue'
 import VideoErrorScreen from '../components/video-error-screen.vue'
+import VideoPartialFailureBanner from '../components/video-partial-failure-banner.vue'
 import VideoContentTabs from '../components/tabs/video-content-tabs.vue'
 import RetryVideoDialog from '../components/retry-video-dialog.vue'
 import DeleteVideoConfirmDialog from '../components/delete-video-confirm-dialog.vue'
 import { useVideoDetail } from '../../composables/use-video-detail'
 import { useRetryVideo } from '../../composables/use-retry-video'
+import { useUpdateVideoContent } from '../../composables/use-update-video-content'
 import { useToggleVideoPublish } from '../../composables/use-toggle-video-publish'
 import { useDeleteVideo } from '../../composables/use-delete-video'
+import { useVideoErrorState } from '../../composables/use-video-error-state'
 import { useRoles } from '@/features/auth/composables/use-roles'
 import { isProcessingStatus } from '../../constants/video-status.constants'
 import {
@@ -147,8 +167,9 @@ import {
 import { VIDEO_BLOCK_TYPES } from '../../constants/video-block-type.constants'
 import { formatDuration } from '../../utils/format-duration'
 import { MODULES_ROUTES_NAMES } from '@/features/modules/routes/modules-routes'
+import { LEARNING_OBJECTS_TAB_QUERY_KEY } from '@/features/learning-objects/constants/learning-objects-tabs.constants'
 import type { IngestionStatus } from '../../types/video.types'
-import type { VideoBlockType } from '../../types/video-block.types'
+import type { VideoBlockContent, VideoBlockType } from '../../types/video-block.types'
 
 const route = useRoute()
 const router = useRouter()
@@ -160,18 +181,27 @@ const canEditVideo = computed(() => canEdit())
 
 const { video, isLoading, status, errorMessage } = useVideoDetail(learningObjectId)
 const retryMutation = useRetryVideo(learningObjectId.value, moduleId.value)
+const updateMutation = useUpdateVideoContent(learningObjectId.value, moduleId.value)
 const publishMutation = useToggleVideoPublish(moduleId.value)
 const deleteMutation = useDeleteVideo(moduleId.value)
 const deleteOpen = ref(false)
+const tabsRef = ref<{ exitEdit: () => void } | null>(null)
 
 const effectiveStatus = computed<IngestionStatus>(() => status.value ?? 'PENDING')
 const isProcessing = computed(() => isProcessingStatus(effectiveStatus.value))
+
+const { failedTypes, isPartial, isFullFailure } = useVideoErrorState(
+  video,
+  effectiveStatus,
+  errorMessage,
+)
 
 const duration = computed(() => formatDuration(video.value?.durationSeconds))
 
 const backRoute = computed(() => ({
   name: MODULES_ROUTES_NAMES.MODULE_WIKI,
   params: { id: moduleId.value },
+  query: { [LEARNING_OBJECTS_TAB_QUERY_KEY]: 'VIDEO' },
 }))
 
 const processingStartedAt = ref<number | null>(null)
@@ -213,6 +243,12 @@ function openRetryForTab(t: VideoBlockType) {
   retryOpen.value = true
 }
 
+function openRetryForPartial() {
+  retryPreselected.value =
+    failedTypes.value.length > 0 ? [...failedTypes.value] : [...VIDEO_BLOCK_TYPES]
+  retryOpen.value = true
+}
+
 async function onRetrySubmit(payload: { contentTypes?: VideoBlockType[]; instruction?: string }) {
   await retryMutation.mutateAsync(payload)
   retryOpen.value = false
@@ -234,10 +270,30 @@ async function togglePublish() {
   })
 }
 
+async function onSaveTab(args: { type: VideoBlockType; content: VideoBlockContent }) {
+  const blocks = video.value?.blocks ?? []
+  if (!blocks.length) return
+  const payload = {
+    blocks: blocks.map((b) => ({
+      id: b.id,
+      orderIndex: b.orderIndex,
+      type: b.type,
+      content: b.type === args.type ? args.content : b.content,
+      tipTapContent: null as null,
+    })),
+  }
+  await updateMutation.mutateAsync(payload)
+  tabsRef.value?.exitEdit()
+}
+
 async function onConfirmDelete() {
   if (!video.value) return
   await deleteMutation.mutateAsync(video.value.id)
   deleteOpen.value = false
-  router.push({ name: MODULES_ROUTES_NAMES.MODULE_WIKI, params: { id: moduleId.value } })
+  router.push({
+    name: MODULES_ROUTES_NAMES.MODULE_WIKI,
+    params: { id: moduleId.value },
+    query: { [LEARNING_OBJECTS_TAB_QUERY_KEY]: 'VIDEO' },
+  })
 }
 </script>

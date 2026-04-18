@@ -1,14 +1,14 @@
 <template>
-  <div class="video-section-enter max-w-4xl w-full">
+  <div class="video-section-enter max-w-4xl w-full min-w-0">
     <div v-if="!currentQuestion" class="p-6 text-center text-muted-foreground">
       Sin preguntas
     </div>
-    <div v-else class="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-6 items-start">
-      <article class="relative rounded-2xl border border-border bg-[color:var(--paper)] p-7 shadow-[0_1px_0_rgba(0,0,0,0.02),0_12px_32px_-18px_rgba(23,26,58,0.2)] space-y-6">
-        <header class="flex items-start gap-5">
+    <div v-else class="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-4 sm:gap-6 items-start min-w-0">
+      <article class="relative rounded-2xl border border-border bg-[color:var(--paper)] p-4 sm:p-7 shadow-[0_1px_0_rgba(0,0,0,0.02),0_12px_32px_-18px_rgba(23,26,58,0.2)] space-y-5 sm:space-y-6 min-w-0">
+        <header class="flex items-start gap-3 sm:gap-5">
           <div class="flex flex-col items-center shrink-0">
             <span
-              class="video-display-serif italic font-bold text-[color:var(--accent-ink)] text-5xl leading-none tabular-nums"
+              class="video-display-serif italic font-bold text-[color:var(--accent-ink)] text-4xl sm:text-5xl leading-none tabular-nums"
             >
               {{ String(currentIndex + 1).padStart(2, '0') }}
             </span>
@@ -16,7 +16,7 @@
               pregunta
             </span>
           </div>
-          <h3 class="video-display-serif font-semibold text-foreground text-xl leading-snug pt-1 flex-1">
+          <h3 class="video-display-serif font-semibold text-foreground text-lg sm:text-xl leading-snug pt-1 flex-1 break-words min-w-0">
             {{ currentQuestion.question }}
           </h3>
         </header>
@@ -26,7 +26,7 @@
           <label
             v-for="(opt, oIdx) in currentQuestion.options"
             :key="oIdx"
-            class="flex items-start gap-3 rounded-xl border px-4 py-3 cursor-pointer transition-all text-[14.5px]"
+            class="flex items-start gap-3 rounded-xl border px-3 sm:px-4 py-3 cursor-pointer transition-all text-[14px] sm:text-[14.5px] min-w-0"
             :class="optionClass(oIdx)"
           >
             <span
@@ -37,7 +37,7 @@
               <X v-else-if="isAnswered && oIdx === picked && oIdx !== currentQuestion.correctAnswer" class="w-3.5 h-3.5" />
               <template v-else>{{ letter(oIdx) }}</template>
             </span>
-            <span class="leading-snug">{{ opt }}</span>
+            <span class="leading-snug break-words min-w-0">{{ opt }}</span>
             <input
               type="radio"
               class="sr-only"
@@ -96,15 +96,15 @@
         </div>
       </article>
 
-      <aside class="flex md:flex-col items-center gap-3 md:sticky md:top-4 md:pt-2">
-        <p class="text-[9px] uppercase tracking-[0.18em] text-muted-foreground font-semibold shrink-0 md:writing-mode-horizontal">
+      <aside class="flex md:flex-col items-center gap-3 md:sticky md:top-4 md:pt-2 flex-wrap">
+        <p class="text-[9px] uppercase tracking-[0.18em] text-muted-foreground font-semibold shrink-0">
           Progreso
         </p>
-        <div class="flex md:flex-col gap-1.5">
+        <div class="flex md:flex-col gap-1.5 flex-wrap">
           <span
             v-for="(_, qIdx) in content.questions"
             :key="qIdx"
-            class="w-8 h-8 rounded-md flex items-center justify-center text-[11px] font-semibold border tabular-nums video-display-serif"
+            class="w-7 h-7 sm:w-8 sm:h-8 rounded-md flex items-center justify-center text-[11px] font-semibold border tabular-nums video-display-serif"
             :class="progressCircleClass(qIdx)"
           >
             {{ qIdx + 1 }}
@@ -115,7 +115,7 @@
 
     <div
       v-if="showResults"
-      class="video-section-enter mt-10 rounded-2xl border border-border bg-[color:var(--paper)] p-8 shadow-sm flex flex-col items-center gap-4"
+      class="video-section-enter mt-8 sm:mt-10 rounded-2xl border border-border bg-[color:var(--paper)] p-6 sm:p-8 shadow-sm flex flex-col items-center gap-4"
     >
       <div class="relative">
         <Trophy class="w-16 h-16 text-[color:var(--accent-ink)]" />
@@ -128,7 +128,7 @@
       <p class="text-[10px] font-semibold uppercase tracking-[0.18em] text-[color:var(--accent-ink)]">
         Resultado final
       </p>
-      <p class="video-display-serif font-bold text-primary text-6xl tabular-nums leading-none">
+      <p class="video-display-serif font-bold text-primary text-5xl sm:text-6xl tabular-nums leading-none">
         {{ score }}<span class="text-border mx-1">/</span>{{ content.questions.length }}
       </p>
       <p class="text-muted-foreground text-sm">

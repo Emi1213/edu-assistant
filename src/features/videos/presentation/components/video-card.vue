@@ -1,21 +1,21 @@
 <template>
-  <div class="group relative">
+  <div class="group relative h-full">
     <router-link
       :to="detailRoute"
-      class="block rounded-xl border bg-card overflow-hidden transition-all hover:border-primary hover:shadow-[0_1px_0_rgba(0,0,0,0.02),0_12px_32px_-20px_rgba(23,26,58,0.25)]"
+      class="flex h-full rounded-xl border bg-card overflow-hidden transition-all hover:border-primary hover:shadow-[0_1px_0_rgba(0,0,0,0.02),0_12px_32px_-20px_rgba(23,26,58,0.25)]"
       :class="cardStateClass"
     >
-      <div class="flex gap-4 p-4">
+      <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 p-3 sm:p-4 w-full">
         <VideoThumbnail
           :source-kind="item.sourceKind"
           :source-url="item.sourceUrl"
           :title="item.title"
         />
 
-        <div class="flex-1 min-w-0 flex flex-col justify-between py-0.5">
+        <div class="flex-1 min-w-0 flex flex-col py-0.5">
           <div>
             <div class="flex items-start justify-between gap-3">
-              <h3 class="video-display-serif font-semibold text-foreground text-base leading-tight line-clamp-2 pr-8">
+              <h3 class="video-display-serif font-semibold text-foreground text-base leading-tight line-clamp-2 pr-8 min-h-[2lh]">
                 {{ item.title }}
               </h3>
             </div>
@@ -26,7 +26,7 @@
             </div>
           </div>
 
-          <div class="mt-3 flex flex-wrap items-center gap-1.5">
+          <div class="mt-auto pt-3 flex flex-wrap items-center gap-1.5">
             <span
               v-if="isProcessing"
               class="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] px-2 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200"

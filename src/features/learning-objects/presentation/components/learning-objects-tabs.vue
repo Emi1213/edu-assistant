@@ -1,14 +1,16 @@
 <script setup lang="ts">
 import type { RouteLocationRaw } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import type { LearningObject, LearningObjectType } from '../../types'
 import { Plus } from 'lucide-vue-next'
-import { ref, computed, watch } from 'vue'
+import { computed, watch } from 'vue'
 import { useLearningObjectsListReorder } from '../../composables/use-learning-objects-list-reorder'
 import { sortLearningObjectsByOrderIndex } from '../../utils/learning-objects-reorder.utils'
 import {
   FALLBACK_DETAIL_ROUTE_NAME,
   LEARNING_OBJECT_TYPE_CONFIG,
 } from '../../constants/learning-object-type.constants'
+import { LEARNING_OBJECTS_TAB_QUERY_KEY } from '../../constants/learning-objects-tabs.constants'
 import { useLearningObjects } from '../../composables/queries/use-learning-objects'
 import GenericTabContent from './generic-tab-content.vue'
 import { useVideosList } from '@/features/videos/composables/use-videos-list'
@@ -30,16 +32,41 @@ const emit = defineEmits<{
   create: [typeId: number]
 }>()
 
-const activeTypeId = ref<number>(0)
+const route = useRoute()
+const router = useRouter()
+
+const activeTypeName = computed<string>(() => {
+  const raw = route.query[LEARNING_OBJECTS_TAB_QUERY_KEY]
+  const value = typeof raw === 'string' ? raw : ''
+  if (value && props.types.some((t) => t.name === value)) return value
+  return props.types[0]?.name ?? ''
+})
+
+const activeType = computed(() =>
+  props.types.find((type) => type.name === activeTypeName.value),
+)
+
+const activeTypeId = computed(() => activeType.value?.id ?? 0)
+
+function selectType(type: LearningObjectType) {
+  if (activeTypeName.value === type.name) return
+  router.replace({
+    query: { ...route.query, [LEARNING_OBJECTS_TAB_QUERY_KEY]: type.name },
+  })
+}
 
 watch(
-  () => props.types,
-  (types) => {
-    if (activeTypeId.value === 0 && types[0] !== undefined) {
-      activeTypeId.value = types[0].id
-    }
+  [() => props.types, () => route.query[LEARNING_OBJECTS_TAB_QUERY_KEY]],
+  ([types, queryValue]) => {
+    const fallback = types[0]
+    if (!fallback) return
+    const current = typeof queryValue === 'string' ? queryValue : ''
+    if (current && types.some((t) => t.name === current)) return
+    router.replace({
+      query: { ...route.query, [LEARNING_OBJECTS_TAB_QUERY_KEY]: fallback.name },
+    })
   },
-  { immediate: true }
+  { immediate: true },
 )
 
 const queryParams = computed(() => ({
@@ -47,15 +74,10 @@ const queryParams = computed(() => ({
   typeId: activeTypeId.value,
 }))
 
-const activeType = computed(() =>
-  props.types.find((type) => type.id === activeTypeId.value)
-)
-
 const activeConfig = computed(() =>
   activeType.value ? LEARNING_OBJECT_TYPE_CONFIG[activeType.value.name] : undefined
 )
 
-const activeTypeName = computed(() => activeType.value?.name ?? '')
 const isVideoTab = computed(() => activeTypeName.value === 'VIDEO')
 
 const { data: learningObjectsResponse, isLoading: isLoadingLearningObjects } =
@@ -101,7 +123,7 @@ const buildDetailRoute = (learningObject: LearningObject): RouteLocationRaw => (
         <button
           v-for="type in types"
           :key="type.id"
-          @click="activeTypeId = type.id"
+          @click="selectType(type)"
           class="px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px"
           :class="activeTypeId === type.id
             ? 'border-primary text-primary'
@@ -132,10 +154,10 @@ const buildDetailRoute = (learningObject: LearningObject): RouteLocationRaw => (
     </div>
 
     <template v-if="isVideoTab">
-      <div v-if="isLoading" class="space-y-3">
-        <div v-for="i in 3" :key="i" class="rounded-lg border bg-card p-4">
-          <div class="flex gap-4">
-            <div class="w-40 aspect-video rounded-md bg-muted animate-pulse" />
+      <div v-if="isLoading" class="grid grid-cols-2 gap-3 sm:gap-4">
+        <div v-for="i in 4" :key="i" class="rounded-lg border bg-card p-4">
+          <div class="flex flex-col sm:flex-row gap-4">
+            <div class="w-full sm:w-40 aspect-video rounded-md bg-muted animate-pulse" />
             <div class="flex-1 space-y-2">
               <div class="h-5 w-2/3 rounded bg-muted animate-pulse" />
               <div class="h-3 w-1/3 rounded bg-muted animate-pulse" />
@@ -146,7 +168,7 @@ const buildDetailRoute = (learningObject: LearningObject): RouteLocationRaw => (
       <div v-else-if="videos.length === 0" class="rounded-lg border border-dashed bg-muted/20 p-10 text-center">
         <p class="text-muted-foreground">Sin videos todavía.</p>
       </div>
-      <div v-else class="space-y-3">
+      <div v-else class="grid grid-cols-2 gap-3 sm:gap-4">
         <VideoCard
           v-for="video in videos"
           :key="video.id"

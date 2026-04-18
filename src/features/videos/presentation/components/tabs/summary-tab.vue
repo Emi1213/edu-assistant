@@ -1,27 +1,27 @@
 <template>
-  <article class="video-section-enter space-y-12 max-w-4xl">
-    <section class="grid grid-cols-[auto_1fr] gap-5">
+  <article class="video-section-enter space-y-10 sm:space-y-12 max-w-4xl min-w-0">
+    <section class="grid grid-cols-[auto_1fr] gap-3 sm:gap-5">
       <div class="flex flex-col items-center">
         <span
-          class="video-display-serif italic text-[color:var(--accent-ink)] text-5xl leading-none select-none"
+          class="video-display-serif italic text-[color:var(--accent-ink)] text-4xl sm:text-5xl leading-none select-none"
           aria-hidden="true"
         >
           §
         </span>
         <span class="flex-1 w-px bg-[color:var(--accent-ink)]/20 mt-2" />
       </div>
-      <div class="pb-1">
+      <div class="pb-1 min-w-0">
         <p
           class="text-[10px] font-semibold uppercase tracking-[0.18em] text-[color:var(--accent-ink)] mb-3"
         >
           Introducción
         </p>
         <h2
-          class="video-display-serif font-bold text-primary text-3xl leading-[1.1] tracking-tight"
+          class="video-display-serif font-bold text-primary text-2xl sm:text-3xl leading-[1.15] tracking-tight break-words hyphens-auto"
         >
           {{ content.title }}
         </h2>
-        <p class="mt-4 text-foreground/85 text-[15px] leading-[1.75] whitespace-pre-line">
+        <p class="mt-4 text-foreground/85 text-[14px] sm:text-[15px] leading-[1.7] sm:leading-[1.75] whitespace-pre-line break-words">
           {{ content.summary }}
         </p>
       </div>
@@ -45,14 +45,14 @@
         <li
           v-for="(item, idx) in content.whatYouLearn"
           :key="idx"
-          class="grid grid-cols-[auto_1fr] gap-5 items-baseline py-4"
+          class="grid grid-cols-[auto_1fr] gap-3 sm:gap-5 items-baseline py-4"
         >
           <span
-            class="video-display-serif text-primary text-2xl tabular-nums leading-none"
+            class="video-display-serif text-primary text-xl sm:text-2xl tabular-nums leading-none"
           >
             {{ String(idx + 1).padStart(2, '0') }}
           </span>
-          <span class="text-foreground text-[15px] leading-relaxed">{{ item }}</span>
+          <span class="text-foreground text-[14px] sm:text-[15px] leading-relaxed break-words min-w-0">{{ item }}</span>
         </li>
       </ol>
     </section>
@@ -70,7 +70,7 @@
         <article
           v-for="(item, idx) in content.keyConcepts"
           :key="idx"
-          class="group relative rounded-lg bg-[color:var(--paper)] border border-border p-5 transition-shadow hover:shadow-sm overflow-hidden"
+          class="group relative rounded-lg bg-[color:var(--paper)] border border-border p-4 sm:p-5 transition-shadow hover:shadow-sm overflow-hidden min-w-0"
         >
           <span
             class="absolute top-0 left-0 h-full w-[3px] bg-[color:var(--accent-ink)]"
@@ -81,7 +81,7 @@
           >
             concepto / {{ String(idx + 1).padStart(2, '0') }}
           </span>
-          <p class="mt-2 text-foreground text-[14px] leading-relaxed">
+          <p class="mt-2 text-foreground text-[13.5px] sm:text-[14px] leading-relaxed break-words">
             {{ item }}
           </p>
         </article>
@@ -101,7 +101,7 @@
         <li
           v-for="(item, idx) in content.examples"
           :key="idx"
-          class="relative pl-6 text-foreground text-[14.5px] leading-relaxed italic"
+          class="relative pl-6 text-foreground text-[14px] sm:text-[14.5px] leading-relaxed italic break-words"
         >
           <span
             class="absolute left-0 top-0 video-display-serif text-[color:var(--accent-ink)] text-xl leading-none"

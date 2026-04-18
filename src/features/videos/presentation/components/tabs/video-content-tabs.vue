@@ -1,21 +1,37 @@
 <template>
-  <div class="space-y-5">
-    <div class="flex items-center justify-between border-b border-border">
-      <nav class="flex gap-1">
+  <div class="space-y-5 min-w-0">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-border">
+      <nav
+        class="flex gap-1 overflow-x-auto scrollbar-none -mb-px flex-nowrap whitespace-nowrap"
+        aria-label="Tabs"
+      >
         <button
           v-for="tab in tabs"
           :key="tab"
           type="button"
-          class="px-4 py-2.5 text-sm font-semibold border-b-2 -mb-px transition-colors"
+          class="relative px-3 sm:px-4 py-2.5 text-sm font-semibold border-b-2 transition-colors inline-flex items-center gap-1.5 shrink-0"
           :class="active === tab
             ? 'border-[color:var(--accent-ink)] text-[color:var(--accent-ink)]'
             : 'border-transparent text-muted-foreground hover:text-foreground'"
           @click="switchTo(tab)"
         >
           {{ BLOCK_TAB_LABELS[tab] }}
+          <span
+            v-if="failedTypes.includes(tab)"
+            class="inline-block w-2 h-2 rounded-full bg-red-500"
+            :aria-label="`${BLOCK_TAB_LABELS[tab]}: error`"
+          />
+          <span
+            v-else-if="needsReviewTypes.includes(tab)"
+            class="inline-block w-2 h-2 rounded-full bg-amber-500"
+            :aria-label="`${BLOCK_TAB_LABELS[tab]}: revisar`"
+          />
         </button>
       </nav>
-      <div v-if="canEdit && !editingType" class="pb-2 flex gap-1.5">
+      <div
+        v-if="canEdit && !editingType && hasActiveContent"
+        class="pb-2 flex flex-wrap gap-1.5 shrink-0"
+      >
         <button
           type="button"
           class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-full border border-border bg-background hover:border-[color:var(--accent-ink)] hover:text-[color:var(--accent-ink)] transition-colors"
@@ -35,57 +51,76 @@
       </div>
     </div>
 
-    <div class="min-h-[200px]">
-      <template v-if="active === 'SUMMARY'">
+    <div class="min-h-[200px] space-y-3 min-w-0">
+      <BlockErrorPlaceholder
+        v-if="!hasActiveContent && failedTypes.includes(active)"
+        :type="active"
+        :can-retry="canEdit"
+        @retry="(t) => emit('regenerate-tab', t)"
+      />
+
+      <template v-else-if="active === 'SUMMARY'">
         <div v-if="!summary" class="p-8 text-center text-muted-foreground rounded-xl border border-dashed border-border bg-card/40">
           Sin resumen
         </div>
-        <SummaryTabEditor
-          v-else-if="editingType === 'SUMMARY'"
-          ref="summaryEditorRef"
-          :key="`edit-summary-${editSession}`"
-          :content="summary"
-        />
-        <SummaryTab v-else :content="summary" />
+        <template v-else>
+          <NeedsReviewBanner v-if="isNeedsReview(summary)" />
+          <SummaryTabEditor
+            v-if="editingType === 'SUMMARY'"
+            ref="summaryEditorRef"
+            :key="`edit-summary-${editSession}`"
+            :content="summary"
+          />
+          <SummaryTab v-else :content="summary" />
+        </template>
       </template>
 
       <template v-else-if="active === 'FLASHCARDS'">
         <div v-if="!flashcards" class="p-8 text-center text-muted-foreground rounded-xl border border-dashed border-border bg-card/40">
           Sin flashcards
         </div>
-        <FlashcardsTabEditor
-          v-else-if="editingType === 'FLASHCARDS'"
-          ref="flashcardsEditorRef"
-          :key="`edit-flashcards-${editSession}`"
-          :content="flashcards"
-        />
-        <FlashcardsTab v-else :content="flashcards" />
+        <template v-else>
+          <NeedsReviewBanner v-if="isNeedsReview(flashcards)" />
+          <FlashcardsTabEditor
+            v-if="editingType === 'FLASHCARDS'"
+            ref="flashcardsEditorRef"
+            :key="`edit-flashcards-${editSession}`"
+            :content="flashcards"
+          />
+          <FlashcardsTab v-else :content="flashcards" />
+        </template>
       </template>
 
       <template v-else-if="active === 'QUIZ'">
         <div v-if="!quiz" class="p-8 text-center text-muted-foreground rounded-xl border border-dashed border-border bg-card/40">
           Sin quiz
         </div>
-        <QuizTabEditor
-          v-else-if="editingType === 'QUIZ'"
-          ref="quizEditorRef"
-          :key="`edit-quiz-${editSession}`"
-          :content="quiz"
-        />
-        <QuizTab v-else :content="quiz" />
+        <template v-else>
+          <NeedsReviewBanner v-if="isNeedsReview(quiz)" />
+          <QuizTabEditor
+            v-if="editingType === 'QUIZ'"
+            ref="quizEditorRef"
+            :key="`edit-quiz-${editSession}`"
+            :content="quiz"
+          />
+          <QuizTab v-else :content="quiz" />
+        </template>
       </template>
 
       <template v-else-if="active === 'GLOSSARY'">
         <div v-if="!glossary" class="p-8 text-center text-muted-foreground rounded-xl border border-dashed border-border bg-card/40">
           Sin glosario
         </div>
-        <GlossaryTabEditor
-          v-else-if="editingType === 'GLOSSARY'"
-          ref="glossaryEditorRef"
-          :key="`edit-glossary-${editSession}`"
-          :content="glossary"
-        />
-        <GlossaryTab v-else :content="glossary" />
+        <template v-else>
+          <NeedsReviewBanner v-if="isNeedsReview(glossary)" />
+          <GlossaryTabEditor
+            v-if="editingType === 'GLOSSARY'"
+            ref="glossaryEditorRef"
+            :key="`edit-glossary-${editSession}`"
+            :content="glossary"
+          />
+          <GlossaryTab v-else :content="glossary" />
+        </template>
       </template>
     </div>
 
@@ -131,6 +166,7 @@
 
 <script setup lang="ts">
 import { computed, ref, shallowRef } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { Loader2, PenLine, RefreshCw } from 'lucide-vue-next'
 import SummaryTab from './summary-tab.vue'
 import FlashcardsTab from './flashcards-tab.vue'
@@ -140,13 +176,17 @@ import SummaryTabEditor from './summary-tab-editor.vue'
 import FlashcardsTabEditor from './flashcards-tab-editor.vue'
 import QuizTabEditor from './quiz-tab-editor.vue'
 import GlossaryTabEditor from './glossary-tab-editor.vue'
+import BlockErrorPlaceholder from './block-error-placeholder.vue'
+import NeedsReviewBanner from './needs-review-banner.vue'
 import { BLOCK_TAB_LABELS } from '../../../constants/video-labels.constants'
 import { VIDEO_BLOCK_TYPES } from '../../../constants/video-block-type.constants'
+import { VIDEO_CONTENT_TAB_QUERY_KEY } from '../../../constants/video-content-tabs.constants'
 import {
   isFlashcardsBlock,
   isGlossaryBlock,
   isQuizBlock,
   isSummaryBlock,
+  needsReview,
   type VideoBlock,
   type VideoBlockContent,
   type VideoBlockType,
@@ -158,7 +198,15 @@ interface EditorInstance {
   validate: () => string | null
 }
 
-const props = defineProps<{ blocks: VideoBlock[]; canEdit: boolean; isSaving: boolean }>()
+const props = withDefaults(
+  defineProps<{
+    blocks: VideoBlock[]
+    canEdit: boolean
+    isSaving: boolean
+    failedTypes?: VideoBlockType[]
+  }>(),
+  { failedTypes: () => [] },
+)
 
 const emit = defineEmits<{
   'regenerate-tab': [type: VideoBlockType]
@@ -166,7 +214,24 @@ const emit = defineEmits<{
 }>()
 
 const tabs = VIDEO_BLOCK_TYPES
-const active = ref<VideoBlockType>('SUMMARY')
+
+const route = useRoute()
+const router = useRouter()
+
+function isVideoBlockType(value: string): value is VideoBlockType {
+  return (VIDEO_BLOCK_TYPES as readonly string[]).includes(value)
+}
+
+const active = computed<VideoBlockType>(() => {
+  const raw = route.query[VIDEO_CONTENT_TAB_QUERY_KEY]
+  const value = typeof raw === 'string' ? raw : ''
+  return isVideoBlockType(value) ? value : 'SUMMARY'
+})
+
+const sortedBlocks = computed(() =>
+  [...props.blocks].sort((a, b) => a.orderIndex - b.orderIndex),
+)
+
 const editingType = ref<VideoBlockType | null>(null)
 const editSession = ref(0)
 
@@ -175,10 +240,35 @@ const flashcardsEditorRef = shallowRef<EditorInstance | null>(null)
 const quizEditorRef = shallowRef<EditorInstance | null>(null)
 const glossaryEditorRef = shallowRef<EditorInstance | null>(null)
 
-const summary = computed(() => props.blocks.find(isSummaryBlock)?.content ?? null)
-const flashcards = computed(() => props.blocks.find(isFlashcardsBlock)?.content ?? null)
-const quiz = computed(() => props.blocks.find(isQuizBlock)?.content ?? null)
-const glossary = computed(() => props.blocks.find(isGlossaryBlock)?.content ?? null)
+const summary = computed(() => sortedBlocks.value.find(isSummaryBlock)?.content ?? null)
+const flashcards = computed(() => sortedBlocks.value.find(isFlashcardsBlock)?.content ?? null)
+const quiz = computed(() => sortedBlocks.value.find(isQuizBlock)?.content ?? null)
+const glossary = computed(() => sortedBlocks.value.find(isGlossaryBlock)?.content ?? null)
+
+const activeContent = computed<VideoBlockContent | null>(() => {
+  switch (active.value) {
+    case 'SUMMARY':
+      return summary.value
+    case 'FLASHCARDS':
+      return flashcards.value
+    case 'QUIZ':
+      return quiz.value
+    case 'GLOSSARY':
+      return glossary.value
+    default:
+      return null
+  }
+})
+
+const hasActiveContent = computed(() => activeContent.value !== null)
+
+const needsReviewTypes = computed<VideoBlockType[]>(() =>
+  sortedBlocks.value.filter((b) => needsReview(b.content)).map((b) => b.type),
+)
+
+function isNeedsReview(content: VideoBlockContent | null | undefined): boolean {
+  return needsReview(content)
+}
 
 const currentEditor = computed<EditorInstance | null>(() => {
   switch (editingType.value) {
@@ -202,7 +292,10 @@ function switchTo(t: VideoBlockType) {
     if (!window.confirm('Hay cambios sin guardar. ¿Descartar y cambiar de tab?')) return
   }
   editingType.value = null
-  active.value = t
+  if (active.value === t) return
+  router.replace({
+    query: { ...route.query, [VIDEO_CONTENT_TAB_QUERY_KEY]: t },
+  })
 }
 
 function enterEdit() {

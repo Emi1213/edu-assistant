@@ -1,5 +1,5 @@
 <template>
-  <div class="relative overflow-hidden rounded-md bg-muted aspect-video w-40 shrink-0">
+  <div class="relative overflow-hidden rounded-md bg-muted aspect-video w-full sm:w-40 shrink-0">
     <img
       v-if="youtubeId"
       :src="`https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg`"

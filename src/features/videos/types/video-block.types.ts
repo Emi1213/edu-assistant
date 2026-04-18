@@ -1,11 +1,16 @@
 export type VideoBlockType = 'SUMMARY' | 'FLASHCARDS' | 'QUIZ' | 'GLOSSARY'
 
+export interface BlockMeta {
+  needsReview?: boolean
+}
+
 export interface SummaryBlockContent {
   title: string
   summary: string
   examples: string[]
   keyConcepts: string[]
   whatYouLearn: string[]
+  meta?: BlockMeta
 }
 
 export interface FlashcardItem {
@@ -15,6 +20,7 @@ export interface FlashcardItem {
 
 export interface FlashcardsBlockContent {
   items: FlashcardItem[]
+  meta?: BlockMeta
 }
 
 export interface QuizQuestion {
@@ -26,6 +32,7 @@ export interface QuizQuestion {
 
 export interface QuizBlockContent {
   questions: QuizQuestion[]
+  meta?: BlockMeta
 }
 
 export interface GlossaryTerm {
@@ -35,6 +42,7 @@ export interface GlossaryTerm {
 
 export interface GlossaryBlockContent {
   terms: GlossaryTerm[]
+  meta?: BlockMeta
 }
 
 export type VideoBlockContent =
@@ -62,3 +70,6 @@ export const isSummaryBlock = (b: VideoBlock): b is SummaryBlock => b.type === '
 export const isFlashcardsBlock = (b: VideoBlock): b is FlashcardsBlock => b.type === 'FLASHCARDS'
 export const isQuizBlock = (b: VideoBlock): b is QuizBlock => b.type === 'QUIZ'
 export const isGlossaryBlock = (b: VideoBlock): b is GlossaryBlock => b.type === 'GLOSSARY'
+
+export const needsReview = (content: VideoBlockContent | null | undefined): boolean =>
+  content?.meta?.needsReview === true
