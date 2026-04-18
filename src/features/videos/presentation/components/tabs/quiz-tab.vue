@@ -1,50 +1,258 @@
 <template>
-  <div class="space-y-6">
-    <article v-for="(q, qIdx) in content.questions" :key="qIdx" class="rounded-lg border bg-card p-4 space-y-3">
-      <h3 class="font-semibold">{{ qIdx + 1 }}. {{ q.question }}</h3>
+  <div class="video-section-enter max-w-4xl w-full">
+    <div v-if="!currentQuestion" class="p-6 text-center text-muted-foreground">
+      Sin preguntas
+    </div>
+    <div v-else class="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-6 items-start">
+      <article class="relative rounded-2xl border border-border bg-[color:var(--paper)] p-7 shadow-[0_1px_0_rgba(0,0,0,0.02),0_12px_32px_-18px_rgba(23,26,58,0.2)] space-y-6">
+        <header class="flex items-start gap-5">
+          <div class="flex flex-col items-center shrink-0">
+            <span
+              class="video-display-serif italic font-bold text-[color:var(--accent-ink)] text-5xl leading-none tabular-nums"
+            >
+              {{ String(currentIndex + 1).padStart(2, '0') }}
+            </span>
+            <span class="mt-1 text-[9px] uppercase tracking-[0.18em] text-[color:var(--accent-ink)]/70">
+              pregunta
+            </span>
+          </div>
+          <h3 class="video-display-serif font-semibold text-foreground text-xl leading-snug pt-1 flex-1">
+            {{ currentQuestion.question }}
+          </h3>
+        </header>
 
-      <ol class="space-y-2">
-        <li v-for="(opt, oIdx) in q.options" :key="oIdx">
-          <button
-            type="button"
-            class="w-full text-left rounded border px-3 py-2 transition-colors"
-            :class="buttonClass(qIdx, oIdx, q.correctAnswer)"
-            @click="pick(qIdx, oIdx)"
+        <fieldset class="space-y-2.5">
+          <legend class="sr-only">Opciones</legend>
+          <label
+            v-for="(opt, oIdx) in currentQuestion.options"
+            :key="oIdx"
+            class="flex items-start gap-3 rounded-xl border px-4 py-3 cursor-pointer transition-all text-[14.5px]"
+            :class="optionClass(oIdx)"
           >
-            <span class="font-semibold mr-2">{{ letter(oIdx) }}.</span>{{ opt }}
-          </button>
-        </li>
-      </ol>
+            <span
+              class="shrink-0 w-7 h-7 rounded-full border flex items-center justify-center text-xs font-semibold mt-0.5 video-display-serif"
+              :class="indicatorClass(oIdx)"
+            >
+              <Check v-if="isAnswered && oIdx === currentQuestion.correctAnswer" class="w-3.5 h-3.5" />
+              <X v-else-if="isAnswered && oIdx === picked && oIdx !== currentQuestion.correctAnswer" class="w-3.5 h-3.5" />
+              <template v-else>{{ letter(oIdx) }}</template>
+            </span>
+            <span class="leading-snug">{{ opt }}</span>
+            <input
+              type="radio"
+              class="sr-only"
+              :name="`quiz-option-${currentIndex}`"
+              :value="oIdx"
+              :checked="picked === oIdx"
+              :disabled="isAnswered"
+              @change="picked = oIdx"
+            />
+          </label>
+        </fieldset>
 
-      <p v-if="answered[qIdx] !== undefined" class="text-sm bg-muted/30 rounded p-2">
-        <span class="font-semibold">Explicación: </span>{{ q.explanation }}
+        <div
+          v-if="isAnswered"
+          class="rounded-xl p-4 text-sm leading-relaxed border flex items-start gap-3 video-section-enter"
+          :class="feedbackClass"
+        >
+          <CheckCircle2 v-if="isCorrect" class="w-4 h-4 shrink-0 mt-0.5" />
+          <XCircle v-else class="w-4 h-4 shrink-0 mt-0.5" />
+          <div>
+            <p class="font-semibold text-[13px] uppercase tracking-wide">
+              {{ isCorrect ? 'Correcto' : 'No es correcta' }}
+            </p>
+            <p class="mt-1 text-[13.5px]">{{ currentQuestion.explanation }}</p>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-1">
+          <button
+            v-if="!isAnswered"
+            type="button"
+            class="px-5 py-2 rounded-full bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--accent-ink)] focus-visible:ring-offset-2"
+            :disabled="picked === null"
+            @click="confirmAnswer"
+          >
+            Comprobar
+          </button>
+          <button
+            v-else-if="currentIndex < content.questions.length - 1"
+            type="button"
+            class="inline-flex items-center gap-1.5 px-5 py-2 rounded-full bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-colors"
+            @click="nextQuestion"
+          >
+            Siguiente
+            <ChevronRight class="w-3.5 h-3.5" />
+          </button>
+          <button
+            v-else
+            type="button"
+            class="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-colors"
+            @click="finish"
+          >
+            <Trophy class="w-4 h-4" />
+            Ver resultados
+          </button>
+        </div>
+      </article>
+
+      <aside class="flex md:flex-col items-center gap-3 md:sticky md:top-4 md:pt-2">
+        <p class="text-[9px] uppercase tracking-[0.18em] text-muted-foreground font-semibold shrink-0 md:writing-mode-horizontal">
+          Progreso
+        </p>
+        <div class="flex md:flex-col gap-1.5">
+          <span
+            v-for="(_, qIdx) in content.questions"
+            :key="qIdx"
+            class="w-8 h-8 rounded-md flex items-center justify-center text-[11px] font-semibold border tabular-nums video-display-serif"
+            :class="progressCircleClass(qIdx)"
+          >
+            {{ qIdx + 1 }}
+          </span>
+        </div>
+      </aside>
+    </div>
+
+    <div
+      v-if="showResults"
+      class="video-section-enter mt-10 rounded-2xl border border-border bg-[color:var(--paper)] p-8 shadow-sm flex flex-col items-center gap-4"
+    >
+      <div class="relative">
+        <Trophy class="w-16 h-16 text-[color:var(--accent-ink)]" />
+        <span
+          class="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center"
+        >
+          ✓
+        </span>
+      </div>
+      <p class="text-[10px] font-semibold uppercase tracking-[0.18em] text-[color:var(--accent-ink)]">
+        Resultado final
       </p>
-    </article>
+      <p class="video-display-serif font-bold text-primary text-6xl tabular-nums leading-none">
+        {{ score }}<span class="text-border mx-1">/</span>{{ content.questions.length }}
+      </p>
+      <p class="text-muted-foreground text-sm">
+        {{ percent }}% de respuestas correctas
+      </p>
+      <button
+        type="button"
+        class="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-colors"
+        @click="reset"
+      >
+        <RotateCcw class="w-4 h-4" />
+        Intentar de nuevo
+      </button>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
+import {
+  Check,
+  CheckCircle2,
+  ChevronRight,
+  RotateCcw,
+  Trophy,
+  X,
+  XCircle,
+} from 'lucide-vue-next'
 import type { QuizBlockContent } from '../../../types/video-block.types'
 
-defineProps<{ content: QuizBlockContent }>()
+const props = defineProps<{ content: QuizBlockContent }>()
 
-const answered = ref<Record<number, number>>({})
+const currentIndex = ref(0)
+const picked = ref<number | null>(null)
+const answered = ref<(number | null)[]>([])
+const showResults = ref(false)
 
-function pick(qIdx: number, oIdx: number) {
-  if (answered.value[qIdx] !== undefined) return
-  answered.value = { ...answered.value, [qIdx]: oIdx }
-}
+const currentQuestion = computed(() => props.content.questions[currentIndex.value])
+const isAnswered = computed(() => answered.value[currentIndex.value] !== undefined)
+const isCorrect = computed(
+  () =>
+    currentQuestion.value != null &&
+    answered.value[currentIndex.value] === currentQuestion.value.correctAnswer,
+)
+
+const score = computed(() =>
+  props.content.questions.reduce((acc, q, i) => {
+    const a = answered.value[i]
+    return a === q.correctAnswer ? acc + 1 : acc
+  }, 0),
+)
+
+const percent = computed(() =>
+  props.content.questions.length === 0
+    ? 0
+    : Math.round((score.value / props.content.questions.length) * 100),
+)
+
+const feedbackClass = computed(() =>
+  isCorrect.value
+    ? 'bg-green-50 border-green-200 text-green-800'
+    : 'bg-red-50 border-red-200 text-red-700',
+)
 
 function letter(idx: number): string {
   return 'ABCD'[idx] ?? String(idx + 1)
 }
 
-function buttonClass(qIdx: number, oIdx: number, correct: number): string {
-  const picked = answered.value[qIdx]
-  if (picked === undefined) return 'hover:border-primary'
-  if (oIdx === correct) return 'border-green-500 bg-green-50'
-  if (oIdx === picked) return 'border-red-500 bg-red-50'
-  return 'opacity-60'
+function optionClass(oIdx: number): string {
+  const q = currentQuestion.value
+  if (!isAnswered.value || !q) {
+    return picked.value === oIdx
+      ? 'border-primary bg-[color:var(--accent-ink-wash)]'
+      : 'border-border bg-card hover:border-primary/40'
+  }
+  if (oIdx === q.correctAnswer) return 'border-green-500 bg-green-50'
+  if (oIdx === picked.value) return 'border-red-500 bg-red-50'
+  return 'border-border bg-card opacity-50'
+}
+
+function indicatorClass(oIdx: number): string {
+  const q = currentQuestion.value
+  if (!isAnswered.value || !q) {
+    return picked.value === oIdx
+      ? 'border-primary bg-primary text-primary-foreground'
+      : 'border-muted-foreground/40 text-muted-foreground'
+  }
+  if (oIdx === q.correctAnswer) return 'border-green-500 bg-green-500 text-white'
+  if (oIdx === picked.value) return 'border-red-500 bg-red-500 text-white'
+  return 'border-muted-foreground/40 text-muted-foreground'
+}
+
+function progressCircleClass(qIdx: number): string {
+  const a = answered.value[qIdx]
+  const question = props.content.questions[qIdx]
+  if (a !== undefined && question) {
+    return a === question.correctAnswer
+      ? 'border-green-500 bg-green-100 text-green-700'
+      : 'border-red-500 bg-red-50 text-red-600'
+  }
+  if (qIdx === currentIndex.value) return 'border-primary bg-primary text-primary-foreground'
+  return 'border-border bg-card text-muted-foreground'
+}
+
+function confirmAnswer() {
+  if (picked.value === null) return
+  const next = [...answered.value]
+  next[currentIndex.value] = picked.value
+  answered.value = next
+}
+
+function nextQuestion() {
+  currentIndex.value += 1
+  picked.value = answered.value[currentIndex.value] ?? null
+}
+
+function finish() {
+  showResults.value = true
+}
+
+function reset() {
+  currentIndex.value = 0
+  picked.value = null
+  answered.value = []
+  showResults.value = false
 }
 </script>
