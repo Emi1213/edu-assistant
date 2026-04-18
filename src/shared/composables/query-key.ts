@@ -1,6 +1,7 @@
 import type { ModuleQueryParams } from "@/features/modules/types/modules.types";
 import type { LearningObjectsQueryParams } from "@/features/learning-objects/types";
 import type { StudentsQueryParams } from "@/features/users/types";
+import type { VideoFiltersDto } from "@/features/videos/types/video.types";
 
 export const QUERY_KEYS = {
     // Modules
@@ -27,4 +28,10 @@ export const QUERY_KEYS = {
 
     CHAT_SESSIONS: (learningObjectId: number) => ['chat-sessions', learningObjectId],
     CHAT_MESSAGES: (sessionId: number) => ['chat-messages', sessionId],
+
+    // Videos
+    VIDEOS_BY_MODULE: (params: { moduleId: number; filters?: VideoFiltersDto }) =>
+        ['videos', 'module', params.moduleId, params.filters] as const,
+    VIDEO_DETAIL: (id: number) => ['videos', 'detail', id] as const,
+    VIDEO_STATUS: (id: number) => ['videos', 'status', id] as const,
     }
