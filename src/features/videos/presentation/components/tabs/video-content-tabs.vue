@@ -154,7 +154,7 @@ import {
 
 interface EditorInstance {
   getDraft: () => VideoBlockContent
-  isDirty: { value: boolean }
+  getIsDirty: () => boolean
   validate: () => string | null
 }
 
@@ -195,7 +195,7 @@ const currentEditor = computed<EditorInstance | null>(() => {
   }
 })
 
-const isDirty = computed(() => currentEditor.value?.isDirty.value ?? false)
+const isDirty = computed(() => currentEditor.value?.getIsDirty() ?? false)
 
 function switchTo(t: VideoBlockType) {
   if (editingType.value && isDirty.value) {

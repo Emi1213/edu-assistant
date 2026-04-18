@@ -133,7 +133,7 @@ function validate(): string | null {
 
 defineExpose({
   getDraft: () => draft.value,
-  isDirty,
+  getIsDirty: () => isDirty.value,
   validate,
 })
 </script>
