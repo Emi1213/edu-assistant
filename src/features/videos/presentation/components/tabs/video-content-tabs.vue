@@ -211,7 +211,6 @@ function enterEdit() {
 }
 
 function cancelEdit() {
-  if (isDirty.value && !window.confirm('¿Descartar cambios?')) return
   editingType.value = null
 }
 
