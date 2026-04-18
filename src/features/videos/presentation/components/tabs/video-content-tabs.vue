@@ -35,94 +35,102 @@
       </div>
     </div>
 
-    <template v-if="editingType === active">
-      <SummaryTabEditor
-        v-if="active === 'SUMMARY' && summary"
-        ref="summaryEditorRef"
-        :key="`editor-summary-${editSession}`"
-        :content="summary"
-      />
-      <FlashcardsTabEditor
-        v-else-if="active === 'FLASHCARDS' && flashcards"
-        ref="flashcardsEditorRef"
-        :key="`editor-flashcards-${editSession}`"
-        :content="flashcards"
-      />
-      <QuizTabEditor
-        v-else-if="active === 'QUIZ' && quiz"
-        ref="quizEditorRef"
-        :key="`editor-quiz-${editSession}`"
-        :content="quiz"
-      />
-      <GlossaryTabEditor
-        v-else-if="active === 'GLOSSARY' && glossary"
-        ref="glossaryEditorRef"
-        :key="`editor-glossary-${editSession}`"
-        :content="glossary"
-      />
-    </template>
+    <div class="min-h-[200px]">
+      <template v-if="active === 'SUMMARY'">
+        <div v-if="!summary" class="p-8 text-center text-muted-foreground rounded-xl border border-dashed border-border bg-card/40">
+          Sin resumen
+        </div>
+        <SummaryTabEditor
+          v-else-if="editingType === 'SUMMARY'"
+          ref="summaryEditorRef"
+          :key="`edit-summary-${editSession}`"
+          :content="summary"
+        />
+        <SummaryTab v-else :content="summary" />
+      </template>
 
-    <template v-else>
-      <SummaryTab v-if="active === 'SUMMARY' && summary" :content="summary" />
-      <FlashcardsTab v-else-if="active === 'FLASHCARDS' && flashcards" :content="flashcards" />
-      <QuizTab v-else-if="active === 'QUIZ' && quiz" :content="quiz" />
-      <GlossaryTab v-else-if="active === 'GLOSSARY' && glossary" :content="glossary" />
-      <div v-else class="p-8 text-center text-muted-foreground rounded-xl border border-dashed border-border bg-card/40">
-        Contenido no disponible
-      </div>
-    </template>
+      <template v-else-if="active === 'FLASHCARDS'">
+        <div v-if="!flashcards" class="p-8 text-center text-muted-foreground rounded-xl border border-dashed border-border bg-card/40">
+          Sin flashcards
+        </div>
+        <FlashcardsTabEditor
+          v-else-if="editingType === 'FLASHCARDS'"
+          ref="flashcardsEditorRef"
+          :key="`edit-flashcards-${editSession}`"
+          :content="flashcards"
+        />
+        <FlashcardsTab v-else :content="flashcards" />
+      </template>
 
-    <Transition
-      enter-active-class="transition-transform duration-200"
-      enter-from-class="translate-y-full"
-      enter-to-class="translate-y-0"
-      leave-active-class="transition-transform duration-150"
-      leave-from-class="translate-y-0"
-      leave-to-class="translate-y-full"
+      <template v-else-if="active === 'QUIZ'">
+        <div v-if="!quiz" class="p-8 text-center text-muted-foreground rounded-xl border border-dashed border-border bg-card/40">
+          Sin quiz
+        </div>
+        <QuizTabEditor
+          v-else-if="editingType === 'QUIZ'"
+          ref="quizEditorRef"
+          :key="`edit-quiz-${editSession}`"
+          :content="quiz"
+        />
+        <QuizTab v-else :content="quiz" />
+      </template>
+
+      <template v-else-if="active === 'GLOSSARY'">
+        <div v-if="!glossary" class="p-8 text-center text-muted-foreground rounded-xl border border-dashed border-border bg-card/40">
+          Sin glosario
+        </div>
+        <GlossaryTabEditor
+          v-else-if="editingType === 'GLOSSARY'"
+          ref="glossaryEditorRef"
+          :key="`edit-glossary-${editSession}`"
+          :content="glossary"
+        />
+        <GlossaryTab v-else :content="glossary" />
+      </template>
+    </div>
+
+    <div
+      v-if="editingType"
+      class="sticky bottom-0 -mx-4 px-4 py-3 rounded-t-2xl border border-border bg-background/95 backdrop-blur-md shadow-[0_-8px_24px_-12px_rgba(23,26,58,0.2)] flex items-center justify-between gap-3 z-10"
     >
-      <div
-        v-if="editingType"
-        class="sticky bottom-0 -mx-4 px-4 py-3 rounded-t-2xl border border-border bg-background/95 backdrop-blur-md shadow-[0_-8px_24px_-12px_rgba(23,26,58,0.2)] flex items-center justify-between gap-3 z-10"
-      >
-        <div class="flex items-center gap-2 text-sm">
-          <span
-            class="inline-block w-2 h-2 rounded-full"
-            :class="isDirty ? 'bg-[color:var(--accent-ink)] animate-pulse' : 'bg-muted-foreground/30'"
-          />
-          <span :class="isDirty ? 'text-foreground font-semibold' : 'text-muted-foreground'">
-            {{ isDirty ? 'Cambios sin guardar' : 'Sin cambios' }}
-          </span>
-          <span class="text-muted-foreground">·</span>
-          <span class="text-[10px] uppercase tracking-[0.18em] text-muted-foreground font-semibold">
-            {{ BLOCK_TAB_LABELS[editingType] }}
-          </span>
-        </div>
-        <div class="flex items-center gap-2">
-          <button
-            type="button"
-            class="px-3 py-1.5 text-sm font-semibold rounded-full border border-border bg-background hover:bg-muted transition-colors"
-            :disabled="isSaving"
-            @click="cancelEdit"
-          >
-            Cancelar
-          </button>
-          <button
-            type="button"
-            class="inline-flex items-center gap-1.5 px-4 py-1.5 text-sm font-semibold rounded-full bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            :disabled="!isDirty || isSaving"
-            @click="saveEdit"
-          >
-            <Loader2 v-if="isSaving" class="w-3.5 h-3.5 animate-spin" />
-            {{ isSaving ? 'Guardando...' : 'Guardar' }}
-          </button>
-        </div>
+      <div class="flex items-center gap-2 text-sm">
+        <span
+          class="inline-block w-2 h-2 rounded-full"
+          :class="isDirty ? 'bg-[color:var(--accent-ink)] animate-pulse' : 'bg-muted-foreground/30'"
+        />
+        <span :class="isDirty ? 'text-foreground font-semibold' : 'text-muted-foreground'">
+          {{ isDirty ? 'Cambios sin guardar' : 'Sin cambios' }}
+        </span>
+        <span class="text-muted-foreground">·</span>
+        <span class="text-[10px] uppercase tracking-[0.18em] text-muted-foreground font-semibold">
+          {{ BLOCK_TAB_LABELS[editingType] }}
+        </span>
       </div>
-    </Transition>
+      <div class="flex items-center gap-2">
+        <button
+          type="button"
+          class="px-3 py-1.5 text-sm font-semibold rounded-full border border-border bg-background hover:bg-muted transition-colors"
+          :disabled="isSaving"
+          @click="cancelEdit"
+        >
+          Cancelar
+        </button>
+        <button
+          type="button"
+          class="inline-flex items-center gap-1.5 px-4 py-1.5 text-sm font-semibold rounded-full bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          :disabled="!isDirty || isSaving"
+          @click="saveEdit"
+        >
+          <Loader2 v-if="isSaving" class="w-3.5 h-3.5 animate-spin" />
+          {{ isSaving ? 'Guardando...' : 'Guardar' }}
+        </button>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, shallowRef } from 'vue'
 import { Loader2, PenLine, RefreshCw } from 'lucide-vue-next'
 import SummaryTab from './summary-tab.vue'
 import FlashcardsTab from './flashcards-tab.vue'
@@ -162,17 +170,17 @@ const active = ref<VideoBlockType>('SUMMARY')
 const editingType = ref<VideoBlockType | null>(null)
 const editSession = ref(0)
 
-const summaryEditorRef = ref<EditorInstance | null>(null)
-const flashcardsEditorRef = ref<EditorInstance | null>(null)
-const quizEditorRef = ref<EditorInstance | null>(null)
-const glossaryEditorRef = ref<EditorInstance | null>(null)
+const summaryEditorRef = shallowRef<EditorInstance | null>(null)
+const flashcardsEditorRef = shallowRef<EditorInstance | null>(null)
+const quizEditorRef = shallowRef<EditorInstance | null>(null)
+const glossaryEditorRef = shallowRef<EditorInstance | null>(null)
 
 const summary = computed(() => props.blocks.find(isSummaryBlock)?.content ?? null)
 const flashcards = computed(() => props.blocks.find(isFlashcardsBlock)?.content ?? null)
 const quiz = computed(() => props.blocks.find(isQuizBlock)?.content ?? null)
 const glossary = computed(() => props.blocks.find(isGlossaryBlock)?.content ?? null)
 
-function currentEditor(): EditorInstance | null {
+const currentEditor = computed<EditorInstance | null>(() => {
   switch (editingType.value) {
     case 'SUMMARY':
       return summaryEditorRef.value
@@ -185,9 +193,9 @@ function currentEditor(): EditorInstance | null {
     default:
       return null
   }
-}
+})
 
-const isDirty = computed(() => currentEditor()?.isDirty.value ?? false)
+const isDirty = computed(() => currentEditor.value?.isDirty.value ?? false)
 
 function switchTo(t: VideoBlockType) {
   if (editingType.value && isDirty.value) {
@@ -198,8 +206,8 @@ function switchTo(t: VideoBlockType) {
 }
 
 function enterEdit() {
-  editingType.value = active.value
   editSession.value += 1
+  editingType.value = active.value
 }
 
 function cancelEdit() {
@@ -208,7 +216,7 @@ function cancelEdit() {
 }
 
 function saveEdit() {
-  const editor = currentEditor()
+  const editor = currentEditor.value
   if (!editor || !editingType.value) return
   const err = editor.validate()
   if (err) {
