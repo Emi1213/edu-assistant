@@ -47,15 +47,35 @@
             </div>
           </div>
 
-          <div v-if="canEdit" class="flex flex-wrap gap-2">
+          <div v-if="canEditVideo" class="flex flex-wrap items-center gap-2">
             <button
               type="button"
-              class="px-3 py-1.5 text-sm rounded border bg-background hover:bg-muted inline-flex items-center gap-1"
+              class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold rounded-full border border-border bg-background hover:border-[color:var(--accent-ink)] hover:text-[color:var(--accent-ink)] transition-colors"
               :disabled="isProcessing"
               @click="openRetryAll"
             >
-              <RefreshCw class="w-3 h-3" />
+              <RefreshCw class="w-3.5 h-3.5" />
               Regenerar todo
+            </button>
+            <button
+              type="button"
+              class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold rounded-full transition-colors"
+              :class="video.isPublished
+                ? 'border border-border bg-background hover:bg-muted text-muted-foreground'
+                : 'bg-primary text-primary-foreground hover:bg-primary/90'"
+              @click="togglePublish"
+            >
+              <CheckCircle2 v-if="!video.isPublished" class="w-3.5 h-3.5" />
+              <EyeOff v-else class="w-3.5 h-3.5" />
+              {{ video.isPublished ? 'Despublicar' : 'Publicar' }}
+            </button>
+            <button
+              type="button"
+              class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold rounded-full border border-border bg-background text-destructive hover:bg-destructive/10 transition-colors"
+              @click="deleteOpen = true"
+            >
+              <Trash2 class="w-3.5 h-3.5" />
+              Eliminar
             </button>
           </div>
         </div>
@@ -77,7 +97,7 @@
       <VideoContentTabs
         v-else-if="video.blocks?.length"
         :blocks="video.blocks"
-        :can-edit="canEdit"
+        :can-edit="canEditVideo"
         @regenerate-tab="openRetryForTab"
       />
       <div v-else class="rounded-lg border bg-card p-6 text-center text-muted-foreground">
@@ -91,22 +111,34 @@
         @update:is-open="retryOpen = $event"
         @submit="onRetrySubmit"
       />
+
+      <DeleteVideoConfirmDialog
+        :is-open="deleteOpen"
+        :is-submitting="deleteMutation.isPending.value"
+        :title="video.title"
+        @update:is-open="deleteOpen = $event"
+        @confirm="onConfirmDelete"
+      />
     </template>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, onUnmounted, ref, watch } from 'vue'
-import { useRoute } from 'vue-router'
-import { ArrowLeft, RefreshCw } from 'lucide-vue-next'
+import { useRoute, useRouter } from 'vue-router'
+import { ArrowLeft, CheckCircle2, EyeOff, RefreshCw, Trash2 } from 'lucide-vue-next'
 import VideoPlayer from '../components/video-player.vue'
 import VideoSourceBadge from '../components/video-source-badge.vue'
 import VideoProcessingScreen from '../components/video-processing-screen.vue'
 import VideoErrorScreen from '../components/video-error-screen.vue'
 import VideoContentTabs from '../components/tabs/video-content-tabs.vue'
 import RetryVideoDialog from '../components/retry-video-dialog.vue'
+import DeleteVideoConfirmDialog from '../components/delete-video-confirm-dialog.vue'
 import { useVideoDetail } from '../../composables/use-video-detail'
 import { useRetryVideo } from '../../composables/use-retry-video'
+import { useToggleVideoPublish } from '../../composables/use-toggle-video-publish'
+import { useDeleteVideo } from '../../composables/use-delete-video'
+import { useRoles } from '@/features/auth/composables/use-roles'
 import { isProcessingStatus } from '../../constants/video-status.constants'
 import {
   POLLING_INTERVAL_MS,
@@ -119,13 +151,18 @@ import type { IngestionStatus } from '../../types/video.types'
 import type { VideoBlockType } from '../../types/video-block.types'
 
 const route = useRoute()
+const router = useRouter()
 const moduleId = computed(() => Number(route.params.id))
 const learningObjectId = computed(() => Number(route.params.learningObjectId))
 
-const canEdit = computed(() => true)
+const { canEdit } = useRoles()
+const canEditVideo = computed(() => canEdit())
 
 const { video, isLoading, status, errorMessage } = useVideoDetail(learningObjectId)
 const retryMutation = useRetryVideo(learningObjectId.value, moduleId.value)
+const publishMutation = useToggleVideoPublish(moduleId.value)
+const deleteMutation = useDeleteVideo(moduleId.value)
+const deleteOpen = ref(false)
 
 const effectiveStatus = computed<IngestionStatus>(() => status.value ?? 'PENDING')
 const isProcessing = computed(() => isProcessingStatus(effectiveStatus.value))
@@ -186,6 +223,21 @@ function handleRetry() {
 }
 
 function handleDelete() {
-  // Wired in Phase 8
+  deleteOpen.value = true
+}
+
+async function togglePublish() {
+  if (!video.value) return
+  await publishMutation.mutateAsync({
+    id: video.value.id,
+    isPublished: !video.value.isPublished,
+  })
+}
+
+async function onConfirmDelete() {
+  if (!video.value) return
+  await deleteMutation.mutateAsync(video.value.id)
+  deleteOpen.value = false
+  router.push({ name: MODULES_ROUTES_NAMES.MODULE_WIKI, params: { id: moduleId.value } })
 }
 </script>
