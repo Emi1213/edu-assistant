@@ -11,6 +11,8 @@ import {
 } from '../../constants/learning-object-type.constants'
 import { useLearningObjects } from '../../composables/queries/use-learning-objects'
 import GenericTabContent from './generic-tab-content.vue'
+import { useVideosList } from '@/features/videos/composables/use-videos-list'
+import VideoCard from '@/features/videos/presentation/components/video-card.vue'
 
 const props = defineProps<{
   types: LearningObjectType[]
@@ -45,18 +47,6 @@ const queryParams = computed(() => ({
   typeId: activeTypeId.value,
 }))
 
-const { data: learningObjectsResponse, isLoading } = useLearningObjects(queryParams)
-
-const learningObjects = computed(() => learningObjectsResponse.value?.records ?? [])
-
-const sortedLearningObjects = computed(() => sortLearningObjectsByOrderIndex(learningObjects.value))
-
-const { reorderByDrag, isReorderingLearningObjects } = useLearningObjectsListReorder(props.moduleId)
-
-function handleReorderDrag(movedLo: LearningObject, targetLo: LearningObject) {
-  reorderByDrag(movedLo, targetLo)
-}
-
 const activeType = computed(() =>
   props.types.find((type) => type.id === activeTypeId.value)
 )
@@ -64,6 +54,36 @@ const activeType = computed(() =>
 const activeConfig = computed(() =>
   activeType.value ? LEARNING_OBJECT_TYPE_CONFIG[activeType.value.name] : undefined
 )
+
+const activeTypeName = computed(() => activeType.value?.name ?? '')
+const isVideoTab = computed(() => activeTypeName.value === 'VIDEO')
+
+const { data: learningObjectsResponse, isLoading: isLoadingLearningObjects } =
+  useLearningObjects(queryParams)
+
+const videosParams = computed(() => ({ moduleId: props.moduleId }))
+const {
+  videos,
+  isLoading: isLoadingVideos,
+} = useVideosList(videosParams, isVideoTab)
+
+const learningObjects = computed(() => learningObjectsResponse.value?.records ?? [])
+
+const sortedLearningObjects = computed(() => sortLearningObjectsByOrderIndex(learningObjects.value))
+
+const isLoading = computed(() =>
+  isVideoTab.value ? isLoadingVideos.value : isLoadingLearningObjects.value,
+)
+
+const activeItemsCount = computed(() =>
+  isVideoTab.value ? videos.value.length : learningObjects.value.length,
+)
+
+const { reorderByDrag, isReorderingLearningObjects } = useLearningObjectsListReorder(props.moduleId)
+
+function handleReorderDrag(movedLo: LearningObject, targetLo: LearningObject) {
+  reorderByDrag(movedLo, targetLo)
+}
 
 const resolveLabel = (type: LearningObjectType) =>
   LEARNING_OBJECT_TYPE_CONFIG[type.name]?.tabLabel ?? type.name
@@ -96,7 +116,7 @@ const buildDetailRoute = (learningObject: LearningObject): RouteLocationRaw => (
             {{ resolveLabel(type) }}
           </span>
           <span v-if="type.id === activeTypeId" class="ml-1 text-xs opacity-70">
-            ({{ learningObjects.length }})
+            ({{ activeItemsCount }})
           </span>
         </button>
       </div>
@@ -111,7 +131,33 @@ const buildDetailRoute = (learningObject: LearningObject): RouteLocationRaw => (
       </button>
     </div>
 
+    <template v-if="isVideoTab">
+      <div v-if="isLoading" class="space-y-3">
+        <div v-for="i in 3" :key="i" class="rounded-lg border bg-card p-4">
+          <div class="flex gap-4">
+            <div class="w-40 aspect-video rounded-md bg-muted animate-pulse" />
+            <div class="flex-1 space-y-2">
+              <div class="h-5 w-2/3 rounded bg-muted animate-pulse" />
+              <div class="h-3 w-1/3 rounded bg-muted animate-pulse" />
+            </div>
+          </div>
+        </div>
+      </div>
+      <div v-else-if="videos.length === 0" class="rounded-lg border border-dashed bg-muted/20 p-10 text-center">
+        <p class="text-muted-foreground">Sin videos todavía.</p>
+      </div>
+      <div v-else class="space-y-3">
+        <VideoCard
+          v-for="video in videos"
+          :key="video.id"
+          :item="video"
+          :module-id="moduleId"
+        />
+      </div>
+    </template>
+
     <GenericTabContent
+      v-else
       :learning-objects="sortedLearningObjects"
       :is-loading="isLoading"
       :can-edit="canEdit"
