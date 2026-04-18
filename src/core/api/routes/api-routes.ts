@@ -104,5 +104,6 @@ export const API_ROUTES = {
         GENERATE_ACTIVITY: `${AR_KEYS.CONTENT_GENERATION}/generate-activity`,
         EXTRACT_CONCEPTS: `${AR_KEYS.CONTENT_GENERATION}/extract-concepts`,
         EXTRACT_RELATIONS: `${AR_KEYS.CONTENT_GENERATION}/generate-relations`,
+        GENERATE_CONCEPT: `${AR_KEYS.CONTENT_GENERATION}/generate-concept`,
     },
 }
