@@ -8,6 +8,8 @@ import type {
   ExtractRelationsResponse,
   GenerateActivityPayload,
   GenerateActivityResponse,
+  GenerateConceptData,
+  GenerateConceptPayload,
   GenerateImagePayload,
   GenerateImageResponse,
 } from "../types";
@@ -78,6 +80,14 @@ export class ContentGenerationDataSource {
     async generateActivity(payload: GenerateActivityPayload): Promise<GenerateActivityResponse | null> {
         const response = await this.httpClient.post<GenerateActivityResponse>(
             API_ROUTES.CONTENT_GENERATION.GENERATE_ACTIVITY,
+            payload
+        )
+        return response.data ?? null
+    }
+
+    async generateConcept(payload: GenerateConceptPayload): Promise<GenerateConceptData | null> {
+        const response = await this.httpClient.post<GenerateConceptData>(
+            API_ROUTES.CONTENT_GENERATION.GENERATE_CONCEPT,
             payload
         )
         return response.data ?? null

@@ -120,6 +120,7 @@ export function useLearningObjectEditorView() {
   }
 
   const relationsStorageKey = (id: number) => `learning-object-relations-${id}`
+  const hydratedLearningObjectId = ref<number | null>(null)
 
   const hasRunApplyRelations = ref(false)
   watch(
@@ -178,8 +179,9 @@ export function useLearningObjectEditorView() {
       if (learningObjectData) {
         learningObjectTitle.value = learningObjectData.title
         learningObjectKeywords.value = [...learningObjectData.keywords]
-        if (editor.value) {
+        if (editor.value && hydratedLearningObjectId.value !== learningObjectData.id) {
           setContentFromLearningObject(learningObjectData)
+          hydratedLearningObjectId.value = learningObjectData.id
         }
       }
     },
@@ -194,7 +196,10 @@ export function useLearningObjectEditorView() {
           learningObjectTitle.value = learningObject.value.title
           learningObjectKeywords.value = [...learningObject.value.keywords]
         }
-        setContentFromLearningObject(learningObject.value)
+        if (hydratedLearningObjectId.value !== learningObject.value.id) {
+          setContentFromLearningObject(learningObject.value)
+          hydratedLearningObjectId.value = learningObject.value.id
+        }
       }
     },
     { immediate: true }
