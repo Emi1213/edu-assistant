@@ -21,6 +21,7 @@ const props = defineProps<{
   onUpdateLearningObject?: (learningObject: LearningObject) => void
   onGenerateRelations?: (learningObject: LearningObject) => void
   onPublishNow?: (learningObject: LearningObject) => void
+  onChat?: (learningObject: LearningObject) => void
 }>()
 
 const emit = defineEmits<{
@@ -52,8 +53,8 @@ const sortedLearningObjects = computed(() => sortLearningObjectsByOrderIndex(lea
 
 const { reorderByDrag, isReorderingLearningObjects } = useLearningObjectsListReorder(props.moduleId)
 
-function handleReorderDrag(fromIndex: number, toIndex: number) {
-  reorderByDrag(sortedLearningObjects.value, fromIndex, toIndex)
+function handleReorderDrag(movedLo: LearningObject, targetLo: LearningObject) {
+  reorderByDrag(movedLo, targetLo)
 }
 
 const activeType = computed(() =>
@@ -122,6 +123,7 @@ const buildDetailRoute = (learningObject: LearningObject): RouteLocationRaw => (
       :on-update-learning-object="onUpdateLearningObject"
       :on-generate-relations="onGenerateRelations"
       :on-publish-now="onPublishNow"
+      :on-chat="onChat"
     />
   </div>
 </template>

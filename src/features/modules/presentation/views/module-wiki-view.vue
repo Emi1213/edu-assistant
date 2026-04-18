@@ -15,6 +15,11 @@ import UpdateLearningObjectDialog from '@/features/learning-objects/presentation
 import Skeleton from '@/components/ui/skeleton/Skeleton.vue'
 import type { LearningObject } from '@/features/learning-objects/types'
 import { useUpdateLearningObject } from '@/features/learning-objects/composables/mutations/use-update-learning-object'
+import { Sheet, SheetContent } from '@/components/ui/sheet'
+import ChatPanel from '@/features/chat/presentation/components/chat-panel.vue'
+import { useCreateChatSession } from '@/features/chat/composables/mutations/use-create-chat-session'
+import { Loader2, X } from 'lucide-vue-next'
+import { Button } from '@/components/ui/button'
 
 const route = useRoute()
 const router = useRouter()
@@ -22,7 +27,12 @@ const toast = useToast()
 const moduleId = computed(() => Number(route.params.id))
 
 const { data: module, isLoading: isLoadingModule } = useModule(moduleId.value)
-const { canEdit } = useRoles()
+const { canEdit, isStudent } = useRoles()
+
+const isChatOpen = ref(false)
+const selectedLearningObjectId = ref<number | null>(null)
+const chatSessionId = ref<number | null>(null)
+const { mutate: createChatSession, isPending: isStartingSession } = useCreateChatSession(computed(() => selectedLearningObjectId.value ?? 0))
 
 const { data: learningObjectTypes, isLoading: isLoadingTypes } = useLearningObjectTypes()
 const types = computed(() => learningObjectTypes.value ?? [])
@@ -66,6 +76,22 @@ const handlePublishNow = (learningObject: LearningObject) => {
 
 const goBack = () => {
   router.push({ name: 'modules' })
+}
+
+const handleChat = (learningObject: LearningObject) => {
+  if (selectedLearningObjectId.value !== learningObject.id) {
+    chatSessionId.value = null
+  }
+  selectedLearningObjectId.value = learningObject.id
+  isChatOpen.value = true
+  
+  if (!chatSessionId.value) {
+    createChatSession({}, {
+      onSuccess: (session) => {
+        if (session) chatSessionId.value = session.id
+      }
+    })
+  }
 }
 
 const handleGenerateRelations = (learningObject: LearningObject) => {
@@ -176,6 +202,7 @@ const handleGenerateRelations = (learningObject: LearningObject) => {
         :on-update-learning-object="openUpdateLearningObject"
         :on-generate-relations="handleGenerateRelations"
         :on-publish-now="handlePublishNow"
+        :on-chat="isStudent ? handleChat : undefined"
         @create="openDialog"
       />
 
@@ -202,5 +229,27 @@ const handleGenerateRelations = (learningObject: LearningObject) => {
       :learning-object="learningObjectToUpdate"
       @close="closeUpdateLearningObject"
     />
+
+    <Sheet :open="isChatOpen" @update:open="isChatOpen = $event">
+      <SheetContent side="right" class="w-[400px] sm:w-[540px] p-0">
+        <div v-if="isStartingSession" class="h-full flex flex-col items-center justify-center p-6 text-center space-y-4">
+          <Loader2 class="size-10 text-primary animate-spin" />
+          <p class="text-muted-foreground font-medium">Iniciando sesión con el asistente...</p>
+        </div>
+        <ChatPanel 
+          v-else-if="chatSessionId !== null" 
+          :session-id="chatSessionId"
+          @close="isChatOpen = false" 
+        />
+        <div v-else class="h-full flex flex-col items-center justify-center p-6 text-center space-y-4">
+          <div class="size-12 bg-destructive/10 text-destructive rounded-full flex items-center justify-center">
+            <X class="size-6" />
+          </div>
+          <p class="text-muted-foreground">No se pudo iniciar la sesión de chat. Intenta de nuevo.</p>
+          <Button variant="outline" @click="() => handleChat({ id: selectedLearningObjectId } as LearningObject)">Reintentar</Button>
+        </div>
+      </SheetContent>
+    </Sheet>
+
   </div>
 </template>

@@ -40,6 +40,20 @@ const editorContent = computed(() => {
     }
 
     props.learningObject.blocks.forEach((block: LOContentBlock) => {
+      if (block.type === 'CODE' && block.content && 'code' in block.content) {
+        combinedContent.content.push({
+          type: 'codeBlock',
+          attrs: {
+            language:
+              ('language' in block.content && typeof block.content.language === 'string'
+                ? block.content.language
+                : 'plaintext'),
+          },
+          content: [{ type: 'text', text: block.content.code ?? '' }],
+        })
+        return
+      }
+
       if (block.tipTapContent && block.tipTapContent.content) {
         const normalizedNodes = normalizeTiptapContent(block.tipTapContent.content)
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
