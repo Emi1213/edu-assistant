@@ -60,8 +60,9 @@
         @delete="handleDelete"
       />
 
+      <VideoContentTabs v-else-if="video.blocks?.length" :blocks="video.blocks" />
       <div v-else class="rounded-lg border bg-card p-6 text-center text-muted-foreground">
-        Contenido disponible. (Tabs se habilitan en Phase 5.)
+        Sin contenido aún.
       </div>
     </template>
   </div>
@@ -75,6 +76,7 @@ import VideoPlayer from '../components/video-player.vue'
 import VideoSourceBadge from '../components/video-source-badge.vue'
 import VideoProcessingScreen from '../components/video-processing-screen.vue'
 import VideoErrorScreen from '../components/video-error-screen.vue'
+import VideoContentTabs from '../components/tabs/video-content-tabs.vue'
 import { useVideoDetail } from '../../composables/use-video-detail'
 import { isProcessingStatus } from '../../constants/video-status.constants'
 import {
