@@ -1,17 +1,29 @@
 <template>
   <div class="space-y-4">
-    <nav class="flex gap-2 border-b">
-      <button
-        v-for="tab in tabs"
-        :key="tab"
-        type="button"
-        class="px-3 py-2 text-sm font-medium border-b-2 -mb-px"
-        :class="active === tab ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'"
-        @click="active = tab"
-      >
-        {{ BLOCK_TAB_LABELS[tab] }}
-      </button>
-    </nav>
+    <div class="flex items-center justify-between border-b">
+      <nav class="flex gap-2">
+        <button
+          v-for="tab in tabs"
+          :key="tab"
+          type="button"
+          class="px-3 py-2 text-sm font-medium border-b-2 -mb-px"
+          :class="active === tab ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'"
+          @click="active = tab"
+        >
+          {{ BLOCK_TAB_LABELS[tab] }}
+        </button>
+      </nav>
+      <div v-if="canEdit" class="pb-2 flex gap-2">
+        <button
+          type="button"
+          class="px-2 py-1 text-xs rounded border bg-background hover:bg-muted inline-flex items-center gap-1"
+          @click="emit('regenerate-tab', active)"
+        >
+          <RefreshCw class="w-3 h-3" />
+          Regenerar
+        </button>
+      </div>
+    </div>
 
     <SummaryTab v-if="active === 'SUMMARY' && summary" :content="summary" />
     <FlashcardsTab v-else-if="active === 'FLASHCARDS' && flashcards" :content="flashcards" />
@@ -25,6 +37,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { RefreshCw } from 'lucide-vue-next'
 import SummaryTab from './summary-tab.vue'
 import FlashcardsTab from './flashcards-tab.vue'
 import QuizTab from './quiz-tab.vue'
@@ -40,7 +53,9 @@ import {
   type VideoBlockType,
 } from '../../../types/video-block.types'
 
-const props = defineProps<{ blocks: VideoBlock[] }>()
+const props = defineProps<{ blocks: VideoBlock[]; canEdit: boolean }>()
+
+const emit = defineEmits<{ 'regenerate-tab': [type: VideoBlockType] }>()
 
 const tabs = VIDEO_BLOCK_TYPES
 const active = ref<VideoBlockType>('SUMMARY')

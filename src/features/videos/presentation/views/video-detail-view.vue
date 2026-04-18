@@ -25,24 +25,38 @@
           :title="video.title"
         />
 
-        <div>
-          <h1 class="text-2xl font-bold">{{ video.title }}</h1>
-          <div class="mt-2 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-            <VideoSourceBadge :source-kind="video.sourceKind" />
-            <span v-if="duration">· {{ duration }}</span>
-            <span v-if="video.detectedLanguage">· {{ video.detectedLanguage }}</span>
-            <span
-              class="ml-auto text-xs font-bold px-2 py-0.5 rounded"
-              :class="video.isPublished ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-700'"
+        <div class="flex flex-wrap items-start gap-3 justify-between">
+          <div class="min-w-0">
+            <h1 class="text-2xl font-bold">{{ video.title }}</h1>
+            <div class="mt-2 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+              <VideoSourceBadge :source-kind="video.sourceKind" />
+              <span v-if="duration">· {{ duration }}</span>
+              <span v-if="video.detectedLanguage">· {{ video.detectedLanguage }}</span>
+              <span
+                class="text-xs font-bold px-2 py-0.5 rounded"
+                :class="video.isPublished ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-700'"
+              >
+                {{ video.isPublished ? 'PUBLICADO' : 'BORRADOR' }}
+              </span>
+              <span
+                v-if="video.hasManualEdits"
+                class="text-xs font-medium px-2 py-0.5 rounded border border-gray-300"
+              >
+                Editado manualmente
+              </span>
+            </div>
+          </div>
+
+          <div v-if="canEdit" class="flex flex-wrap gap-2">
+            <button
+              type="button"
+              class="px-3 py-1.5 text-sm rounded border bg-background hover:bg-muted inline-flex items-center gap-1"
+              :disabled="isProcessing"
+              @click="openRetryAll"
             >
-              {{ video.isPublished ? 'PUBLICADO' : 'BORRADOR' }}
-            </span>
-            <span
-              v-if="video.hasManualEdits"
-              class="text-xs font-medium px-2 py-0.5 rounded border border-gray-300"
-            >
-              Editado manualmente
-            </span>
+              <RefreshCw class="w-3 h-3" />
+              Regenerar todo
+            </button>
           </div>
         </div>
       </header>
@@ -60,10 +74,23 @@
         @delete="handleDelete"
       />
 
-      <VideoContentTabs v-else-if="video.blocks?.length" :blocks="video.blocks" />
+      <VideoContentTabs
+        v-else-if="video.blocks?.length"
+        :blocks="video.blocks"
+        :can-edit="canEdit"
+        @regenerate-tab="openRetryForTab"
+      />
       <div v-else class="rounded-lg border bg-card p-6 text-center text-muted-foreground">
         Sin contenido aún.
       </div>
+
+      <RetryVideoDialog
+        :is-open="retryOpen"
+        :preselected="retryPreselected"
+        :is-submitting="retryMutation.isPending.value"
+        @update:is-open="retryOpen = $event"
+        @submit="onRetrySubmit"
+      />
     </template>
   </div>
 </template>
@@ -71,27 +98,34 @@
 <script setup lang="ts">
 import { computed, onUnmounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { ArrowLeft } from 'lucide-vue-next'
+import { ArrowLeft, RefreshCw } from 'lucide-vue-next'
 import VideoPlayer from '../components/video-player.vue'
 import VideoSourceBadge from '../components/video-source-badge.vue'
 import VideoProcessingScreen from '../components/video-processing-screen.vue'
 import VideoErrorScreen from '../components/video-error-screen.vue'
 import VideoContentTabs from '../components/tabs/video-content-tabs.vue'
+import RetryVideoDialog from '../components/retry-video-dialog.vue'
 import { useVideoDetail } from '../../composables/use-video-detail'
+import { useRetryVideo } from '../../composables/use-retry-video'
 import { isProcessingStatus } from '../../constants/video-status.constants'
 import {
   POLLING_INTERVAL_MS,
   PROCESSING_TIMEOUT_MS,
 } from '../../constants/video-processing.constants'
+import { VIDEO_BLOCK_TYPES } from '../../constants/video-block-type.constants'
 import { formatDuration } from '../../utils/format-duration'
 import { MODULES_ROUTES_NAMES } from '@/features/modules/routes/modules-routes'
 import type { IngestionStatus } from '../../types/video.types'
+import type { VideoBlockType } from '../../types/video-block.types'
 
 const route = useRoute()
 const moduleId = computed(() => Number(route.params.id))
 const learningObjectId = computed(() => Number(route.params.learningObjectId))
 
+const canEdit = computed(() => true)
+
 const { video, isLoading, status, errorMessage } = useVideoDetail(learningObjectId)
+const retryMutation = useRetryVideo(learningObjectId.value, moduleId.value)
 
 const effectiveStatus = computed<IngestionStatus>(() => status.value ?? 'PENDING')
 const isProcessing = computed(() => isProcessingStatus(effectiveStatus.value))
@@ -129,9 +163,28 @@ const timeoutInterval = window.setInterval(() => {
 
 onUnmounted(() => window.clearInterval(timeoutInterval))
 
-function handleRetry() {
-  // Wired in Phase 6
+const retryOpen = ref(false)
+const retryPreselected = ref<VideoBlockType[]>([...VIDEO_BLOCK_TYPES])
+
+function openRetryAll() {
+  retryPreselected.value = [...VIDEO_BLOCK_TYPES]
+  retryOpen.value = true
 }
+
+function openRetryForTab(t: VideoBlockType) {
+  retryPreselected.value = [t]
+  retryOpen.value = true
+}
+
+async function onRetrySubmit(payload: { contentTypes?: VideoBlockType[]; instruction?: string }) {
+  await retryMutation.mutateAsync(payload)
+  retryOpen.value = false
+}
+
+function handleRetry() {
+  openRetryAll()
+}
+
 function handleDelete() {
   // Wired in Phase 8
 }
