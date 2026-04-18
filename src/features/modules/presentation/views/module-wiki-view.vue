@@ -11,6 +11,7 @@ import { useToast } from '@/shared/composables/use-toast'
 import { toFullAssetUrl } from '@/shared/utils/image.utils'
 import LearningObjectsTabs from '@/features/learning-objects/presentation/components/learning-objects-tabs.vue'
 import CreateLearningObjectDialog from '@/features/learning-objects/presentation/components/create-learning-object-dialog.vue'
+import CreateVideoDialog from '@/features/videos/presentation/components/create-video-dialog.vue'
 import UpdateLearningObjectDialog from '@/features/learning-objects/presentation/components/update-learning-object-dialog.vue'
 import Skeleton from '@/components/ui/skeleton/Skeleton.vue'
 import type { LearningObject } from '@/features/learning-objects/types'
@@ -36,6 +37,17 @@ const { mutate: createChatSession, isPending: isStartingSession } = useCreateCha
 
 const { data: learningObjectTypes, isLoading: isLoadingTypes } = useLearningObjectTypes()
 const types = computed(() => learningObjectTypes.value ?? [])
+
+const isVideoDialogOpen = ref(false)
+
+const openCreateDialog = (typeId: number) => {
+  const type = types.value.find((t) => t.id === typeId)
+  if (type?.name === 'VIDEO') {
+    isVideoDialogOpen.value = true
+    return
+  }
+  openDialog(typeId)
+}
 
 const {
   isDialogOpen,
@@ -203,7 +215,7 @@ const handleGenerateRelations = (learningObject: LearningObject) => {
         :on-generate-relations="handleGenerateRelations"
         :on-publish-now="handlePublishNow"
         :on-chat="isStudent ? handleChat : undefined"
-        @create="openDialog"
+        @create="openCreateDialog"
       />
 
       <div v-else class="rounded-md bg-card px-6 py-12 text-center">
@@ -220,6 +232,12 @@ const handleGenerateRelations = (learningObject: LearningObject) => {
       @update:is-published="isPublished = $event"
       @close="closeDialog"
       @create="handleCreate"
+    />
+
+    <CreateVideoDialog
+      :module-id="moduleId"
+      :is-open="isVideoDialogOpen"
+      @update:is-open="isVideoDialogOpen = $event"
     />
 
     <UpdateLearningObjectDialog
