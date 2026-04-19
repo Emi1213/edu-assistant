@@ -16,6 +16,7 @@ export interface VideoDto {
   isPublished: boolean
   hasManualEdits: boolean
   errorMessage: string | null
+  orderIndex: number
   createdAt: string
 }
 

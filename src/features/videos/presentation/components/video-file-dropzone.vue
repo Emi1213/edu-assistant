@@ -31,15 +31,15 @@
 
     <div
       v-if="modelValue"
-      class="mt-2 flex items-center justify-between rounded border bg-muted/30 px-3 py-2 text-sm"
+      class="mt-2 flex items-center gap-2 rounded border bg-muted/30 px-3 py-2 text-sm"
     >
-      <div class="min-w-0">
+      <div class="min-w-0 flex-1">
         <div class="truncate font-medium">{{ modelValue.name }}</div>
         <div class="text-xs text-muted-foreground">{{ formatSize(modelValue.size) }}</div>
       </div>
       <button
         type="button"
-        class="text-muted-foreground hover:text-destructive"
+        class="shrink-0 text-muted-foreground hover:text-destructive"
         aria-label="Quitar archivo"
         @click.stop="emit('update:modelValue', null)"
       >

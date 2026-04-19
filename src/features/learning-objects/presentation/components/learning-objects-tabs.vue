@@ -14,7 +14,10 @@ import { LEARNING_OBJECTS_TAB_QUERY_KEY } from '../../constants/learning-objects
 import { useLearningObjects } from '../../composables/queries/use-learning-objects'
 import GenericTabContent from './generic-tab-content.vue'
 import { useVideosList } from '@/features/videos/composables/use-videos-list'
-import VideoCard from '@/features/videos/presentation/components/video-card.vue'
+import { useVideosListReorder } from '@/features/videos/composables/use-videos-list-reorder'
+import { sortVideosByOrderIndex } from '@/features/videos/utils/videos-reorder.utils'
+import VideosTabContent from '@/features/videos/presentation/components/videos-tab-content.vue'
+import type { VideoDto } from '@/features/videos/types/video.types'
 
 const props = defineProps<{
   types: LearningObjectType[]
@@ -107,6 +110,14 @@ function handleReorderDrag(movedLo: LearningObject, targetLo: LearningObject) {
   reorderByDrag(movedLo, targetLo)
 }
 
+const sortedVideos = computed(() => sortVideosByOrderIndex(videos.value))
+
+const { reorderByDrag: reorderVideoByDrag, isReorderingVideos } = useVideosListReorder(props.moduleId)
+
+function handleVideoReorderDrag(movedVideo: VideoDto, targetVideo: VideoDto) {
+  reorderVideoByDrag(movedVideo, targetVideo)
+}
+
 const resolveLabel = (type: LearningObjectType) =>
   LEARNING_OBJECT_TYPE_CONFIG[type.name]?.tabLabel ?? type.name
 
@@ -153,30 +164,14 @@ const buildDetailRoute = (learningObject: LearningObject): RouteLocationRaw => (
       </button>
     </div>
 
-    <template v-if="isVideoTab">
-      <div v-if="isLoading" class="grid grid-cols-2 gap-3 sm:gap-4">
-        <div v-for="i in 4" :key="i" class="rounded-lg border bg-card p-4">
-          <div class="flex flex-col sm:flex-row gap-4">
-            <div class="w-full sm:w-40 aspect-video rounded-md bg-muted animate-pulse" />
-            <div class="flex-1 space-y-2">
-              <div class="h-5 w-2/3 rounded bg-muted animate-pulse" />
-              <div class="h-3 w-1/3 rounded bg-muted animate-pulse" />
-            </div>
-          </div>
-        </div>
-      </div>
-      <div v-else-if="videos.length === 0" class="rounded-lg border border-dashed bg-muted/20 p-10 text-center">
-        <p class="text-muted-foreground">Sin videos todavía.</p>
-      </div>
-      <div v-else class="grid grid-cols-2 gap-3 sm:gap-4">
-        <VideoCard
-          v-for="video in videos"
-          :key="video.id"
-          :item="video"
-          :module-id="moduleId"
-        />
-      </div>
-    </template>
+    <VideosTabContent
+      v-if="isVideoTab"
+      :videos="sortedVideos"
+      :module-id="moduleId"
+      :is-loading="isLoading"
+      :reorder-pending="isReorderingVideos"
+      :on-reorder-drag="canEdit && sortedVideos.length > 1 ? handleVideoReorderDrag : undefined"
+    />
 
     <GenericTabContent
       v-else
