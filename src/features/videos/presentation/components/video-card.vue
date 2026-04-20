@@ -146,8 +146,8 @@ const props = defineProps<{
 const { canEdit } = useRoles()
 const canEditVideo = computed(() => canEdit())
 
-const publishMutation = useToggleVideoPublish(props.moduleId)
-const deleteMutation = useDeleteVideo(props.moduleId)
+const publishMutation = useToggleVideoPublish(() => props.moduleId)
+const deleteMutation = useDeleteVideo(() => props.moduleId)
 const deleteOpen = ref(false)
 
 const detailRoute = computed(() => ({
