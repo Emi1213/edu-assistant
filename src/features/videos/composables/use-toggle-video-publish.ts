@@ -1,3 +1,4 @@
+import { toValue, type MaybeRefOrGetter } from 'vue'
 import { useMutation, useQueryClient } from '@tanstack/vue-query'
 import { useToast } from '@/shared/composables/use-toast'
 import { LearningObjectsDataSource } from '@/features/learning-objects/services/learning-objects.service'
@@ -5,7 +6,7 @@ import { QUERY_KEYS } from '@/shared/composables/query-key'
 
 const learningObjectsDataSource = new LearningObjectsDataSource()
 
-export function useToggleVideoPublish(moduleId: number) {
+export function useToggleVideoPublish(moduleId: MaybeRefOrGetter<number>) {
   const queryClient = useQueryClient()
   const toast = useToast()
 
@@ -14,7 +15,7 @@ export function useToggleVideoPublish(moduleId: number) {
       learningObjectsDataSource.update(args.id, { isPublished: args.isPublished }),
     onSuccess: (_data, args) => {
       queryClient.invalidateQueries({
-        queryKey: QUERY_KEYS.VIDEOS_BY_MODULE({ moduleId }),
+        queryKey: QUERY_KEYS.VIDEOS_BY_MODULE({ moduleId: toValue(moduleId) }),
       })
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.VIDEO_DETAIL(args.id) })
       toast.success(args.isPublished ? 'Video publicado' : 'Video despublicado')

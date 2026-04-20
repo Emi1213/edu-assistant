@@ -6,7 +6,6 @@ import type { LearningObjectsQueryParams } from '../../types'
 
 export function useLearningObjectEditorLinkModal(
   editor: Ref<Editor | undefined>,
-   
   _learningObjectId: Ref<number>,
   moduleId: Ref<number>
 ) {

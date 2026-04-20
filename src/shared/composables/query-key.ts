@@ -31,7 +31,7 @@ export const QUERY_KEYS = {
 
     // Videos
     VIDEOS_BY_MODULE: (params: { moduleId: number; filters?: VideoFiltersDto }) =>
-        ['videos', 'module', params.moduleId, params.filters] as const,
-    VIDEO_DETAIL: (id: number) => ['videos', 'detail', id] as const,
-    VIDEO_STATUS: (id: number) => ['videos', 'status', id] as const,
-    }
+        params.filters ? ['videos', 'module', params.moduleId, params.filters] : ['videos', 'module', params.moduleId],
+    VIDEO_DETAIL: (id: number) => ['videos', 'detail', id],
+    VIDEO_STATUS: (id: number) => ['videos', 'status', id],
+}

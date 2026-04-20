@@ -11,7 +11,7 @@ export interface VideoDto {
   sourceKind: SourceKind
   sourceUrl: string
   status: IngestionStatus
-  outputLanguage: string
+  outputLanguage: OutputLanguage
   durationSeconds: number | null
   isPublished: boolean
   hasManualEdits: boolean

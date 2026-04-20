@@ -1,19 +1,25 @@
+import { toValue, type MaybeRefOrGetter } from 'vue'
 import { useMutation, useQueryClient } from '@tanstack/vue-query'
 import { useToast } from '@/shared/composables/use-toast'
 import { videosDataSource } from '../services/videos.service'
 import { QUERY_KEYS } from '@/shared/composables/query-key'
 import type { UpdateVideoContentPayload } from '../types/video-update.types'
 
-export function useUpdateVideoContent(videoId: number, moduleId: number) {
+export function useUpdateVideoContent(
+  videoId: MaybeRefOrGetter<number>,
+  moduleId: MaybeRefOrGetter<number>,
+) {
   const queryClient = useQueryClient()
   const toast = useToast()
 
   return useMutation({
     mutationFn: (payload: UpdateVideoContentPayload) =>
-      videosDataSource.updateContent(videoId, payload),
+      videosDataSource.updateContent(toValue(videoId), payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.VIDEO_DETAIL(videoId) })
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.VIDEOS_BY_MODULE({ moduleId }) })
+      const id = toValue(videoId)
+      const mId = toValue(moduleId)
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.VIDEO_DETAIL(id) })
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.VIDEOS_BY_MODULE({ moduleId: mId }) })
       toast.success('Cambios guardados')
     },
     onError: (err: Error) => {
