@@ -16,7 +16,7 @@
             class="absolute hidden md:flex flex-col top-0 left-0 w-full h-full bg-[#233a83] bg-opacity-95 text-white p-10 justify-center space-y-6"
           >
             <img
-              src="/images/logo.png"
+              src="/images/logo2.png"
               alt="Logo"
               class="w-32 h-32 mx-auto rounded-full object-cover"
             />

@@ -83,7 +83,7 @@ const currentAiActionLabel = computed(() => {
   if (isExtractingConcepts.value) return 'Generando conceptos...'
   if (isExtractingRelations.value) return 'Procesando relaciones...'
   if (isGeneratingConceptDefinition.value) return 'Generando definición...'
-  return 'Selección De Herramienta'
+  return 'Herramientas'
 })
 
 const {
