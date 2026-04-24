@@ -21,13 +21,36 @@ import Skeleton from '@/components/ui/skeleton/Skeleton.vue'
 import { Button } from '@/components/ui/button'
 import { MODULES_ROUTES_NAMES } from '@/features/modules/routes/modules-routes'
 
+import type { LearningObject } from '../../types'
+
+interface Props {
+  previewData?: LearningObject | null
+  isPreview?: boolean
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  previewData: null,
+  isPreview: false,
+})
+
 const route = useRoute()
 const router = useRouter()
 const learningObjectId = computed(() => Number(route.params.learningObjectId))
 const moduleId = computed(() => Number(route.params.id))
 
-const { data: learningObject, isLoading } = useLearningObject(learningObjectId)
-const { canEdit, isStudent } = useRoles()
+const { data: fetchedLearningObject, isLoading: isQueryLoading } = useLearningObject(learningObjectId)
+
+const isLoading = computed(() => {
+  if (props.isPreview) return false
+  return isQueryLoading.value
+})
+
+const learningObject = computed(() => {
+  if (props.isPreview) return props.previewData
+  return fetchedLearningObject.value
+})
+
+const { canEdit, isStudent: isRealStudent } = useRoles()
 const authStore = useAuthStore()
 
 const pageNotes = computed(() => {
@@ -40,7 +63,8 @@ const pageStudentQuestions = computed(() => {
   return learningObject.value.studentQuestions ?? []
 })
 
-const isProfessor = computed(() => canEdit())
+const isStudent = computed(() => props.isPreview || isRealStudent.value)
+const isProfessor = computed(() => !props.isPreview && canEdit())
 
 const loFeedbacks = computed(() => {
   if (!learningObject.value) return []
@@ -106,7 +130,7 @@ const scrollToQuestions = () => {
 
 <template>
   <div class="space-y-6 pt-4 sm:pt-8 min-w-0">
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+    <div v-if="!isPreview" class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
       <button
         @click="goBack"
         class="flex items-center justify-center sm:justify-start gap-2 px-4 py-2.5 text-sm font-medium bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 hover:shadow-md transition-all duration-200 w-full sm:w-auto"
