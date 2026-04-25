@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { RouteLocationRaw } from 'vue-router'
 import type { LearningObject } from '../../types'
-import { FileText, Zap, Clock, Link2, Pencil } from 'lucide-vue-next'
+import { FileText, Zap, Clock, Link2, Pencil, Bot } from 'lucide-vue-next'
 import { computed } from 'vue'
 
 const props = defineProps<{
@@ -13,6 +13,7 @@ const props = defineProps<{
   onGenerateRelations?: (learningObject: LearningObject) => void
   onUpdateLearningObject?: (learningObject: LearningObject) => void
   onPublishNow?: (learningObject: LearningObject) => void
+  onChat?: (learningObject: LearningObject) => void
 }>()
 
 
@@ -70,7 +71,17 @@ const isGeneratingRelations = computed(
       </div>
     </div>
 
-    <div v-if="onGenerateRelations || onUpdateLearningObject || onPublishNow" class="flex items-center justify-end gap-2 mt-4 pt-4 border-t border-border/50">
+    <div v-if="onGenerateRelations || onUpdateLearningObject || onPublishNow || onChat" class="flex items-center justify-end gap-2 mt-4 pt-4 border-t border-border/50">
+      <button
+        v-if="onChat"
+        @click.prevent.stop="onChat(learningObject)"
+        class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-all shadow-sm"
+        title="Consultar con IA"
+      >
+        <Bot class="size-3.5" />
+        Chat con IA
+      </button>
+
       <button
         v-if="!learningObject.isPublished && onPublishNow"
         @click.prevent.stop="onPublishNow(learningObject)"

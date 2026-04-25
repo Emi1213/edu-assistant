@@ -1,16 +1,23 @@
 <script setup lang="ts">
 import type { RouteLocationRaw } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import type { LearningObject, LearningObjectType } from '../../types'
 import { Plus } from 'lucide-vue-next'
-import { ref, computed, watch } from 'vue'
+import { computed, watch } from 'vue'
 import { useLearningObjectsListReorder } from '../../composables/use-learning-objects-list-reorder'
 import { sortLearningObjectsByOrderIndex } from '../../utils/learning-objects-reorder.utils'
 import {
   FALLBACK_DETAIL_ROUTE_NAME,
   LEARNING_OBJECT_TYPE_CONFIG,
 } from '../../constants/learning-object-type.constants'
+import { LEARNING_OBJECTS_TAB_QUERY_KEY } from '../../constants/learning-objects-tabs.constants'
 import { useLearningObjects } from '../../composables/queries/use-learning-objects'
 import GenericTabContent from './generic-tab-content.vue'
+import { useVideosList } from '@/features/videos/composables/use-videos-list'
+import { useVideosListReorder } from '@/features/videos/composables/use-videos-list-reorder'
+import { sortVideosByOrderIndex } from '@/features/videos/utils/videos-reorder.utils'
+import VideosTabContent from '@/features/videos/presentation/components/videos-tab-content.vue'
+import type { VideoDto } from '@/features/videos/types/video.types'
 
 const props = defineProps<{
   types: LearningObjectType[]
@@ -21,22 +28,48 @@ const props = defineProps<{
   onUpdateLearningObject?: (learningObject: LearningObject) => void
   onGenerateRelations?: (learningObject: LearningObject) => void
   onPublishNow?: (learningObject: LearningObject) => void
+  onChat?: (learningObject: LearningObject) => void
 }>()
 
 const emit = defineEmits<{
   create: [typeId: number]
 }>()
 
-const activeTypeId = ref<number>(0)
+const route = useRoute()
+const router = useRouter()
+
+const activeTypeName = computed<string>(() => {
+  const raw = route.query[LEARNING_OBJECTS_TAB_QUERY_KEY]
+  const value = typeof raw === 'string' ? raw : ''
+  if (value && props.types.some((t) => t.name === value)) return value
+  return props.types[0]?.name ?? ''
+})
+
+const activeType = computed(() =>
+  props.types.find((type) => type.name === activeTypeName.value),
+)
+
+const activeTypeId = computed(() => activeType.value?.id ?? 0)
+
+function selectType(type: LearningObjectType) {
+  if (activeTypeName.value === type.name) return
+  router.replace({
+    query: { ...route.query, [LEARNING_OBJECTS_TAB_QUERY_KEY]: type.name },
+  })
+}
 
 watch(
-  () => props.types,
-  (types) => {
-    if (activeTypeId.value === 0 && types[0] !== undefined) {
-      activeTypeId.value = types[0].id
-    }
+  [() => props.types, () => route.query[LEARNING_OBJECTS_TAB_QUERY_KEY]],
+  ([types, queryValue]) => {
+    const fallback = types[0]
+    if (!fallback) return
+    const current = typeof queryValue === 'string' ? queryValue : ''
+    if (current && types.some((t) => t.name === current)) return
+    router.replace({
+      query: { ...route.query, [LEARNING_OBJECTS_TAB_QUERY_KEY]: fallback.name },
+    })
   },
-  { immediate: true }
+  { immediate: true },
 )
 
 const queryParams = computed(() => ({
@@ -44,28 +77,49 @@ const queryParams = computed(() => ({
   typeId: activeTypeId.value,
 }))
 
-const { data: learningObjectsResponse, isLoading } = useLearningObjects(queryParams)
+const activeConfig = computed(() =>
+  activeType.value ? LEARNING_OBJECT_TYPE_CONFIG[activeType.value.name] : undefined
+)
+
+const isVideoTab = computed(() => activeTypeName.value === 'VIDEO')
+
+const { data: learningObjectsResponse, isLoading: isLoadingLearningObjects } =
+  useLearningObjects(queryParams)
+
+const videosParams = computed(() => ({ moduleId: props.moduleId }))
+const {
+  videos,
+  isLoading: isLoadingVideos,
+} = useVideosList(videosParams, isVideoTab)
 
 const learningObjects = computed(() => learningObjectsResponse.value?.records ?? [])
 
 const sortedLearningObjects = computed(() => sortLearningObjectsByOrderIndex(learningObjects.value))
 
+const isLoading = computed(() =>
+  isVideoTab.value ? isLoadingVideos.value : isLoadingLearningObjects.value,
+)
+
+const activeItemsCount = computed(() =>
+  isVideoTab.value ? videos.value.length : learningObjects.value.length,
+)
+
 const { reorderByDrag, isReorderingLearningObjects } = useLearningObjectsListReorder(props.moduleId)
 
-function handleReorderDrag(fromIndex: number, toIndex: number) {
-  reorderByDrag(sortedLearningObjects.value, fromIndex, toIndex)
+function handleReorderDrag(movedLo: LearningObject, targetLo: LearningObject) {
+  reorderByDrag(movedLo, targetLo)
 }
 
-const activeType = computed(() =>
-  props.types.find((type) => type.id === activeTypeId.value)
-)
+const sortedVideos = computed(() => sortVideosByOrderIndex(videos.value))
 
-const activeConfig = computed(() =>
-  activeType.value ? LEARNING_OBJECT_TYPE_CONFIG[activeType.value.name] : undefined
-)
+const { reorderByDrag: reorderVideoByDrag, isReorderingVideos } = useVideosListReorder(props.moduleId)
+
+function handleVideoReorderDrag(movedVideo: VideoDto, targetVideo: VideoDto) {
+  reorderVideoByDrag(movedVideo, targetVideo)
+}
 
 const resolveLabel = (type: LearningObjectType) =>
-  LEARNING_OBJECT_TYPE_CONFIG[type.name]?.label ?? type.name
+  LEARNING_OBJECT_TYPE_CONFIG[type.name]?.tabLabel ?? type.name
 
 const buildDetailRoute = (learningObject: LearningObject): RouteLocationRaw => ({
   name: activeConfig.value?.detailRouteName ?? FALLBACK_DETAIL_ROUTE_NAME,
@@ -80,7 +134,7 @@ const buildDetailRoute = (learningObject: LearningObject): RouteLocationRaw => (
         <button
           v-for="type in types"
           :key="type.id"
-          @click="activeTypeId = type.id"
+          @click="selectType(type)"
           class="px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px"
           :class="activeTypeId === type.id
             ? 'border-primary text-primary'
@@ -95,7 +149,7 @@ const buildDetailRoute = (learningObject: LearningObject): RouteLocationRaw => (
             {{ resolveLabel(type) }}
           </span>
           <span v-if="type.id === activeTypeId" class="ml-1 text-xs opacity-70">
-            ({{ learningObjects.length }})
+            ({{ activeItemsCount }})
           </span>
         </button>
       </div>
@@ -106,11 +160,21 @@ const buildDetailRoute = (learningObject: LearningObject): RouteLocationRaw => (
         class="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 hover:shadow-md transition-all duration-200 w-full sm:w-auto"
       >
         <Plus class="size-4" />
-        <span>Crear {{ activeConfig?.label ?? activeType.name }}</span>
+        <span>Crear {{ activeConfig?.createLabel ?? activeType.name }}</span>
       </button>
     </div>
 
+    <VideosTabContent
+      v-if="isVideoTab"
+      :videos="sortedVideos"
+      :module-id="moduleId"
+      :is-loading="isLoading"
+      :reorder-pending="isReorderingVideos"
+      :on-reorder-drag="canEdit && sortedVideos.length > 1 ? handleVideoReorderDrag : undefined"
+    />
+
     <GenericTabContent
+      v-else
       :learning-objects="sortedLearningObjects"
       :is-loading="isLoading"
       :can-edit="canEdit"
@@ -122,6 +186,7 @@ const buildDetailRoute = (learningObject: LearningObject): RouteLocationRaw => (
       :on-update-learning-object="onUpdateLearningObject"
       :on-generate-relations="onGenerateRelations"
       :on-publish-now="onPublishNow"
+      :on-chat="onChat"
     />
   </div>
 </template>

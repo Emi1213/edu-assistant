@@ -10,6 +10,7 @@ import {
   BookOpen,
   Image,
   Zap,
+  Wand2,
 } from 'lucide-vue-next'
 import { useLearningObjectEditorView } from '../../composables/editor/use-learning-object-editor-view'
 import { useLearningObjectEditorConceptModal } from '../../composables/editor/use-learning-object-editor-concept-modal'
@@ -25,12 +26,14 @@ import {
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { useConceptDefinitionHoverTooltip } from '../../composables/use-concept-definition-hover-tooltip'
 import ConceptDefinitionHoverLayer from '../components/concept-definition-hover-layer.vue'
+import RegenerateContentModal from '../components/RegenerateContentModal.vue'
 import EditorToolbar from '../components/editor-toolbar.vue'
 import Skeleton from '@/components/ui/skeleton/Skeleton.vue'
 
 const {
   learningObjectId,
   moduleId,
+  learningObject,
   isLoadingLearningObject,
   editor,
   isSaving,
@@ -44,6 +47,9 @@ const {
   closeAIModal,
   handleGenerateContent,
   handleKeyDown,
+  handleRegenerateContent,
+  showRegenerateModal,
+  isRegenerating,
   isGenerating,
   generationError,
   handleGenerateConcepts,
@@ -52,27 +58,33 @@ const {
   isExtractingRelations,
 } = useLearningObjectEditorView()
 
+const {
+  showConceptModal,
+  conceptForm,
+  openConceptModal,
+  openConceptModalForEditAtPos,
+  closeConceptModal,
+  submitConcept,
+  isCreatingConcept,
+  generateConceptDefinitionWithAi,
+  isGeneratingConceptDefinition,
+  isEditingConcept,
+} = useLearningObjectEditorConceptModal(learningObjectId, editor, learningObject)
+
 const isAnyAiActionLoading = computed(
   () =>
     isGenerating.value ||
     isExtractingConcepts.value ||
-    isExtractingRelations.value,
+    isExtractingRelations.value ||
+    isGeneratingConceptDefinition.value,
 )
 const currentAiActionLabel = computed(() => {
   if (isGenerating.value) return 'Generando contenido...'
   if (isExtractingConcepts.value) return 'Generando conceptos...'
   if (isExtractingRelations.value) return 'Procesando relaciones...'
+  if (isGeneratingConceptDefinition.value) return 'Generando definición...'
   return 'Selección De Herramienta'
 })
-
-const {
-  showConceptModal,
-  conceptForm,
-  openConceptModal,
-  closeConceptModal,
-  submitConcept,
-  isCreatingConcept,
-} = useLearningObjectEditorConceptModal(learningObjectId, editor)
 
 const {
   showPageLinkModal,
@@ -104,6 +116,17 @@ const {
 const conceptHoverRoot = ref<HTMLElement | null>(null)
 const { visible: conceptTooltipVisible, text: conceptTooltipText, style: conceptTooltipStyle } =
   useConceptDefinitionHoverTooltip(conceptHoverRoot)
+
+function handleEditorContentClick(event: MouseEvent) {
+  if (!editor.value) return
+  const target = event.target as HTMLElement | null
+  const conceptEl = target?.closest?.('[data-type="concept"]') as HTMLElement | null
+  if (!conceptEl) return
+  const pos = editor.value.view.posAtDOM(conceptEl, 0)
+  if (Number.isFinite(pos)) {
+    openConceptModalForEditAtPos(pos)
+  }
+}
 </script>
 
 <template>
@@ -134,6 +157,10 @@ const { visible: conceptTooltipVisible, text: conceptTooltipText, style: concept
               <DropdownMenuItem @click="openAIModal" :disabled="isGenerating">
                 <Sparkles class="mr-2 size-4" />
                 <span>Generar con IA</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem @click="showRegenerateModal = true" :disabled="isRegenerating">
+                <Wand2 class="mr-2 size-4" />
+                <span>Regenerar contenido</span>
               </DropdownMenuItem>
               <DropdownMenuItem @click="handleGenerateConcepts" :disabled="isExtractingConcepts">
                 <BookOpen class="mr-2 size-4" />
@@ -211,7 +238,7 @@ const { visible: conceptTooltipVisible, text: conceptTooltipText, style: concept
             </div>
           </div>
 
-          <div ref="conceptHoverRoot" class="editor-content">
+          <div ref="conceptHoverRoot" class="editor-content" @click.capture="handleEditorContentClick">
             <EditorContent :editor="editor" />
             <ConceptDefinitionHoverLayer
               :visible="conceptTooltipVisible"
@@ -314,26 +341,41 @@ const { visible: conceptTooltipVisible, text: conceptTooltipText, style: concept
       <!-- Concept Modal -->
       <div v-if="showConceptModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
         <div class="bg-card rounded-xl shadow-2xl w-full max-w-lg mx-4 p-6 animate-scale-in">
-          <h3 class="text-xl font-bold mb-4">Añadir Concepto</h3>
+          <h3 class="text-xl font-bold mb-4">{{ isEditingConcept ? 'Editar Concepto' : 'Añadir Concepto' }}</h3>
           <div class="space-y-4 mb-6">
             <div>
               <label class="block text-sm font-medium mb-1">Término</label>
               <input v-model="conceptForm.term" class="w-full p-2 rounded border bg-background" />
             </div>
             <div>
-              <label class="block text-sm font-medium mb-1">Definición</label>
-              <textarea v-model="conceptForm.definition" class="w-full p-2 rounded border bg-background min-h-[100px]" />
+              <div class="flex flex-wrap items-center justify-between gap-2 mb-1">
+                <label class="block text-sm font-medium">Definición</label>
+                <button
+                  type="button"
+                  class="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary/90 disabled:opacity-50 disabled:pointer-events-none"
+                  :disabled="isGeneratingConceptDefinition || !conceptForm.term || !conceptForm.term.trim()"
+                  @click="generateConceptDefinitionWithAi()"
+                >
+                  <Sparkles class="size-4 shrink-0" />
+                  {{ isGeneratingConceptDefinition ? 'Generando…' : 'Generar con IA' }}
+                </button>
+              </div>
+              <textarea
+                v-model="conceptForm.definition"
+                class="w-full p-2 rounded border bg-background min-h-[100px]"
+                :disabled="isGeneratingConceptDefinition"
+              />
             </div>
           </div>
           <div class="flex justify-end gap-3">
             <button @click="closeConceptModal" class="px-4 py-2 text-muted-foreground hover:bg-muted/50 rounded">Cancelar</button>
             <button
               @click="submitConcept"
-              :disabled="isCreatingConcept || !conceptForm.term || !conceptForm.definition"
+              :disabled="isCreatingConcept || isGeneratingConceptDefinition || !conceptForm.term || !conceptForm.definition"
               class="px-4 py-2 bg-primary text-primary-foreground rounded flex items-center gap-2 disabled:opacity-50"
             >
               <Loader2 v-if="isCreatingConcept" class="size-4 animate-spin" />
-              Guardar
+              {{ isEditingConcept ? 'Actualizar' : 'Guardar' }}
             </button>
           </div>
         </div>
@@ -457,6 +499,11 @@ const { visible: conceptTooltipVisible, text: conceptTooltipText, style: concept
         </div>
       </div>
     </Teleport>
+    <RegenerateContentModal
+      v-model:open="showRegenerateModal"
+      :is-loading="isRegenerating"
+      @regenerate="handleRegenerateContent"
+    />
   </div>
 </template>
 
@@ -669,6 +716,48 @@ const { visible: conceptTooltipVisible, text: conceptTooltipText, style: concept
 
 :global(.dark) .editor-content :deep(.ProseMirror a) {
   color: #9fb3ff;
+}
+
+.editor-content :deep(.ProseMirror .concept-term) {
+  font-style: italic;
+  font-weight: 500;
+  color: var(--foreground);
+  cursor: help;
+  padding: 0 0.15em;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-decoration-color: currentColor;
+  text-underline-offset: 0.2em;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+.editor-content :deep(.ProseMirror .concept-term strong) {
+  font-weight: 700;
+  font-style: italic;
+  color: inherit;
+}
+
+.editor-content :deep(.ProseMirror .learning-object-link-term) {
+  border-bottom: none;
+  text-decoration: underline;
+  text-decoration-color: var(--primary);
+  text-underline-offset: 0.2em;
+  color: var(--primary);
+  cursor: pointer;
+  background-color: transparent;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+.editor-content :deep(.ProseMirror .learning-object-link-term strong),
+.editor-content :deep(.ProseMirror .learning-object-link-term em),
+.editor-content :deep(.ProseMirror .learning-object-link-term code) {
+  color: var(--primary);
+}
+
+.editor-content :deep(.ProseMirror .learning-object-link-term:hover) {
+  opacity: 0.88;
 }
 
 .editor-content :deep(.ProseMirror strong) {

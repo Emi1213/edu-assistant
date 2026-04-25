@@ -11,6 +11,8 @@ const AR_KEYS = {
     AI_CONFIG: '/ai/config',
     PAGES: '/pages',
     LEARNING_OBJECT_FEEDBACKS: '/learning-object-feedbacks',
+    CHAT: '/sessions',
+    VIDEOS: '/videos',
 }
 
 export const API_ROUTES = {
@@ -69,6 +71,15 @@ export const API_ROUTES = {
             CREATE: (learningObjectId: number) => `${AR_KEYS.LEARNING_OBJECTS}/${learningObjectId}/activities`,
             BY_ID: (learningObjectId: number, activityId: number) => `${AR_KEYS.LEARNING_OBJECTS}/${learningObjectId}/activities/${activityId}`,
         },
+        SESSIONS: {
+            CREATE_OR_GET: (learningObjectId: number) => `${AR_KEYS.LEARNING_OBJECTS}/${learningObjectId}/sessions`,
+        },
+    },
+    CHAT: {
+        SESSIONS: {
+            LIST_MESSAGES: (sessionId: number) => `${AR_KEYS.CHAT}/${sessionId}/messages`,
+            SEND_MESSAGE: (sessionId: number) => `${AR_KEYS.CHAT}/${sessionId}/messages`,
+        },
     },
     ACTIVITIES: {
         ATTEMPTS: (activityId: number) => `${AR_KEYS.ACTIVITIES}/${activityId}/attempts`,
@@ -89,9 +100,21 @@ export const API_ROUTES = {
     },
     CONTENT_GENERATION: {
         GENERATE: `${AR_KEYS.CONTENT_GENERATION}/generate-content`,
+        REGENERATE_CONTENT: `${AR_KEYS.CONTENT_GENERATION}/regenerate-content`,
         GENERATE_IMAGE: `${AR_KEYS.CONTENT_GENERATION}/generate-image`,
         GENERATE_ACTIVITY: `${AR_KEYS.CONTENT_GENERATION}/generate-activity`,
         EXTRACT_CONCEPTS: `${AR_KEYS.CONTENT_GENERATION}/extract-concepts`,
         EXTRACT_RELATIONS: `${AR_KEYS.CONTENT_GENERATION}/generate-relations`,
+        GENERATE_CONCEPT: `${AR_KEYS.CONTENT_GENERATION}/generate-concept`,
+    },
+    VIDEOS: {
+        CREATE_FROM_URL: AR_KEYS.VIDEOS,
+        UPLOAD: `${AR_KEYS.VIDEOS}/upload`,
+        LIST_BY_MODULE: (moduleId: number) => `${AR_KEYS.VIDEOS}/module/${moduleId}`,
+        DETAIL: (id: number) => `${AR_KEYS.VIDEOS}/${id}`,
+        STATUS: (id: number) => `${AR_KEYS.VIDEOS}/${id}/status`,
+        RETRY: (id: number) => `${AR_KEYS.VIDEOS}/${id}/retry`,
+        UPDATE_CONTENT: (id: number) => `${AR_KEYS.VIDEOS}/${id}/content`,
+        DELETE: (id: number) => `${AR_KEYS.VIDEOS}/${id}`,
     },
 }
