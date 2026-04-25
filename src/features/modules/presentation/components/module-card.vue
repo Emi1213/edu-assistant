@@ -4,6 +4,8 @@ import type { Module } from '../../types/modules.types'
 import { toFullAssetUrl } from '@/shared/utils/image.utils'
 import { Globe, Lock, BookOpen, UserPlus, UserMinus } from 'lucide-vue-next'
 import { useRoles } from '@/features/auth/composables/use-roles'
+import { useAuthStore } from '@/features/auth/context/auth-store'
+import { computed } from 'vue'
 import ModulesActionsMenu from './modules-actions-menu.vue'
 
 const props = defineProps<{
@@ -17,9 +19,11 @@ const props = defineProps<{
 }>()
 
 const { canEdit } = useRoles()
+const authStore = useAuthStore()
 
-const showActions = canEdit()
-const showEnrollActions = (props.onEnroll != null || props.onUnenroll != null) && props.module.allowSelfEnroll
+const isOwner = computed(() => authStore.user?.id === props.module.teacherId)
+const showActions = computed(() => canEdit() && isOwner.value)
+const showEnrollActions = computed(() => (props.onEnroll != null || props.onUnenroll != null) && props.module.allowSelfEnroll && !isOwner.value)
 
 const handleEdit = () => {
   if (props.onEdit) props.onEdit(props.module)

@@ -2,18 +2,17 @@
 import { ref, computed } from 'vue'
 import { useLearningObjectFeedback } from '../../composables/use-learning-object-feedback'
 import { MessageSquare, User as UserIcon, Send } from 'lucide-vue-next'
-import { useRoles } from '@/features/auth/composables/use-roles'
 import { formatLongDate } from '@/shared/utils/date.utils'
 import type { LearningObjectFeedback } from '../../types/learning-object-feedbacks.types'
 
 interface Props {
   learningObjectId: number
   feedbacks?: LearningObjectFeedback[]
+  isProfessor?: boolean
 }
 
 const props = defineProps<Props>()
-const { canEdit } = useRoles()
-const isProfessor = computed(() => canEdit())
+const isProfessor = computed(() => props.isProfessor ?? false)
 
 const isFormVisible = ref(false)
 const { comment, isPending, handleSubmit } = useLearningObjectFeedback(props.learningObjectId)

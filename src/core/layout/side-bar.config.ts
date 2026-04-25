@@ -20,7 +20,7 @@ export const SIDEBAR_ITEMS: SidebarItem[] = [
     label: 'Módulos disponibles',
     route: '/all-modules',
     icon: Library,
-    roles: ['STUDENT'],
+    roles: ['STUDENT', 'TEACHER'],
   },
   {
     label: 'Configuración',

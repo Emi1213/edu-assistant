@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useRoute, useRouter } from 'vue-router'
 import { ArrowLeft, Plus, Sparkles, Loader2, ClipboardList, Pencil, Trash2, CheckCircle2 } from 'lucide-vue-next'
 import { useLearningObject } from '@/features/learning-objects/composables/queries/use-learning-object'
@@ -13,6 +14,8 @@ import { useActivitiesCreateGenerate } from '@/features/activities/composables/u
 import { useActivitiesEditDelete } from '@/features/activities/composables/use-activities-edit-delete'
 import { useActivitiesAttempt } from '@/features/activities/composables/use-activities-attempt'
 import { useRoles } from '@/features/auth/composables/use-roles'
+import { useModule } from '@/features/modules/composables/queries/use-module'
+import { useAuthStore } from '@/features/auth/context/auth-store'
 import ActivityCreateModal from '@/features/activities/presentation/components/activity-create-modal.vue'
 import ActivityGenerateModal from '@/features/activities/presentation/components/activity-generate-modal.vue'
 import ActivityEditModal from '@/features/activities/presentation/components/activity-edit-modal.vue'
@@ -31,8 +34,15 @@ const moduleId = computed(() => Number(route.params.id))
 
 const { data: learningObject, isLoading: isLoadingLearningObject } = useLearningObject(learningObjectId)
 const { data: activitiesData, isLoading: isLoadingActivities, refetch: refetchActivities } = useActivities(learningObjectId.value)
-const { canEdit, isStudent } = useRoles()
+const { canEdit, isStudent, isTeacher } = useRoles()
+const authStore = useAuthStore()
+const { user } = storeToRefs(authStore)
 const toast = useToast()
+
+const { data: module } = useModule(moduleId.value)
+const isOwnerReal = computed(() => module.value?.teacherId === user.value?.id)
+const isActingAsStudent = computed(() => isStudent.value || (isTeacher.value && !isOwnerReal.value))
+const canManage = computed(() => canEdit() && isOwnerReal.value)
 
 const { mutate: updateActivity, isPending: isUpdating } = useUpdateActivity(learningObjectId.value)
 const { mutate: deleteActivity, isPending: isDeleting } = useDeleteActivity(learningObjectId.value)
@@ -139,7 +149,7 @@ const {
         <p class="text-sm text-muted-foreground truncate sm:max-w-xs">{{ learningObject.title }}</p>
       </div>
 
-      <div v-if="canEdit()" class="flex flex-wrap gap-2 sm:gap-3">
+      <div v-if="canManage" class="flex flex-wrap gap-2 sm:gap-3">
         <Button @click="openCreateModal" class="gap-2">
           <Plus class="size-4" />
           Crear actividad 
@@ -159,7 +169,7 @@ const {
       <div v-else-if="activities.length === 0" class="py-12 text-center rounded-lg border border-dashed border-border text-muted-foreground">
         <ClipboardList class="size-12 mx-auto mb-3 opacity-50" />
         <p>No hay actividades aún.</p>
-        <p v-if="canEdit()" class="text-sm mt-1">Crea una manualmente o genera una con IA.</p>
+        <p v-if="canManage" class="text-sm mt-1">Crea una manualmente o genera una con IA.</p>
       </div>
       <ul v-else class="space-y-4 min-w-0">
         <li
@@ -181,7 +191,7 @@ const {
               </div>
             </div>
             <div class="flex flex-wrap items-center gap-2 shrink-0">
-              <template v-if="canEdit()">
+              <template v-if="canManage">
                 <Button type="button" variant="ghost" size="sm" class="gap-1" :disabled="isUpdating" @click="openEditModal(act)">
                   <Pencil class="size-4" />
                   Editar
@@ -191,7 +201,7 @@ const {
                   Eliminar
                 </Button>
               </template>
-              <Button v-else-if="isStudent" type="button" variant="outline" size="sm" class="gap-1 w-full sm:w-auto" @click="openAttemptModal(act)">
+              <Button v-else-if="isActingAsStudent" type="button" variant="outline" size="sm" class="gap-1 w-full sm:w-auto" @click="openAttemptModal(act)">
                 <CheckCircle2 class="size-4" />
                 Realizar
               </Button>
