@@ -237,12 +237,12 @@ function handleEditorContentClick(event: MouseEvent) {
     <div v-if="isPreviewMode" class="flex-1 overflow-y-auto overflow-x-hidden min-w-0 bg-background">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
         <div class="bg-primary/5 border border-primary/10 rounded-lg p-3 mt-6 mb-2 flex items-center gap-3">
-          <div class="size-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-            <Eye class="size-4" />
+          <div class="size-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+            <Eye class="size-5" />
           </div>
           <div>
-            <p class="text-sm font-medium text-primary">Modo Vista Estudiante</p>
-            <p class="text-xs text-muted-foreground">Así es como los alumnos verán este contenido una vez publicado.</p>
+            <p class="text-xl font-bold text-primary">Modo Vista Estudiante</p>
+            <p class="text-base text-muted-foreground">Así es como los alumnos verán este contenido una vez publicado.</p>
           </div>
         </div>
         <LearningObjectDetailView :preview-data="previewData" is-preview />
