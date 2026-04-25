@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref, watch, nextTick, computed } from 'vue'
+import { storeToRefs } from 'pinia'
 import ModulesFilters from '../components/modules-filters.vue'
 import ModuleCard from '../components/module-card.vue'
 import Skeleton from '@/components/ui/skeleton/Skeleton.vue'
@@ -12,10 +13,11 @@ import type { IModulesListViewProps } from '../../types/ui/modules-list-view.typ
 const props = defineProps<IModulesListViewProps>()
 
 const { canCreate, isTeacher } = useRoles()
-const { user } = useAuthStore()
+const authStore = useAuthStore()
+const { user } = storeToRefs(authStore)
 
-const ownedModules = computed(() => props.modules.filter(m => m.teacherId === user?.id))
-const enrolledModules = computed(() => props.modules.filter(m => m.teacherId !== user?.id))
+const ownedModules = computed(() => props.modules.filter(m => m.teacherId === user.value?.id))
+const enrolledModules = computed(() => props.modules.filter(m => m.teacherId !== user.value?.id))
 
 const emptyMessage = 'No hay módulos registrados'
 const loadMoreRef = ref<HTMLElement | null>(null)
