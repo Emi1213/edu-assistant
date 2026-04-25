@@ -95,9 +95,7 @@ onUnmounted(() => {
     </div>
 
     <template v-else>
-      <!-- Sections for Teachers -->
       <div v-if="isTeacher" class="space-y-10">
-        <!-- Owned Modules -->
         <div v-if="ownedModules.length > 0" class="space-y-4">
           <h2 class="text-xl font-semibold text-foreground flex items-center gap-2">
             Módulos que enseño
@@ -114,7 +112,6 @@ onUnmounted(() => {
           </div>
         </div>
 
-        <!-- Enrolled Modules -->
         <div v-if="enrolledModules.length > 0" class="space-y-4">
           <h2 class="text-xl font-semibold text-foreground flex items-center gap-2">
             Módulos donde estoy inscrito
@@ -133,7 +130,6 @@ onUnmounted(() => {
         </div>
       </div>
 
-      <!-- Unified List for Students -->
       <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <ModuleCard
           v-for="module in props.modules"

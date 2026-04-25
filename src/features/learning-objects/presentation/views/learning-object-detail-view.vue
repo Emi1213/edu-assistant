@@ -38,7 +38,6 @@ const { canEdit, isStudent, isTeacher, isAdmin } = useRoles()
 const authStore = useAuthStore()
 const { user } = storeToRefs(authStore)
 
-// Pass the computed directly to keep reactivity
 const { data: module } = useModule(moduleId)
 const isOwnerReal = computed(() => {
   const m = module.value
