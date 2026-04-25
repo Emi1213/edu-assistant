@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
   ArrowLeft,
@@ -9,6 +9,7 @@ import {
   MessageSquare,
   MessageCircleQuestion,
   ClipboardList,
+  Bot,
 } from 'lucide-vue-next'
 import { useLearningObject } from '../../composables/queries/use-learning-object'
 import { useRoles } from '@/features/auth/composables/use-roles'
@@ -20,6 +21,10 @@ import StudentQuestionsPanel from '@/features/student-questions/presentation/com
 import Skeleton from '@/components/ui/skeleton/Skeleton.vue'
 import { Button } from '@/components/ui/button'
 import { MODULES_ROUTES_NAMES } from '@/features/modules/routes/modules-routes'
+import { Sheet, SheetContent } from '@/components/ui/sheet'
+import ChatPanel from '@/features/chat/presentation/components/chat-panel.vue'
+import { useCreateChatSession } from '@/features/chat/composables/mutations/use-create-chat-session'
+import { Loader2, X } from 'lucide-vue-next'
 
 import type { LearningObject } from '../../types'
 
@@ -52,6 +57,10 @@ const learningObject = computed(() => {
 
 const { canEdit, isStudent: isRealStudent } = useRoles()
 const authStore = useAuthStore()
+
+const isChatOpen = ref(false)
+const chatSessionId = ref<number | null>(null)
+const { mutate: createChatSession, isPending: isStartingSession } = useCreateChatSession(learningObjectId)
 
 const pageNotes = computed(() => {
   if (!learningObject.value) return []
@@ -96,6 +105,17 @@ const goToActivities = () => {
     name: MODULES_ROUTES_NAMES.LEARNING_OBJECT_ACTIVITIES,
     params: { id: moduleId.value, learningObjectId: learningObjectId.value },
   })
+}
+
+const goToChat = () => {
+  isChatOpen.value = true
+  if (!chatSessionId.value) {
+    createChatSession({}, {
+      onSuccess: (session) => {
+        if (session) chatSessionId.value = session.id
+      }
+    })
+  }
 }
 
 const hasAdjacentNavigation = computed(() => {
@@ -209,6 +229,15 @@ const scrollToQuestions = () => {
             
             <div class="mt-4 flex flex-wrap gap-2">
               <button
+                v-if="isStudent"
+                @click="goToChat"
+                class="inline-flex items-center gap-2 px-4 py-2 text-sm font-bold bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
+              >
+                <Bot class="size-4" />
+                <span>Chat con IA</span>
+              </button>
+
+              <button
                 @click="scrollToFeedback"
                 class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-primary hover:text-primary/80 hover:bg-primary/10 rounded-lg transition-all duration-200"
               >
@@ -260,6 +289,27 @@ const scrollToQuestions = () => {
     <div v-else class="rounded-md bg-card px-6 py-12 text-center">
       <p class="text-muted-foreground">Objeto de aprendizaje no encontrado</p>
     </div>
+
+    <Sheet :open="isChatOpen" @update:open="isChatOpen = $event">
+      <SheetContent side="right" class="w-[400px] sm:w-[540px] p-0">
+        <div v-if="isStartingSession" class="h-full flex flex-col items-center justify-center p-6 text-center space-y-4">
+          <Loader2 class="size-10 text-primary animate-spin" />
+          <p class="text-muted-foreground font-medium">Iniciando sesión con el asistente...</p>
+        </div>
+        <ChatPanel 
+          v-else-if="chatSessionId !== null" 
+          :session-id="chatSessionId"
+          @close="isChatOpen = false" 
+        />
+        <div v-else class="h-full flex flex-col items-center justify-center p-6 text-center space-y-4">
+          <div class="size-12 bg-destructive/10 text-destructive rounded-full flex items-center justify-center">
+            <X class="size-6" />
+          </div>
+          <p class="text-muted-foreground">No se pudo iniciar la sesión de chat. Intenta de nuevo.</p>
+          <Button variant="outline" @click="goToChat">Reintentar</Button>
+        </div>
+      </SheetContent>
+    </Sheet>
 
   </div>
 </template>
@@ -520,3 +570,4 @@ const scrollToQuestions = () => {
   display: block;
 }
 </style>
+/style>

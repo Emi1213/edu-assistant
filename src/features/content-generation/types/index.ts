@@ -19,6 +19,8 @@ export type {
   ExtractConceptsTerm,
   ExtractConceptsPayload,
   ExtractConceptsResponse,
+  GenerateConceptPayload,
+  GenerateConceptData,
 } from "./concepts.types"
 
 export type {

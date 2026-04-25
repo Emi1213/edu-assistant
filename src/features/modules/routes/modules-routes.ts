@@ -6,6 +6,7 @@ export const MODULES_ROUTES_NAMES = {
   MODULE_STUDENTS: 'module-students',
   LEARNING_OBJECT_DETAIL: 'learning-object-detail',
   PAGE_DETAIL: 'page-detail',
+  VIDEO_DETAIL: 'video-detail',
   LEARNING_OBJECT_ACTIVITIES: 'learning-object-activities',
   LEARNING_OBJECT_EDIT: 'learning-object-edit',
   ALL_MODULES: 'all-modules',
@@ -67,6 +68,16 @@ export const modulesRoutes: RouteRecordRaw[] = [
         },
       },
       {
+        path: ':id/videos/:learningObjectId',
+        name: MODULES_ROUTES_NAMES.VIDEO_DETAIL,
+        component: () => import('@/features/videos/presentation/views/video-detail-view.vue'),
+        meta: {
+          layout: 'dashboard',
+          requiresAuth: true,
+          roles: ['TEACHER', 'STUDENT'],
+        },
+      },
+      {
         path: ':id/learning-objects/:learningObjectId/activities',
         name: MODULES_ROUTES_NAMES.LEARNING_OBJECT_ACTIVITIES,
         component: () => import('@/features/activities/presentation/views/learning-object-activities-view.vue'),
@@ -86,7 +97,6 @@ export const modulesRoutes: RouteRecordRaw[] = [
           roles: ['TEACHER'], 
         },
       }
-
     ]
   },
   {
