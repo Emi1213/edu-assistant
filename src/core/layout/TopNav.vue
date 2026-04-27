@@ -28,7 +28,7 @@ function isActiveRoute(itemRoute: string): boolean {
       >
         <div class="flex h-10 w-10 items-center justify-center rounded-lg p-1 shadow-sm">
           <img
-            src="/images/logo.png"
+            src="/images/logo2.png"
             alt="UTA Logo"
             class="h-full w-full rounded object-contain"
           />
