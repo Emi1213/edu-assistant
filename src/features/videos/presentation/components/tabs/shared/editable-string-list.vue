@@ -48,10 +48,14 @@
 <script setup lang="ts">
 import { Plus, X } from 'lucide-vue-next'
 
-const props = defineProps<{ label: string; items: string[] }>()
-const emit = defineEmits<{ add: []; remove: [idx: number] }>()
+defineProps<{ label: string; items: string[] }>()
+const emit = defineEmits<{ 
+  add: [], 
+  remove: [idx: number],
+  change: [idx: number, value: string]
+}>()
 
 function onItemChange(idx: number, value: string) {
-  props.items[idx] = value
+  emit('change', idx, value)
 }
 </script>

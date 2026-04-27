@@ -30,6 +30,9 @@ import RegenerateContentModal from '../components/RegenerateContentModal.vue'
 import EditorToolbar from '../components/editor-toolbar.vue'
 import Skeleton from '@/components/ui/skeleton/Skeleton.vue'
 
+import { Eye, EyeOff } from 'lucide-vue-next'
+import LearningObjectDetailView from './learning-object-detail-view.vue'
+
 const {
   learningObjectId,
   moduleId,
@@ -58,6 +61,33 @@ const {
   isExtractingRelations,
 } = useLearningObjectEditorView()
 
+const isPreviewMode = ref(false)
+
+const previewData = computed(() => {
+  const base = learningObject.value || {
+    id: learningObjectId.value,
+    moduleId: moduleId.value,
+    title: '',
+    keywords: [],
+    content: '',
+    blocks: [],
+    previousLoId: null,
+    nextLoId: null,
+    chatSessionId: null,
+    isPublished: false,
+    orderIndex: 0,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  }
+
+  return {
+    ...base,
+    title: learningObjectTitle.value,
+    keywords: [...learningObjectKeywords.value],
+    content: editor.value?.getHTML() || '',
+    blocks: [], 
+  }
+})
 const {
   showConceptModal,
   conceptForm,
@@ -174,6 +204,15 @@ function handleEditorContentClick(event: MouseEvent) {
           </DropdownMenu>
 
           <button
+            @click="isPreviewMode = !isPreviewMode"
+            class="flex items-center gap-2 px-4 py-2.5 bg-muted text-foreground rounded-lg font-medium transition-all duration-200 hover:bg-muted/80 hover:shadow-sm"
+          >
+            <component :is="isPreviewMode ? EyeOff : Eye" class="size-4" />
+            <span class="hidden sm:inline">{{ isPreviewMode ? 'Volver al editor' : 'Vista previa' }}</span>
+          </button>
+
+          <button
+            v-if="!isPreviewMode"
             @click="saveContent"
             :disabled="isSaving"
             class="flex items-center gap-2 px-4 py-2.5 bg-muted text-foreground rounded-lg font-medium transition-all duration-200 hover:bg-muted/80 hover:shadow-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none"
@@ -192,6 +231,21 @@ function handleEditorContentClick(event: MouseEvent) {
         <Skeleton class="h-4 w-full" />
         <Skeleton class="h-4 w-full" />
         <Skeleton class="h-4 w-2/3" />
+      </div>
+    </div>
+
+    <div v-if="isPreviewMode" class="flex-1 overflow-y-auto overflow-x-hidden min-w-0 bg-background">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+        <div class="bg-primary/5 border border-primary/10 rounded-lg p-3 mt-6 mb-2 flex items-center gap-3">
+          <div class="size-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+            <Eye class="size-5" />
+          </div>
+          <div>
+            <p class="text-xl font-bold text-primary">Modo Vista Estudiante</p>
+            <p class="text-base text-muted-foreground">Así es como los alumnos verán este contenido una vez publicado.</p>
+          </div>
+        </div>
+        <LearningObjectDetailView :preview-data="previewData" is-preview />
       </div>
     </div>
 
