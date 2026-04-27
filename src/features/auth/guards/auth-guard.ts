@@ -30,9 +30,13 @@ export function authGuard(
   if (requiresAuth && isAuthenticated && allowedRoles && allowedRoles.length > 0) {
     const userRole = authStore.user?.role
 
+    if (userRole === 'ADMIN') {
+      next()
+      return
+    }
+
     if (!userRole || !allowedRoles.includes(userRole)) {
-      const defaultName = userRole === 'ADMIN' ? 'admin' : 'modules'
-      next({ name: defaultName })
+      next({ name: 'modules' })
       return
     }
   }
