@@ -110,7 +110,7 @@ export const modulesRoutes: RouteRecordRaw[] = [
         meta: {
           layout: 'dashboard',
           requiresAuth: true,
-          roles: ['STUDENT'], 
+          roles: ['STUDENT', 'TEACHER'], 
         },
       }
     ]

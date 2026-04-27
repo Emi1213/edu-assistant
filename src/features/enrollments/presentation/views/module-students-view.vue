@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useRoute, useRouter } from 'vue-router'
 import { ArrowLeft, UserPlus, Trash2, Loader2, Users } from 'lucide-vue-next'
 import { useModule } from '@/features/modules/composables/queries/use-module'
 import { useRoles } from '@/features/auth/composables/use-roles'
+import { useAuthStore } from '@/features/auth/context/auth-store'
 import { useGetModuleEnrollments } from '../../composables/queries/useEnrollmentQueries'
 import { useDeleteEnrollmentMutation } from '../../composables/mutations/useDeleteEnrollmentMutation'
 import { useUpdateEnrollmentMutation } from '../../composables/mutations/useUpdateEnrollmentMutation'
@@ -18,8 +20,20 @@ const router = useRouter()
 const moduleId = computed(() => Number(route.params.id))
 const { data: module, isLoading: isLoadingModule } = useModule(moduleId.value)
 const { canEdit } = useRoles()
+const authStore = useAuthStore()
+const { user } = storeToRefs(authStore)
 const toast = useToast()
 const showAddModal = ref(false)
+
+const isOwner = computed(() => module.value?.teacherId === user.value?.id)
+const canManage = computed(() => canEdit() && isOwner.value)
+
+watch(module, (newModule) => {
+  if (newModule && newModule.teacherId !== user.value?.id) {
+    toast.error('No tienes permisos para gestionar estudiantes de este módulo')
+    router.replace({ name: 'module-wiki', params: { id: moduleId.value } })
+  }
+})
 
 const { data: enrollments, isLoading: isLoadingEnrollments } = useGetModuleEnrollments(moduleId)
 const enrolledList = computed(() => enrollments.value ?? [])
@@ -92,7 +106,7 @@ function handleAddStudents(selectedIds: number[]) {
           </span>
         </h2>
         <button
-          v-if="canEdit()"
+          v-if="canManage"
           type="button"
           class="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors w-full sm:w-auto"
           @click="showAddModal = true"
@@ -118,7 +132,7 @@ function handleAddStudents(selectedIds: number[]) {
               <th class="pb-2 pr-2 font-medium">Nombre</th>
               <th class="pb-2 pr-2 font-medium hidden sm:table-cell">Email</th>
               <th class="pb-2 pr-2 font-medium">Estado</th>
-              <th v-if="canEdit()" class="pb-2 pl-2 text-right font-medium">Acciones</th>
+              <th v-if="canManage" class="pb-2 pl-2 text-right font-medium">Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -143,7 +157,7 @@ function handleAddStudents(selectedIds: number[]) {
                   {{ e.isActive ? 'Activo' : 'Inactivo' }}
                 </span>
               </td>
-              <td v-if="canEdit()" class="py-3 pl-2 text-right">
+              <td v-if="canManage" class="py-3 pl-2 text-right">
                 <div class="flex items-center justify-end gap-1">
                   <button
                     type="button"
