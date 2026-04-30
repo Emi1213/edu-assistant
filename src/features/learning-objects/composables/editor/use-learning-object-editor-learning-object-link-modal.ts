@@ -10,16 +10,19 @@ export function useLearningObjectEditorLinkModal(
   moduleId: Ref<number>
 ) {
   const showPageLinkModal = ref(false)
+  const searchQuery = ref('')
   const pageLinkForm = ref<{ targetLearningObjectId: number | null; mentionText: string }>({
     targetLearningObjectId: null,
     mentionText: '',
   })
 
   const params = computed<LearningObjectsQueryParams>(() => ({
-    moduleId: moduleId.value
+    moduleId: moduleId.value,
+    search: searchQuery.value,
+    limit: 20 
   }))
 
-  const { data: moduleLearningObjects } = useLearningObjects(params)
+  const { data: moduleLearningObjects, isFetching } = useLearningObjects(params)
 
   const openPageLinkModal = () => {
     const sel = editor.value?.state.selection
@@ -31,12 +34,14 @@ export function useLearningObjectEditorLinkModal(
       targetLearningObjectId: null,
       mentionText: selectedText.trim()
     }
+    searchQuery.value = ''
     showPageLinkModal.value = true
   }
 
   const closePageLinkModal = () => {
     showPageLinkModal.value = false
     pageLinkForm.value = { targetLearningObjectId: null, mentionText: '' }
+    searchQuery.value = ''
   }
 
   const submitPageLink = () => {
@@ -53,7 +58,9 @@ export function useLearningObjectEditorLinkModal(
 
   return {
     showPageLinkModal,
+    searchQuery,
     pageLinkForm,
+    isFetching,
     modulePages: computed(() => moduleLearningObjects.value?.records ?? []),
     openPageLinkModal,
     closePageLinkModal,
