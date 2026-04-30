@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { GripVertical } from 'lucide-vue-next'
 import VideoCard from './video-card.vue'
 import type { VideoDto } from '../../types/video.types'
@@ -8,12 +8,49 @@ const props = defineProps<{
   videos: VideoDto[]
   moduleId: number
   isLoading: boolean
+  hasNextPage?: boolean
+  isFetchingNextPage?: boolean
+  loadMore?: () => void
   reorderPending?: boolean
   onReorderDrag?: (movedVideo: VideoDto, targetVideo: VideoDto) => void
 }>()
 
 const dragFromIndex = ref<number | null>(null)
 const dragOverIndex = ref<number | null>(null)
+
+const loadMoreRef = ref<HTMLElement | null>(null)
+let observer: IntersectionObserver | null = null
+
+const setupObserver = () => {
+  if (observer) observer.disconnect()
+  if (!loadMoreRef.value || !props.loadMore) return
+  
+  observer = new IntersectionObserver(
+    (entries) => {
+      const entry = entries[0]
+      if (
+        entry?.isIntersecting &&
+        props.hasNextPage &&
+        !props.isFetchingNextPage &&
+        props.loadMore
+      ) {
+        props.loadMore()
+      }
+    },
+    { rootMargin: '200px' }
+  )
+  observer.observe(loadMoreRef.value)
+}
+
+onMounted(() => {
+  nextTick(setupObserver)
+})
+
+watch([loadMoreRef, () => props.hasNextPage], () => nextTick(setupObserver))
+
+onUnmounted(() => {
+  if (observer) observer.disconnect()
+})
 
 function handleDragStart(e: DragEvent, index: number) {
   dragFromIndex.value = index
@@ -65,7 +102,7 @@ function handleDragEnd(e: DragEvent) {
 </script>
 
 <template>
-  <div v-if="isLoading" class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+  <div v-if="isLoading && videos.length === 0" class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
     <div v-for="i in 4" :key="i" class="rounded-lg border bg-card p-4">
       <div class="flex flex-col sm:flex-row gap-4">
         <div class="w-full sm:w-40 aspect-video rounded-md bg-muted animate-pulse" />
@@ -78,7 +115,7 @@ function handleDragEnd(e: DragEvent) {
   </div>
 
   <div
-    v-else-if="videos.length === 0"
+    v-else-if="!isLoading && videos.length === 0"
     class="rounded-lg border border-dashed bg-muted/20 p-10 text-center"
   >
     <p class="text-muted-foreground">Sin videos todavía.</p>
@@ -116,6 +153,19 @@ function handleDragEnd(e: DragEvent) {
       <div class="min-w-0 flex-1">
         <VideoCard :item="video" :module-id="moduleId" />
       </div>
+    </div>
+  </div>
+
+  <div
+    ref="loadMoreRef"
+    class="flex items-center justify-center py-10 min-h-[100px]"
+  >
+    <div v-show="isFetchingNextPage" class="flex items-center gap-2 text-muted-foreground animate-in fade-in duration-300">
+      <div class="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      <span class="text-sm">Cargando más videos...</span>
+    </div>
+    <div v-if="!hasNextPage && videos.length > 0 && !isFetchingNextPage" class="text-sm text-muted-foreground fade-in duration-500">
+      Has llegado al final de los videos
     </div>
   </div>
 </template>

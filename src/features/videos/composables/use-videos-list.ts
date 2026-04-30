@@ -1,10 +1,10 @@
-import { computed, type Ref } from 'vue'
+import { computed, type Ref, ref, watch } from 'vue'
 import { useQuery } from '@tanstack/vue-query'
 import { videosDataSource } from '../services/videos.service'
 import { QUERY_KEYS } from '@/shared/composables/query-key'
 import { POLLING_INTERVAL_MS } from '../constants/video-processing.constants'
 import { isProcessingStatus } from '../constants/video-status.constants'
-import type { VideoFiltersDto } from '../types/video.types'
+import type { VideoFiltersDto, VideoDto } from '../types/video.types'
 
 interface UseVideosListParams {
   moduleId: number
@@ -12,9 +12,26 @@ interface UseVideosListParams {
 }
 
 export function useVideosList(params: Ref<UseVideosListParams>, enabled?: Ref<boolean>) {
+  const currentPage = ref(1)
+  const pageSize = ref(10)
+  const loadedVideos = ref<VideoDto[]>([])
+  const totalItems = ref(0)
+  const totalPages = ref(0)
+
+  const queryParams = computed(() => {
+    return {
+      moduleId: params.value.moduleId,
+      filters: {
+        ...params.value.filters,
+        page: currentPage.value,
+        limit: pageSize.value,
+      }
+    }
+  })
+
   const query = useQuery({
-    queryKey: computed(() => QUERY_KEYS.VIDEOS_BY_MODULE(params.value)),
-    queryFn: () => videosDataSource.findAllByModule(params.value.moduleId, params.value.filters),
+    queryKey: computed(() => QUERY_KEYS.VIDEOS_BY_MODULE(queryParams.value)),
+    queryFn: () => videosDataSource.findAllByModule(queryParams.value.moduleId, queryParams.value.filters),
     enabled: enabled ?? computed(() => true),
     refetchInterval: (q) => {
       const data = q.state.data
@@ -24,10 +41,43 @@ export function useVideosList(params: Ref<UseVideosListParams>, enabled?: Ref<bo
     },
   })
 
+  watch(query.data, (response) => {
+    if (response) {
+      totalItems.value = response.total
+      totalPages.value = response.pages
+
+      if (currentPage.value === 1) {
+        loadedVideos.value = [...response.records]
+      } else {
+        const existingIds = new Set(loadedVideos.value.map(v => v.id))
+        const newItems = response.records.filter(v => !existingIds.has(v.id))
+        loadedVideos.value = [...loadedVideos.value, ...newItems]
+      }
+    }
+  }, { immediate: true })
+
+  watch([() => params.value.moduleId, () => params.value.filters], () => {
+    currentPage.value = 1
+    loadedVideos.value = []
+    totalItems.value = 0
+  }, { deep: true })
+
+  const hasNextPage = computed(() => currentPage.value < totalPages.value)
+  const isFetchingNextPage = computed(() => query.isFetching.value && currentPage.value > 1)
+
+  const loadMore = () => {
+    if (hasNextPage.value && !query.isFetching.value) {
+      currentPage.value++
+    }
+  }
+
   return {
-    videos: computed(() => query.data.value?.records ?? []),
-    total: computed(() => query.data.value?.total ?? 0),
+    videos: computed(() => loadedVideos.value),
+    total: totalItems,
     isLoading: query.isLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    loadMore,
     isError: query.isError,
     error: query.error,
     refetch: query.refetch,

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { RouteLocationRaw } from 'vue-router'
 import type { LearningObject } from '../../types'
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { GripVertical } from 'lucide-vue-next'
 import Skeleton from '@/components/ui/skeleton/Skeleton.vue'
 import LearningObjectCard from './learning-object-card.vue'
@@ -10,6 +10,9 @@ const props = defineProps<{
   learningObjects: LearningObject[]
   isLoading: boolean
   canEdit: boolean
+  hasNextPage?: boolean
+  isFetchingNextPage?: boolean
+  loadMore?: () => void
   reorderPending?: boolean
   onReorderDrag?: (movedLo: LearningObject, targetLo: LearningObject) => void
   generatingRelationsLearningObjectId?: number | null
@@ -23,6 +26,40 @@ const props = defineProps<{
 
 const dragFromIndex = ref<number | null>(null)
 const dragOverIndex = ref<number | null>(null)
+
+const loadMoreRef = ref<HTMLElement | null>(null)
+let observer: IntersectionObserver | null = null
+
+const setupObserver = () => {
+  if (observer) observer.disconnect()
+  if (!loadMoreRef.value || !props.loadMore) return
+  
+  observer = new IntersectionObserver(
+    (entries) => {
+      const entry = entries[0]
+      if (
+        entry?.isIntersecting &&
+        props.hasNextPage &&
+        !props.isFetchingNextPage &&
+        props.loadMore
+      ) {
+        props.loadMore()
+      }
+    },
+    { rootMargin: '200px' }
+  )
+  observer.observe(loadMoreRef.value)
+}
+
+onMounted(() => {
+  nextTick(setupObserver)
+})
+
+watch([loadMoreRef, () => props.hasNextPage], () => nextTick(setupObserver))
+
+onUnmounted(() => {
+  if (observer) observer.disconnect()
+})
 
 function handleDragStart(e: DragEvent, index: number) {
   dragFromIndex.value = index
@@ -75,7 +112,7 @@ function handleDragEnd(e: DragEvent) {
 
 <template>
   <div class="space-y-4 min-w-0">
-    <div v-if="isLoading" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div v-if="isLoading && learningObjects.length === 0" class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div
         v-for="i in 4"
         :key="i"
@@ -88,7 +125,7 @@ function handleDragEnd(e: DragEvent) {
     </div>
 
     <div
-      v-else-if="learningObjects.length === 0"
+      v-else-if="!isLoading && learningObjects.length === 0"
       class="rounded-md bg-card px-6 py-12 text-center"
     >
       <p class="text-muted-foreground">No hay contenido disponible</p>
@@ -135,6 +172,19 @@ function handleDragEnd(e: DragEvent) {
             :on-chat="onChat"
           />
         </div>
+      </div>
+    </div>
+
+    <div
+      ref="loadMoreRef"
+      class="flex items-center justify-center py-10 min-h-[100px]"
+    >
+      <div v-show="isFetchingNextPage" class="flex items-center gap-2 text-muted-foreground animate-in fade-in duration-300">
+        <div class="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+        <span class="text-sm">Cargando más contenido...</span>
+      </div>
+      <div v-if="!hasNextPage && learningObjects.length > 0 && !isFetchingNextPage" class="text-sm text-muted-foreground fade-in duration-500">
+        Has llegado al final del contenido
       </div>
     </div>
   </div>
