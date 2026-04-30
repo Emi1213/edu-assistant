@@ -7,7 +7,7 @@ export interface LearningObject {
   id: number
   moduleId: number
   title: string
-  content?: string
+  content?: string | Record<string, unknown>
   orderIndex: number
   keywords: string[]
   isPublished: boolean
