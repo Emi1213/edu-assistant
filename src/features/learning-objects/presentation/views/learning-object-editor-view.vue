@@ -404,9 +404,7 @@ function handleEditorContentClick(event: MouseEvent) {
       </div>
     </Teleport>
 
-    <!-- Modals -->
     <Teleport to="body">
-      <!-- Concept Modal -->
       <div v-if="showConceptModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
         <div class="bg-card rounded-xl shadow-2xl w-full max-w-lg mx-4 p-6 animate-scale-in">
           <h3 class="text-xl font-bold mb-4">{{ isEditingConcept ? 'Editar Concepto' : 'Añadir Concepto' }}</h3>
@@ -449,7 +447,6 @@ function handleEditorContentClick(event: MouseEvent) {
         </div>
       </div>
 
-      <!-- Learning Object Link Modal -->
       <div v-if="showPageLinkModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
         <div class="bg-card rounded-xl shadow-2xl w-full max-w-lg mx-4 p-6 animate-scale-in">
           <h3 class="text-xl font-bold mb-4">Enlazar Objeto de Aprendizaje</h3>
@@ -463,7 +460,6 @@ function handleEditorContentClick(event: MouseEvent) {
               <label class="block text-sm font-medium mb-1">Seleccionar objeto de aprendizaje</label>
               
               <div class="relative">
-                <!-- Input que actúa como Combo/Buscador -->
                 <div class="relative">
                   <input 
                     v-model="searchQuery" 
@@ -478,7 +474,6 @@ function handleEditorContentClick(event: MouseEvent) {
                   </div>
                 </div>
 
-                <!-- Lista Desplegable de Sugerencias -->
                 <div 
                   v-if="searchQuery.trim() || isSearchingPages || (modulePages.length > 0 && !selectedPageTitle)" 
                   class="absolute z-10 w-full mt-1 border rounded-md bg-card shadow-lg max-h-60 overflow-y-auto animate-in fade-in zoom-in-95 duration-200"
@@ -520,7 +515,6 @@ function handleEditorContentClick(event: MouseEvent) {
         </div>
       </div>
 
-      <!-- Enlace externo (web / YouTube / etc.) -->
       <div v-if="showExternalLinkModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
         <div class="bg-card rounded-xl shadow-2xl w-full max-w-lg mx-4 p-6 animate-scale-in">
           <h3 class="text-xl font-bold mb-4">Enlace externo</h3>
@@ -570,7 +564,6 @@ function handleEditorContentClick(event: MouseEvent) {
         </div>
       </div>
 
-      <!-- Image Generation Modal -->
       <div v-if="showImagePromptModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
         <div class="bg-card rounded-xl shadow-2xl w-full max-w-2xl mx-4 p-6 animate-scale-in">
           <div class="flex items-start gap-4 mb-6">
@@ -615,7 +608,6 @@ function handleEditorContentClick(event: MouseEvent) {
 </template>
 
 <style scoped>
-/* Alineado con la vista de lectura (wiki-page / page-header / page-content) */
 .editor-page-wrapper {
   max-width: 100%;
   margin: 0 auto;
