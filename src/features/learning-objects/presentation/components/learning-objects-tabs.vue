@@ -3,7 +3,7 @@ import type { RouteLocationRaw } from 'vue-router'
 import { useRoute, useRouter } from 'vue-router'
 import type { LearningObject, LearningObjectType } from '../../types'
 import { Plus } from 'lucide-vue-next'
-import { computed, watch } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useLearningObjectsListReorder } from '../../composables/use-learning-objects-list-reorder'
 import { sortLearningObjectsByOrderIndex } from '../../utils/learning-objects-reorder.utils'
 import {
@@ -51,6 +51,12 @@ const activeType = computed(() =>
 
 const activeTypeId = computed(() => activeType.value?.id ?? 0)
 
+const currentPage = ref(1)
+const pageSize = ref(10)
+const loadedLearningObjects = ref<LearningObject[]>([])
+const totalItems = ref(0)
+const totalPages = ref(0)
+
 function selectType(type: LearningObjectType) {
   if (activeTypeName.value === type.name) return
   router.replace({
@@ -75,6 +81,8 @@ watch(
 const queryParams = computed(() => ({
   moduleId: props.moduleId,
   typeId: activeTypeId.value,
+  page: currentPage.value,
+  limit: pageSize.value,
 }))
 
 const activeConfig = computed(() =>
@@ -83,16 +91,41 @@ const activeConfig = computed(() =>
 
 const isVideoTab = computed(() => activeTypeName.value === 'VIDEO')
 
-const { data: learningObjectsResponse, isLoading: isLoadingLearningObjects } =
+const { data: learningObjectsResponse, isLoading: isLoadingLearningObjects, isFetching: isFetchingLearningObjects } =
   useLearningObjects(queryParams)
+
+watch(learningObjectsResponse, (response) => {
+  if (response) {
+    totalItems.value = response.total
+    totalPages.value = response.pages
+    
+    if (currentPage.value === 1) {
+      loadedLearningObjects.value = [...response.records]
+    } else {
+      const existingIds = new Set(loadedLearningObjects.value.map(lo => lo.id))
+      const newItems = response.records.filter(lo => !existingIds.has(lo.id))
+      loadedLearningObjects.value = [...loadedLearningObjects.value, ...newItems]
+    }
+  }
+}, { immediate: true })
+
+watch(activeTypeId, () => {
+  currentPage.value = 1
+  loadedLearningObjects.value = []
+  totalItems.value = 0
+})
 
 const videosParams = computed(() => ({ moduleId: props.moduleId }))
 const {
   videos,
   isLoading: isLoadingVideos,
+  total: totalVideos,
+  hasNextPage: hasNextPageVideo,
+  isFetchingNextPage: isFetchingNextPageVideo,
+  loadMore: loadMoreVideo,
 } = useVideosList(videosParams, isVideoTab)
 
-const learningObjects = computed(() => learningObjectsResponse.value?.records ?? [])
+const learningObjects = computed(() => loadedLearningObjects.value)
 
 const sortedLearningObjects = computed(() => sortLearningObjectsByOrderIndex(learningObjects.value))
 
@@ -100,8 +133,17 @@ const isLoading = computed(() =>
   isVideoTab.value ? isLoadingVideos.value : isLoadingLearningObjects.value,
 )
 
+const hasNextPage = computed(() => currentPage.value < totalPages.value)
+const isFetchingNextPage = computed(() => isFetchingLearningObjects.value && currentPage.value > 1)
+
+const loadMore = () => {
+  if (hasNextPage.value && !isFetchingLearningObjects.value) {
+    currentPage.value++
+  }
+}
+
 const activeItemsCount = computed(() =>
-  isVideoTab.value ? videos.value.length : learningObjects.value.length,
+  isVideoTab.value ? totalVideos.value : totalItems.value,
 )
 
 const { reorderByDrag, isReorderingLearningObjects } = useLearningObjectsListReorder(props.moduleId)
@@ -169,6 +211,9 @@ const buildDetailRoute = (learningObject: LearningObject): RouteLocationRaw => (
       :videos="sortedVideos"
       :module-id="moduleId"
       :is-loading="isLoading"
+      :has-next-page="hasNextPageVideo"
+      :is-fetching-next-page="isFetchingNextPageVideo"
+      :load-more="loadMoreVideo"
       :reorder-pending="isReorderingVideos"
       :on-reorder-drag="canEdit && sortedVideos.length > 1 ? handleVideoReorderDrag : undefined"
     />
@@ -178,6 +223,9 @@ const buildDetailRoute = (learningObject: LearningObject): RouteLocationRaw => (
       :learning-objects="sortedLearningObjects"
       :is-loading="isLoading"
       :can-edit="canEdit"
+      :has-next-page="hasNextPage"
+      :is-fetching-next-page="isFetchingNextPage"
+      :load-more="loadMore"
       :reorder-pending="isReorderingLearningObjects"
       :on-reorder-drag="canEdit && sortedLearningObjects.length > 1 ? handleReorderDrag : undefined"
       :generating-relations-learning-object-id="generatingRelationsLearningObjectId"
