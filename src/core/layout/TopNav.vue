@@ -33,9 +33,6 @@ function isActiveRoute(itemRoute: string): boolean {
             class="h-full w-full rounded object-contain"
           />
         </div>
-        <div class="hidden sm:block">
-          <span class="font-semibold text-sm text-foreground">Nous AI</span>
-        </div>
       </RouterLink>
 
       <!-- Navegación central -->
