@@ -11,8 +11,11 @@ import {
   MessageCircleQuestion,
   ClipboardList,
   Bot,
+  CheckCircle2,
+  Circle,
 } from 'lucide-vue-next'
 import { useLearningObject } from '../../composables/queries/use-learning-object'
+import { useLoProgress } from '../../composables/use-lo-progress'
 import { useModule } from '@/features/modules/composables/queries/use-module'
 import { useRoles } from '@/features/auth/composables/use-roles'
 import { useAuthStore } from '@/features/auth/context/auth-store'
@@ -46,6 +49,9 @@ const learningObjectId = computed(() => Number(route.params.learningObjectId))
 const moduleId = computed(() => Number(route.params.id))
 
 const { data: fetchedLearningObject, isLoading: isQueryLoading } = useLearningObject(learningObjectId)
+
+const { isVisited, markAsVisited } = useLoProgress()
+const visited = computed(() => isVisited(learningObjectId.value))
 
 const isLoading = computed(() => {
   if (props.isPreview) return false
@@ -274,10 +280,22 @@ const scrollToQuestions = () => {
             <PageContentRenderer :learning-object="learningObject" />
           </div>
 
-          <div v-if="learningObject" class="mt-6 pt-6 border-t border-border">
+          <div v-if="learningObject" class="mt-6 pt-6 border-t border-border flex flex-wrap gap-3">
             <Button variant="outline" class="gap-2" @click="goToActivities">
               <ClipboardList class="size-4" />
               Ver actividades
+            </Button>
+
+            <Button
+              v-if="isStudent && !isPreview"
+              :variant="visited ? 'secondary' : 'default'"
+              :disabled="visited"
+              class="gap-2 min-w-[180px]"
+              @click="markAsVisited(learningObjectId)"
+            >
+              <CheckCircle2 v-if="visited" class="size-4" />
+              <Circle v-else class="size-4" />
+              <span>{{ visited ? 'Visitado' : 'Marcar como visitado' }}</span>
             </Button>
           </div>
 
