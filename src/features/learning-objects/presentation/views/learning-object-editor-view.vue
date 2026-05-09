@@ -11,11 +11,9 @@ import {
   Image,
   Zap,
   Wand2,
-  Search,
 } from 'lucide-vue-next'
 import { useLearningObjectEditorView } from '../../composables/editor/use-learning-object-editor-view'
 import { useLearningObjectEditorConceptModal } from '../../composables/editor/use-learning-object-editor-concept-modal'
-import { useLearningObjectEditorLinkModal } from '../../composables/editor/use-learning-object-editor-learning-object-link-modal'
 import { useLearningObjectEditorExternalLinkModal } from '../../composables/editor/use-learning-object-editor-external-link-modal'
 import { useLearningObjectEditorImageModal } from '../../composables/editor/use-learning-object-editor-image-modal'
 import {
@@ -30,7 +28,7 @@ import ConceptDefinitionHoverLayer from '../components/concept-definition-hover-
 import RegenerateContentModal from '../components/RegenerateContentModal.vue'
 import EditorToolbar from '../components/editor-toolbar.vue'
 import Skeleton from '@/components/ui/skeleton/Skeleton.vue'
-import type { LearningObject } from '../../types'
+import LearningObjectLinkModal from '../components/learning-object-link-modal.vue'
 
 import { Eye, EyeOff } from 'lucide-vue-next'
 import LearningObjectDetailView from './learning-object-detail-view.vue'
@@ -118,6 +116,7 @@ const currentAiActionLabel = computed(() => {
   return 'Herramientas'
 })
 
+<<<<<<< HEAD
 const {
   showPageLinkModal,
   searchQuery,
@@ -140,6 +139,9 @@ function selectPage(page: LearningObject) {
   pageLinkForm.value.targetLearningObjectId = page.id
   searchQuery.value = ''
 }
+=======
+const linkModal = ref<InstanceType<typeof LearningObjectLinkModal> | null>(null)
+>>>>>>> 5a1e84f (Divide component)
 
 const {
   showExternalLinkModal,
@@ -272,7 +274,7 @@ function handleEditorContentClick(event: MouseEvent) {
           <EditorToolbar
             :editor="editor"
             :on-insert-concept="openConceptModal"
-            :on-insert-page-link="openPageLinkModal"
+            :on-insert-page-link="() => linkModal?.open()"
             :on-insert-external-link="openExternalLinkModal"
             :on-insert-image="openImagePromptModal"
           />
@@ -449,89 +451,12 @@ function handleEditorContentClick(event: MouseEvent) {
         </div>
       </div>
 
-      <!-- Learning Object Link Modal (relaciones entre objetos) -->
-      <div v-if="showPageLinkModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-        <div class="bg-card rounded-xl shadow-2xl w-full max-w-lg mx-4 p-6 animate-scale-in">
-          <h3 class="text-xl font-bold mb-4">
-            {{ isEditingLearningObjectLink ? 'Editar relación' : 'Enlazar objeto de aprendizaje' }}
-          </h3>
-          <p v-if="isEditingLearningObjectLink" class="text-sm text-muted-foreground mb-4">
-            Cambia el texto visible o el objeto destino, o quita la relación para dejar solo el texto.
-          </p>
-          <div class="space-y-4 mb-6">
-            <div>
-              <label class="block text-sm font-medium mb-1">Texto a mostrar</label>
-              <input v-model="pageLinkForm.mentionText" class="w-full p-2 rounded border bg-background" />
-            </div>
-            
-            <div class="space-y-2">
-              <label class="block text-sm font-medium mb-1">Seleccionar objeto de aprendizaje</label>
-              
-              <div class="relative">
-                <!-- Input que actúa como Combo/Buscador -->
-                <div class="relative">
-                  <input 
-                    v-model="searchQuery" 
-                    type="text" 
-                    :placeholder="selectedPageTitle || 'Buscar objeto de aprendizaje...'" 
-                    class="w-full p-2.5 pr-10 rounded-md border bg-background focus:ring-2 focus:ring-primary/20 outline-none transition-all"
-                    :class="selectedPageTitle && !searchQuery ? 'placeholder:text-foreground font-medium' : 'placeholder:text-muted-foreground'"
-                  />
-                  <div class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
-                    <Loader2 v-if="isSearchingPages" class="size-4 animate-spin text-muted-foreground" />
-                    <Search v-else class="size-4 text-muted-foreground" />
-                  </div>
-                </div>
-
-                <!-- Lista Desplegable de Sugerencias -->
-                <div 
-                  v-if="searchQuery.trim() || isSearchingPages || (modulePages.length > 0 && !selectedPageTitle)" 
-                  class="absolute z-10 w-full mt-1 border rounded-md bg-card shadow-lg max-h-60 overflow-y-auto animate-in fade-in zoom-in-95 duration-200"
-                >
-                  <div v-if="modulePages.length === 0 && !isSearchingPages" class="p-4 text-sm text-center text-muted-foreground">
-                    No se encontraron resultados
-                  </div>
-                  
-                  <button
-                    v-for="p in modulePages"
-                    :key="p.id"
-                    type="button"
-                    @click="selectPage(p)"
-                    class="w-full text-left px-4 py-2.5 text-sm hover:bg-accent hover:text-accent-foreground transition-colors flex items-center justify-between border-b last:border-b-0 border-border/40"
-                    :class="pageLinkForm.targetLearningObjectId === p.id ? 'bg-primary/5 text-primary font-medium' : ''"
-                  >
-                    <span class="truncate">{{ p.title }}</span>
-                    <span v-if="pageLinkForm.targetLearningObjectId === p.id" class="size-1.5 rounded-full bg-primary" />
-                  </button>
-                </div>
-              </div>
-              
-              <p v-if="selectedPageTitle && !searchQuery" class="text-[11px] text-primary font-medium px-1 flex items-center gap-1">
-                <span class="size-1 rounded-full bg-primary" />
-                Objeto seleccionado: {{ selectedPageTitle }}
-              </p>
-            </div>
-          </div>
-          <div class="flex flex-wrap justify-end gap-3">
-            <button
-              v-if="isEditingLearningObjectLink"
-              type="button"
-              @click="removeLearningObjectLink"
-              class="px-4 py-2 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded mr-auto"
-            >
-              Quitar relación
-            </button>
-            <button @click="closePageLinkModal" class="px-4 py-2 text-muted-foreground hover:bg-muted/50 rounded">Cancelar</button>
-            <button
-              @click="submitPageLink"
-              :disabled="!pageLinkForm.mentionText?.trim() || !pageLinkForm.targetLearningObjectId"
-              class="px-4 py-2 bg-primary text-primary-foreground rounded disabled:opacity-50"
-            >
-              {{ isEditingLearningObjectLink ? 'Guardar' : 'Enlazar' }}
-            </button>
-          </div>
-        </div>
-      </div>
+      <LearningObjectLinkModal
+        ref="linkModal"
+        :editor="editor"
+        :learning-object-id="learningObjectId"
+        :module-id="moduleId"
+      />
 
       <div v-if="showExternalLinkModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
         <div class="bg-card rounded-xl shadow-2xl w-full max-w-lg mx-4 p-6 animate-scale-in">
