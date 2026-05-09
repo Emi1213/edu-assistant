@@ -9,6 +9,7 @@ import { Plus } from 'lucide-vue-next'
 import { useRoles } from '@/features/auth/composables/use-roles'
 import { useAuthStore } from '@/features/auth/context/auth-store'
 import type { IModulesListViewProps } from '../../types/ui/modules-list-view.types'
+import { useLearningObjectTypes } from '@/features/learning-objects/composables/queries/use-learning-object-types'
 
 const props = defineProps<IModulesListViewProps>()
 
@@ -18,6 +19,9 @@ const { user } = storeToRefs(authStore)
 
 const ownedModules = computed(() => props.modules.filter(m => m.teacherId === user.value?.id))
 const enrolledModules = computed(() => props.modules.filter(m => m.teacherId !== user.value?.id))
+
+const { data: learningObjectTypesData } = useLearningObjectTypes()
+const learningObjectTypes = computed(() => learningObjectTypesData.value ?? [])
 
 const emptyMessage = 'No hay módulos registrados'
 const loadMoreRef = ref<HTMLElement | null>(null)
@@ -107,6 +111,7 @@ onUnmounted(() => {
               :key="module.id"
               :module="module"
               :to="{ name: 'module-wiki', params: { id: module.id } }"
+              :learning-object-types="learningObjectTypes"
               :on-edit="props.onEdit ? () => props.onEdit(module) : undefined"
             />
           </div>
@@ -124,6 +129,7 @@ onUnmounted(() => {
               :module="module"
               :is-enrolled="true"
               :to="{ name: 'module-wiki', params: { id: module.id } }"
+              :learning-object-types="learningObjectTypes"
               :on-edit="props.onEdit ? () => props.onEdit(module) : undefined"
             />
           </div>
@@ -136,6 +142,7 @@ onUnmounted(() => {
           :key="module.id"
           :module="module"
           :to="{ name: 'module-wiki', params: { id: module.id } }"
+          :learning-object-types="learningObjectTypes"
           :on-edit="props.onEdit ? () => props.onEdit(module) : undefined"
         />
       </div>
