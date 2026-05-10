@@ -185,7 +185,7 @@ const scrollToQuestions = () => {
     </div>
 
     <div
-      v-if="!isLoading && learningObject && hasAdjacentNavigation"
+      v-if="!isLoading && learningObject && hasAdjacentNavigation && !isPreview"
       class="grid w-full grid-cols-2 items-center gap-3"
       role="navigation"
       aria-label="Navegación entre páginas del módulo"
@@ -299,7 +299,7 @@ const scrollToQuestions = () => {
         </div>
       </div>
 
-      <div v-if="isActingAsStudent && learningObject" class="notes-sidebar-wrapper">
+      <div v-if="isActingAsStudent && learningObject && !isPreview" class="notes-sidebar-wrapper">
         <NotesPanel :learning-object-id="learningObject.id" :notes="pageNotes" />
       </div>
 

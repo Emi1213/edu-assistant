@@ -84,7 +84,7 @@ const previewData = computed(() => {
     ...base,
     title: learningObjectTitle.value,
     keywords: [...learningObjectKeywords.value],
-    content: editor.value?.getHTML() || '',
+    content: editor.value?.getJSON() || '',
     blocks: [], 
   }
 })
