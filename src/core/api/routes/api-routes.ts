@@ -12,6 +12,7 @@ const AR_KEYS = {
     PAGES: '/pages',
     LEARNING_OBJECT_FEEDBACKS: '/learning-object-feedbacks',
     CHAT: '/sessions',
+    VIDEOS: '/videos',
 }
 
 export const API_ROUTES = {
@@ -104,5 +105,16 @@ export const API_ROUTES = {
         GENERATE_ACTIVITY: `${AR_KEYS.CONTENT_GENERATION}/generate-activity`,
         EXTRACT_CONCEPTS: `${AR_KEYS.CONTENT_GENERATION}/extract-concepts`,
         EXTRACT_RELATIONS: `${AR_KEYS.CONTENT_GENERATION}/generate-relations`,
+        GENERATE_CONCEPT: `${AR_KEYS.CONTENT_GENERATION}/generate-concept`,
+    },
+    VIDEOS: {
+        CREATE_FROM_URL: AR_KEYS.VIDEOS,
+        UPLOAD: `${AR_KEYS.VIDEOS}/upload`,
+        LIST_BY_MODULE: (moduleId: number) => `${AR_KEYS.VIDEOS}/module/${moduleId}`,
+        DETAIL: (id: number) => `${AR_KEYS.VIDEOS}/${id}`,
+        STATUS: (id: number) => `${AR_KEYS.VIDEOS}/${id}/status`,
+        RETRY: (id: number) => `${AR_KEYS.VIDEOS}/${id}/retry`,
+        UPDATE_CONTENT: (id: number) => `${AR_KEYS.VIDEOS}/${id}/content`,
+        DELETE: (id: number) => `${AR_KEYS.VIDEOS}/${id}`,
     },
 }

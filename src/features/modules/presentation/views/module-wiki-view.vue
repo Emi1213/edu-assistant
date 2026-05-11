@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useRoute, useRouter } from 'vue-router'
 import { ArrowLeft, BookOpen, Users } from 'lucide-vue-next'
 import { useModule } from '../../composables/queries/use-module'
@@ -11,10 +12,12 @@ import { useToast } from '@/shared/composables/use-toast'
 import { toFullAssetUrl } from '@/shared/utils/image.utils'
 import LearningObjectsTabs from '@/features/learning-objects/presentation/components/learning-objects-tabs.vue'
 import CreateLearningObjectDialog from '@/features/learning-objects/presentation/components/create-learning-object-dialog.vue'
+import CreateVideoDialog from '@/features/videos/presentation/components/create-video-dialog.vue'
 import UpdateLearningObjectDialog from '@/features/learning-objects/presentation/components/update-learning-object-dialog.vue'
 import Skeleton from '@/components/ui/skeleton/Skeleton.vue'
 import type { LearningObject } from '@/features/learning-objects/types'
 import { useUpdateLearningObject } from '@/features/learning-objects/composables/mutations/use-update-learning-object'
+import { useAuthStore } from '@/features/auth/context/auth-store'
 import { Sheet, SheetContent } from '@/components/ui/sheet'
 import ChatPanel from '@/features/chat/presentation/components/chat-panel.vue'
 import { useCreateChatSession } from '@/features/chat/composables/mutations/use-create-chat-session'
@@ -28,6 +31,12 @@ const moduleId = computed(() => Number(route.params.id))
 
 const { data: module, isLoading: isLoadingModule } = useModule(moduleId.value)
 const { canEdit, isStudent } = useRoles()
+const authStore = useAuthStore()
+const { user } = storeToRefs(authStore)
+
+const isOwner = computed(() => module.value?.teacherId === user.value?.id)
+const canManage = computed(() => canEdit() && isOwner.value)
+
 
 const isChatOpen = ref(false)
 const selectedLearningObjectId = ref<number | null>(null)
@@ -36,6 +45,17 @@ const { mutate: createChatSession, isPending: isStartingSession } = useCreateCha
 
 const { data: learningObjectTypes, isLoading: isLoadingTypes } = useLearningObjectTypes()
 const types = computed(() => learningObjectTypes.value ?? [])
+
+const isVideoDialogOpen = ref(false)
+
+const openCreateDialog = (typeId: number) => {
+  const type = types.value.find((t) => t.id === typeId)
+  if (type?.name === 'VIDEO') {
+    isVideoDialogOpen.value = true
+    return
+  }
+  openDialog(typeId)
+}
 
 const {
   isDialogOpen,
@@ -165,7 +185,7 @@ const handleGenerateRelations = (learningObject: LearningObject) => {
           <p v-if="module.description" class="text-sm sm:text-base text-muted-foreground mb-4 break-words">
             {{ module.description }}
           </p>
-          <div v-if="canEdit()" class="flex flex-wrap items-center gap-3">
+          <div v-if="canManage" class="flex flex-wrap items-center gap-3">
             <router-link
               :to="{ name: 'module-students', params: { id: module.id } }"
               class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
@@ -196,14 +216,14 @@ const handleGenerateRelations = (learningObject: LearningObject) => {
         v-else-if="types.length > 0"
         :types="types"
         :module-id="moduleId"
-        :can-edit="canEdit()"
+        :can-edit="canManage"
         :generating-relations-learning-object-id="generatingRelationsLearningObjectId"
         :publishing-learning-object-id="publishingLoId"
         :on-update-learning-object="openUpdateLearningObject"
         :on-generate-relations="handleGenerateRelations"
         :on-publish-now="handlePublishNow"
         :on-chat="isStudent ? handleChat : undefined"
-        @create="openDialog"
+        @create="openCreateDialog"
       />
 
       <div v-else class="rounded-md bg-card px-6 py-12 text-center">
@@ -220,6 +240,12 @@ const handleGenerateRelations = (learningObject: LearningObject) => {
       @update:is-published="isPublished = $event"
       @close="closeDialog"
       @create="handleCreate"
+    />
+
+    <CreateVideoDialog
+      :module-id="moduleId"
+      :is-open="isVideoDialogOpen"
+      @update:is-open="isVideoDialogOpen = $event"
     />
 
     <UpdateLearningObjectDialog

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useRoute, useRouter } from 'vue-router'
 import {
   ArrowLeft,
@@ -13,6 +14,7 @@ import {
   Share2,
 } from 'lucide-vue-next'
 import { useLearningObject } from '../../composables/queries/use-learning-object'
+import { useModule } from '@/features/modules/composables/queries/use-module'
 import { useRoles } from '@/features/auth/composables/use-roles'
 import { useAuthStore } from '@/features/auth/context/auth-store'
 import PageContentRenderer from '../components/learning-object-content-renderer.vue'
@@ -29,13 +31,36 @@ import ChatPanel from '@/features/chat/presentation/components/chat-panel.vue'
 import { useCreateChatSession } from '@/features/chat/composables/mutations/use-create-chat-session'
 import { Loader2, X } from 'lucide-vue-next'
 
+import type { LearningObject } from '../../types'
+
+interface Props {
+  previewData?: LearningObject | null
+  isPreview?: boolean
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  previewData: null,
+  isPreview: false,
+})
+
 const route = useRoute()
 const router = useRouter()
 const learningObjectId = computed(() => Number(route.params.learningObjectId))
 const moduleId = computed(() => Number(route.params.id))
 
-const { data: learningObject, isLoading } = useLearningObject(learningObjectId)
-const { canEdit, isStudent } = useRoles()
+const { data: fetchedLearningObject, isLoading: isQueryLoading } = useLearningObject(learningObjectId)
+
+const isLoading = computed(() => {
+  if (props.isPreview) return false
+  return isQueryLoading.value
+})
+
+const learningObject = computed(() => {
+  if (props.isPreview) return props.previewData
+  return fetchedLearningObject.value
+})
+
+const { canEdit, isStudent: isRealStudent, isTeacher, isAdmin } = useRoles()
 const authStore = useAuthStore()
 const toast = useToast()
 
@@ -59,6 +84,20 @@ const copyShareLink = async () => {
     toast.error('No se pudo copiar el enlace')
   }
 }
+const { user } = storeToRefs(authStore)
+
+const { data: module } = useModule(moduleId)
+const isOwnerReal = computed(() => {
+  const m = module.value
+  const u = user.value
+  if (!m || !u) return false
+  return String(m.teacherId) === String(u.id)
+})
+
+const isActingAsStudent = computed(() => isStudent.value || (isTeacher.value && !isOwnerReal.value))
+const canManage = computed(() => (canEdit() && isOwnerReal.value) || isAdmin.value)
+
+const isProfessorPage = computed(() => canManage.value)
 
 const isChatOpen = ref(false)
 const chatSessionId = ref<number | null>(null)
@@ -74,7 +113,7 @@ const pageStudentQuestions = computed(() => {
   return learningObject.value.studentQuestions ?? []
 })
 
-const isProfessor = computed(() => canEdit())
+const isStudent = computed(() => props.isPreview || isRealStudent.value)
 
 const loFeedbacks = computed(() => {
   if (!learningObject.value) return []
@@ -84,7 +123,7 @@ const loFeedbacks = computed(() => {
 const userFeedback = computed(() => {
   const feedbacksValue = loFeedbacks.value
   if (!feedbacksValue || !Array.isArray(feedbacksValue)) return null
-  return feedbacksValue.find(f => f.user?.id === authStore.user?.id) || null
+  return feedbacksValue.find(f => f.user?.id === user.value?.id) || null
 })
 
 const goBack = () => {
@@ -151,7 +190,7 @@ const scrollToQuestions = () => {
 
 <template>
   <div class="space-y-6 pt-4 sm:pt-8 min-w-0">
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+    <div v-if="!isPreview" class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
       <button
         @click="goBack"
         class="flex items-center justify-center sm:justify-start gap-2 px-4 py-2.5 text-sm font-medium bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 hover:shadow-md transition-all duration-200 w-full sm:w-auto"
@@ -179,10 +218,18 @@ const scrollToQuestions = () => {
           <span>Editar con IA</span>
         </button>
       </div>
+      <button
+        v-if="!isLoading && learningObject && canManage"
+        @click="goToEditor"
+        class="flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-lg font-medium transition-all duration-200 hover:bg-primary/90 hover:shadow-md w-full sm:w-auto"
+      >
+        <Edit3 class="size-4" />
+        <span>Editar con IA</span>
+      </button>
     </div>
 
     <div
-      v-if="!isLoading && learningObject && isProfessor && hasAdjacentNavigation"
+      v-if="!isLoading && learningObject && hasAdjacentNavigation && !isPreview"
       class="grid w-full grid-cols-2 items-center gap-3"
       role="navigation"
       aria-label="Navegación entre páginas del módulo"
@@ -254,7 +301,7 @@ const scrollToQuestions = () => {
                 class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-primary hover:text-primary/80 hover:bg-primary/10 rounded-lg transition-all duration-200"
               >
                 <MessageSquare class="size-4" />
-                <span v-if="isStudent">{{ userFeedback ? 'Ver tu feedback' : 'Agregar feedback' }}</span>
+                <span v-if="isActingAsStudent">{{ userFeedback ? 'Ver tu feedback' : 'Agregar feedback' }}</span>
                 <span v-else>Ver feedbacks</span>
               </button>
               <button
@@ -279,20 +326,24 @@ const scrollToQuestions = () => {
           </div>
 
           <div v-if="learningObject" id="feedback-section" class="mt-6 pt-6 border-t border-border">
-            <LearningObjectFeedbackSection :learning-object-id="learningObject.id" :feedbacks="loFeedbacks" />
+            <LearningObjectFeedbackSection 
+              :learning-object-id="learningObject.id" 
+              :feedbacks="loFeedbacks"
+              :is-professor="isProfessorPage"
+            />
           </div>
           <div v-if="learningObject" id="questions-section" class="mt-6 pt-6 border-t border-border">
             <StudentQuestionsPanel
               :learning-object-id="learningObject.id"
               :student-questions="pageStudentQuestions"
-              :is-professor="isProfessor"
+              :is-professor="isProfessorPage"
               embedded
             />
           </div>
         </div>
       </div>
 
-      <div v-if="isStudent && learningObject" class="notes-sidebar-wrapper">
+      <div v-if="isActingAsStudent && learningObject && !isPreview" class="notes-sidebar-wrapper">
         <NotesPanel :learning-object-id="learningObject.id" :notes="pageNotes" />
       </div>
 

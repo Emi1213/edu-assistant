@@ -24,6 +24,9 @@ export function useRoles() {
   }
 
   function canAccess(allowedRoles?: Role[]): boolean {
+    if (isAdmin.value) {
+      return true
+    }
     if (!allowedRoles || allowedRoles.length === 0) {
       return true 
     }

@@ -4,9 +4,14 @@ import ModulesFilters from '../components/modules-filters.vue'
 import ModuleCard from '../components/module-card.vue'
 import Skeleton from '@/components/ui/skeleton/Skeleton.vue'
 import { useAvailableModulesList } from '../../composables/use-available-modules-list'
+import { useModulesList } from '../../composables/use-modules-list'
+import FormOverlay from '@/shared/components/form-overlay.vue'
+import ModuleForm from '../components/module-form.vue'
 import { useSelfEnrollMutation } from '@/features/enrollments/composables/mutations/useSelfEnrollMutation'
 import { useToast } from '@/shared/composables/use-toast'
 import type { Module } from '../../types/modules.types'
+import { useLearningObjectTypes } from '@/features/learning-objects/composables/queries/use-learning-object-types'
+import { computed } from 'vue'
 
 const toast = useToast()
 const {
@@ -20,7 +25,18 @@ const {
   loadMore,
 } = useAvailableModulesList()
 
+const {
+  drawerOpen,
+  initialData,
+  openEditDrawer,
+  closeDrawer,
+  handleSubmit,
+} = useModulesList()
+
 const selfEnrollMutation = useSelfEnrollMutation()
+
+const { data: learningObjectTypesData } = useLearningObjectTypes()
+const learningObjectTypes = computed(() => learningObjectTypesData.value ?? [])
 
 function handleEnroll(module: Module) {
   selfEnrollMutation.mutate(
@@ -113,7 +129,9 @@ onUnmounted(() => {
           :key="module.id"
           :module="module"
           :is-enrolled="false"
+          :learning-object-types="learningObjectTypes"
           :on-enroll="handleEnroll"
+          :on-edit="openEditDrawer"
         />
       </div>
 
@@ -130,5 +148,18 @@ onUnmounted(() => {
         </div>
       </div>
     </div>
+
+    <FormOverlay
+      :isOpen="drawerOpen"
+      :onClose="closeDrawer"
+      :title="initialData ? 'Editar Módulo' : 'Agregar Módulo'"
+    >
+      <ModuleForm
+        :key="initialData?.id ?? 'create'"
+        :onSubmit="handleSubmit"
+        :onCancel="closeDrawer"
+        :initialData="initialData"
+      />
+    </FormOverlay>
   </div>
 </template>

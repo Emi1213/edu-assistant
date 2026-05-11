@@ -1,10 +1,14 @@
 <script setup lang="ts">
 import type { RouteLocationRaw } from 'vue-router'
 import type { Module } from '../../types/modules.types'
+import type { LearningObjectType } from '@/features/learning-objects/types'
 import { toFullAssetUrl } from '@/shared/utils/image.utils'
 import { Globe, Lock, BookOpen, UserPlus, UserMinus } from 'lucide-vue-next'
 import { useRoles } from '@/features/auth/composables/use-roles'
+import { useAuthStore } from '@/features/auth/context/auth-store'
+import { computed } from 'vue'
 import ModulesActionsMenu from './modules-actions-menu.vue'
+import ModuleLoShortcuts from './module-lo-shortcuts.vue'
 
 const props = defineProps<{
   module: Module
@@ -14,12 +18,15 @@ const props = defineProps<{
   isEnrolled?: boolean
   onEnroll?: (module: Module) => void
   onUnenroll?: (module: Module) => void
+  learningObjectTypes?: LearningObjectType[]
 }>()
 
 const { canEdit } = useRoles()
+const authStore = useAuthStore()
 
-const showActions = canEdit()
-const showEnrollActions = (props.onEnroll != null || props.onUnenroll != null) && props.module.allowSelfEnroll
+const isOwner = computed(() => authStore.user?.id === props.module.teacherId)
+const showActions = computed(() => canEdit() && isOwner.value)
+const showEnrollActions = computed(() => (props.onEnroll != null || props.onUnenroll != null) && props.module.allowSelfEnroll && !isOwner.value)
 
 const handleEdit = () => {
   if (props.onEdit) props.onEdit(props.module)
@@ -85,7 +92,7 @@ const handleUnenroll = (e: Event) => {
       </div>
       </div>
     </component>
-    <div class="flex items-center justify-between px-5 pb-5 pt-3 border-t border-border gap-2">
+    <div class="flex items-center justify-between px-5 pb-5 pt-3 border-t border-border gap-2 flex-wrap">
       <div class="flex items-center gap-2 min-w-0">
         <span
           class="inline-flex items-center text-xs font-bold px-2.5 py-1 rounded-full transition-transform duration-200 hover:scale-105 shrink-0"
@@ -95,6 +102,11 @@ const handleUnenroll = (e: Event) => {
         >
           {{ module.isActive ? 'Activo' : 'Inactivo' }}
         </span>
+        <ModuleLoShortcuts
+          v-if="learningObjectTypes && learningObjectTypes.length > 0"
+          :module-id="module.id"
+          :types="learningObjectTypes"
+        />
       </div>
       <div v-if="showEnrollActions" class="flex items-center gap-1 shrink-0">
         <button
