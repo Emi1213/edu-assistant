@@ -7,12 +7,16 @@ import { useConceptDefinitionHoverTooltip } from '../../composables/use-concept-
 import ConceptDefinitionHoverLayer from './concept-definition-hover-layer.vue'
 import type { LearningObject, LOContentBlock } from '../../types'
 import { normalizeTiptapContent } from '../../utils/normalize-tiptap-content'
+import { SHARED_LEARNING_OBJECT_ROUTE_NAME } from '../../routes/public-share.routes'
 
 interface Props {
   learningObject: LearningObject
+  internalLinkMode?: 'module' | 'public'
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  internalLinkMode: 'module',
+})
 const router = useRouter()
 
 function onContentClick(event: MouseEvent) {
@@ -21,9 +25,22 @@ function onContentClick(event: MouseEvent) {
   const link = el?.closest?.('[data-type="learning-object-link"]')
   if (!link) return
   const learningObjectId = link.getAttribute('data-target-lo-id')
-  if (!learningObjectId || !props.learningObject.moduleId) return
+  if (!learningObjectId) return
+  if (props.internalLinkMode === 'module' && !props.learningObject.moduleId) return
   event.preventDefault()
   event.stopPropagation()
+  if (props.internalLinkMode === 'public') {
+    const loc = router.resolve({
+      name: SHARED_LEARNING_OBJECT_ROUTE_NAME,
+      params: { learningObjectId },
+    })
+    if (event.metaKey || event.ctrlKey) {
+      window.open(loc.href, '_blank', 'noopener,noreferrer')
+    } else {
+      router.push(loc)
+    }
+    return
+  }
   const url = `/modules/${props.learningObject.moduleId}/learning-objects/${learningObjectId}`
   if (event.metaKey || event.ctrlKey) {
     window.open(url, '_blank', 'noopener,noreferrer')

@@ -3,24 +3,33 @@ import axios, { AxiosError, type AxiosInstance, type AxiosRequestConfig } from '
 import type { IHttpHandler, IHttpResponse } from '@/core/interfaces/IHttpHandler'
 import { AuthInterceptor } from './interceptors/auth-interceptor'
 
+export type HttpClientOptions = {
+  attachAuth?: boolean
+  logoutOn401?: boolean
+}
+
 export class HttpClient implements IHttpHandler {
   private instance: AxiosInstance
 
-  constructor(baseURL: string, config?: AxiosRequestConfig) {
+  constructor(baseURL: string, config?: AxiosRequestConfig, clientOptions?: HttpClientOptions) {
+    const { attachAuth = true, logoutOn401 = true } = clientOptions ?? {}
+
     this.instance = axios.create({
       baseURL,
-      timeout: 120000, 
+      timeout: 120000,
       headers: {
         'Content-Type': 'application/json',
       },
       ...config,
     })
 
-    this.setupInterceptors()
+    this.setupInterceptors({ attachAuth, logoutOn401 })
   }
 
-  private setupInterceptors(): void {
-    this.instance.interceptors.request.use(AuthInterceptor.onRequest)
+  private setupInterceptors(options: { attachAuth: boolean; logoutOn401: boolean }): void {
+    if (options.attachAuth) {
+      this.instance.interceptors.request.use(AuthInterceptor.onRequest)
+    }
 
     this.instance.interceptors.response.use(
       (response) => response,
@@ -40,7 +49,7 @@ export class HttpClient implements IHttpHandler {
           error.message = 'Ocurrió un error inesperado'
         }
 
-        if (error.response?.status === 401) {
+        if (options.logoutOn401 && error.response?.status === 401) {
           import('@/features/auth/context/auth-store').then(({ useAuthStore }) => {
             useAuthStore().logout()
           })

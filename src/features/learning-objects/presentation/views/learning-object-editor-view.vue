@@ -83,9 +83,11 @@ const {
   showPageLinkModal,
   pageLinkForm,
   modulePages,
+  isEditingLearningObjectLink,
   openPageLinkModal,
   closePageLinkModal,
   submitPageLink,
+  removeLearningObjectLink,
 } = useLearningObjectEditorLinkModal(editor, learningObjectId, moduleId)
 
 const {
@@ -348,10 +350,15 @@ const { visible: conceptTooltipVisible, text: conceptTooltipText, style: concept
         </div>
       </div>
 
-      <!-- Learning Object Link Modal -->
+      <!-- Learning Object Link Modal (relaciones entre objetos) -->
       <div v-if="showPageLinkModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
         <div class="bg-card rounded-xl shadow-2xl w-full max-w-lg mx-4 p-6 animate-scale-in">
-          <h3 class="text-xl font-bold mb-4">Enlazar Objeto de Aprendizaje</h3>
+          <h3 class="text-xl font-bold mb-4">
+            {{ isEditingLearningObjectLink ? 'Editar relación' : 'Enlazar objeto de aprendizaje' }}
+          </h3>
+          <p v-if="isEditingLearningObjectLink" class="text-sm text-muted-foreground mb-4">
+            Cambia el texto visible o el objeto destino, o quita la relación para dejar solo el texto.
+          </p>
           <div class="space-y-4 mb-6">
             <div>
               <label class="block text-sm font-medium mb-1">Texto a mostrar</label>
@@ -367,14 +374,22 @@ const { visible: conceptTooltipVisible, text: conceptTooltipText, style: concept
               </select>
             </div>
           </div>
-          <div class="flex justify-end gap-3">
+          <div class="flex flex-wrap justify-end gap-3">
+            <button
+              v-if="isEditingLearningObjectLink"
+              type="button"
+              @click="removeLearningObjectLink"
+              class="px-4 py-2 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded mr-auto"
+            >
+              Quitar relación
+            </button>
             <button @click="closePageLinkModal" class="px-4 py-2 text-muted-foreground hover:bg-muted/50 rounded">Cancelar</button>
             <button
               @click="submitPageLink"
-              :disabled="!pageLinkForm.mentionText || !pageLinkForm.targetLearningObjectId"
+              :disabled="!pageLinkForm.mentionText?.trim() || !pageLinkForm.targetLearningObjectId"
               class="px-4 py-2 bg-primary text-primary-foreground rounded disabled:opacity-50"
             >
-              Enlazar
+              {{ isEditingLearningObjectLink ? 'Guardar' : 'Enlazar' }}
             </button>
           </div>
         </div>

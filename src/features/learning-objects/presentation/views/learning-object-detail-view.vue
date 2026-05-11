@@ -10,6 +10,7 @@ import {
   MessageCircleQuestion,
   ClipboardList,
   Bot,
+  Share2,
 } from 'lucide-vue-next'
 import { useLearningObject } from '../../composables/queries/use-learning-object'
 import { useRoles } from '@/features/auth/composables/use-roles'
@@ -21,6 +22,8 @@ import StudentQuestionsPanel from '@/features/student-questions/presentation/com
 import Skeleton from '@/components/ui/skeleton/Skeleton.vue'
 import { Button } from '@/components/ui/button'
 import { MODULES_ROUTES_NAMES } from '@/features/modules/routes/modules-routes'
+import { SHARED_LEARNING_OBJECT_ROUTE_NAME } from '@/features/learning-objects/routes/public-share.routes'
+import { useToast } from '@/shared/composables/use-toast'
 import { Sheet, SheetContent } from '@/components/ui/sheet'
 import ChatPanel from '@/features/chat/presentation/components/chat-panel.vue'
 import { useCreateChatSession } from '@/features/chat/composables/mutations/use-create-chat-session'
@@ -34,6 +37,28 @@ const moduleId = computed(() => Number(route.params.id))
 const { data: learningObject, isLoading } = useLearningObject(learningObjectId)
 const { canEdit, isStudent } = useRoles()
 const authStore = useAuthStore()
+const toast = useToast()
+
+const sharePageUrl = computed(() => {
+  const id = learningObjectId.value
+  if (!Number.isFinite(id) || id <= 0) return ''
+  const path = router.resolve({
+    name: SHARED_LEARNING_OBJECT_ROUTE_NAME,
+    params: { learningObjectId: String(id) },
+  }).href
+  return `${window.location.origin}${path}`
+})
+
+const copyShareLink = async () => {
+  const url = sharePageUrl.value
+  if (!url) return
+  try {
+    await navigator.clipboard.writeText(url)
+    toast.success('Enlace público copiado')
+  } catch {
+    toast.error('No se pudo copiar el enlace')
+  }
+}
 
 const isChatOpen = ref(false)
 const chatSessionId = ref<number | null>(null)
@@ -135,14 +160,25 @@ const scrollToQuestions = () => {
         <span>Volver al módulo</span>
       </button>
 
-      <button
-        v-if="!isLoading && learningObject && canEdit()"
-        @click="goToEditor"
-        class="flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-lg font-medium transition-all duration-200 hover:bg-primary/90 hover:shadow-md w-full sm:w-auto"
-      >
-        <Edit3 class="size-4" />
-        <span>Editar con IA</span>
-      </button>
+      <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+        <button
+          v-if="!isLoading && learningObject"
+          type="button"
+          @click="copyShareLink"
+          class="flex items-center justify-center gap-2 px-4 py-2.5 bg-muted text-foreground rounded-lg font-medium transition-all duration-200 hover:bg-muted/80 hover:shadow-sm w-full sm:w-auto"
+        >
+          <Share2 class="size-4 shrink-0" />
+          <span>Copiar enlace público</span>
+        </button>
+        <button
+          v-if="!isLoading && learningObject && canEdit()"
+          @click="goToEditor"
+          class="flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-lg font-medium transition-all duration-200 hover:bg-primary/90 hover:shadow-md w-full sm:w-auto"
+        >
+          <Edit3 class="size-4" />
+          <span>Editar con IA</span>
+        </button>
+      </div>
     </div>
 
     <div
@@ -546,4 +582,3 @@ const scrollToQuestions = () => {
   display: block;
 }
 </style>
-/style>
