@@ -10,6 +10,8 @@ import ModuleForm from '../components/module-form.vue'
 import { useSelfEnrollMutation } from '@/features/enrollments/composables/mutations/useSelfEnrollMutation'
 import { useToast } from '@/shared/composables/use-toast'
 import type { Module } from '../../types/modules.types'
+import { useLearningObjectTypes } from '@/features/learning-objects/composables/queries/use-learning-object-types'
+import { computed } from 'vue'
 
 const toast = useToast()
 const {
@@ -32,6 +34,9 @@ const {
 } = useModulesList()
 
 const selfEnrollMutation = useSelfEnrollMutation()
+
+const { data: learningObjectTypesData } = useLearningObjectTypes()
+const learningObjectTypes = computed(() => learningObjectTypesData.value ?? [])
 
 function handleEnroll(module: Module) {
   selfEnrollMutation.mutate(
@@ -124,6 +129,7 @@ onUnmounted(() => {
           :key="module.id"
           :module="module"
           :is-enrolled="false"
+          :learning-object-types="learningObjectTypes"
           :on-enroll="handleEnroll"
           :on-edit="openEditDrawer"
         />

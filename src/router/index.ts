@@ -4,6 +4,7 @@ import { authGuard } from '@/features/auth/guards/auth-guard'
 import { dashboardRoutes } from '@/features/dashboard/routes/dashboard.routes'
 import { modulesRoutes } from '@/features/modules/routes/modules-routes'
 import { adminRoutes } from '@/features/admin/routes/admin.routes'
+import { publicShareRoutes } from '@/features/learning-objects/routes/public-share.routes'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -13,6 +14,7 @@ const router = createRouter({
       component: () => import('@/features/auth/presentation/views/home-redirect-view.vue'),
       meta: { requiresAuth: true },
     },
+    ...publicShareRoutes,
     ...authRoutes,
     ...dashboardRoutes,
     ...modulesRoutes,

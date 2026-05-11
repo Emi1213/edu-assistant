@@ -57,12 +57,12 @@ function applyRelationsToEditor(
     const state = editor.state
     const slice = state.doc.slice(replacement.from, replacement.to)
     if (slice.content.size === 0) continue
-    const pageLinkType = state.schema.nodes.pageLink
-    if (!pageLinkType) continue
+    const linkType = state.schema.nodes.learningObjectLink
+    if (!linkType) continue
     const actualText = state.doc.textBetween(replacement.from, replacement.to)
-    const node = pageLinkType.create(
+    const node = linkType.create(
       {
-        targetPageId: replacement.targetPageId,
+        targetLearningObjectId: replacement.targetPageId,
         mentionText: actualText,
       },
       slice.content.size > 0
