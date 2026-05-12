@@ -71,8 +71,8 @@ const onSendFeedback = async () => {
       </div>
     </div>
 
-    <!-- Feedback List (ONLY FOR TEACHERS) -->
-    <div v-if="isProfessor && feedbacks && feedbacks.length > 0" class="grid gap-4">
+    <!-- Feedback List -->
+    <div v-if="feedbacks && feedbacks.length > 0" class="grid gap-4">
       <div 
         v-for="f in feedbacks" 
         :key="f.id" 
