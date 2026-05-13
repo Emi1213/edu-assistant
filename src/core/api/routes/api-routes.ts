@@ -13,6 +13,7 @@ const AR_KEYS = {
     LEARNING_OBJECT_FEEDBACKS: '/learning-object-feedbacks',
     CHAT: '/sessions',
     VIDEOS: '/videos',
+    LO_PROGRESS: '/lo-progress',
 }
 
 export const API_ROUTES = {
@@ -20,6 +21,10 @@ export const API_ROUTES = {
         MICROSOFT_LOGIN: `${AR_KEYS.AUTH}/microsoft`,
         ME: `${AR_KEYS.AUTH}/profile`,
         TEACHERS_EMAILS: `${AR_KEYS.AUTH}/config/teachers/emails`,
+    },
+    LO_PROGRESS: {
+        MARK_VISITED: `${AR_KEYS.LO_PROGRESS}/visit`,
+        GET_BY_LO_ID: (loId: number) => `${AR_KEYS.LO_PROGRESS}/${loId}`,
     },
     AI_CONFIG: {
         GET: AR_KEYS.AI_CONFIG,
