@@ -432,6 +432,7 @@ function handleEditorContentClick(event: MouseEvent) {
         :learning-object-id="learningObjectId"
         :module-id="moduleId"
       />
+
       <div v-if="showExternalLinkModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
         <div class="bg-card rounded-xl shadow-2xl w-full max-w-lg mx-4 p-6 animate-scale-in">
           <h3 class="text-xl font-bold mb-4">Enlace externo</h3>
