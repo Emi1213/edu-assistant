@@ -116,32 +116,7 @@ const currentAiActionLabel = computed(() => {
   return 'Herramientas'
 })
 
-<<<<<<< HEAD
-const {
-  showPageLinkModal,
-  searchQuery,
-  pageLinkForm,
-  modulePages,
-  isEditingLearningObjectLink,
-  isFetching: isSearchingPages,
-  openPageLinkModal,
-  closePageLinkModal,
-  submitPageLink,
-  removeLearningObjectLink,
-} = useLearningObjectEditorLinkModal(editor, learningObjectId, moduleId)
-
-const selectedPageTitle = computed(() => {
-  if (!pageLinkForm.value.targetLearningObjectId) return ''
-  return modulePages.value.find(p => p.id === pageLinkForm.value.targetLearningObjectId)?.title || ''
-})
-
-function selectPage(page: LearningObject) {
-  pageLinkForm.value.targetLearningObjectId = page.id
-  searchQuery.value = ''
-}
-=======
 const linkModal = ref<InstanceType<typeof LearningObjectLinkModal> | null>(null)
->>>>>>> 5a1e84f (Divide component)
 
 const {
   showExternalLinkModal,
