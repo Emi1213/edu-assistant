@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useQueryClient } from '@tanstack/vue-query'
 import { QUERY_KEYS } from '@/shared/composables/query-key'
+import ChatMessageContent from './chat-message-content.vue'
 
 interface Props {
   sessionId: number
@@ -51,7 +52,7 @@ const handleSendMessage = () => {
         pendingUserMessage.value = ''
       },
       onError: () => {
-        currentMessage.value = messageText // Restore if failed
+        currentMessage.value = messageText 
         pendingUserMessage.value = ''
       }
     }
@@ -89,19 +90,23 @@ const handleSendMessage = () => {
         <div 
           v-for="msg in messages" 
           :key="msg.id" 
-          :class="['flex gap-3 max-w-[85%]', msg.role === 'user' ? 'ml-auto flex-row-reverse' : 'mr-auto']"
+          :class="['flex gap-3 max-w-[90%]', msg.role === 'user' ? 'ml-auto flex-row-reverse' : 'mr-auto']"
         >
           <div :class="['size-8 rounded-full shrink-0 flex items-center justify-center', msg.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground']">
             <Bot v-if="msg.role === 'assistant'" class="size-4" />
             <span v-else class="text-xs font-bold">U</span>
           </div>
-          <div :class="['rounded-2xl px-4 py-2 text-sm shadow-sm', msg.role === 'user' ? 'bg-primary text-primary-foreground rounded-tr-none' : 'bg-muted text-foreground rounded-tl-none']">
-            <p class="whitespace-pre-wrap">{{ msg.content }}</p>
+          <div :class="['rounded-2xl px-4 py-2 text-sm shadow-sm break-words overflow-hidden', msg.role === 'user' ? 'bg-primary text-primary-foreground rounded-tr-none' : 'bg-muted text-foreground rounded-tl-none']">
+            <ChatMessageContent
+              v-if="msg.role === 'assistant'"
+              :content="msg.content"
+            />
+            <p v-else class="whitespace-pre-wrap">{{ msg.content }}</p>
             <span class="text-[10px] opacity-50 mt-1 block">{{ new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }}</span>
           </div>
         </div>
 
-        <div v-if="pendingUserMessage" class="flex gap-3 max-w-[85%] ml-auto flex-row-reverse">
+        <div v-if="pendingUserMessage" class="flex gap-3 max-w-[90%] ml-auto flex-row-reverse">
           <div class="size-8 rounded-full shrink-0 flex items-center justify-center bg-primary text-primary-foreground">
             <span class="text-xs font-bold">U</span>
           </div>
@@ -111,7 +116,7 @@ const handleSendMessage = () => {
           </div>
         </div>
 
-        <div v-if="isSendingMessage" class="flex gap-3 max-w-[85%] mr-auto">
+        <div v-if="isSendingMessage" class="flex gap-3 max-w-[92%] mr-auto">
           <div class="size-8 rounded-full shrink-0 flex items-center justify-center bg-muted text-muted-foreground">
             <Bot class="size-4" />
           </div>
