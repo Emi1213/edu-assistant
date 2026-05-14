@@ -94,7 +94,7 @@ const isOwnerReal = computed(() => {
   return String(m.teacherId) === String(u.id)
 })
 
-const isActingAsStudent = computed(() => isStudent.value || (isTeacher.value && !isOwnerReal.value))
+const isActingAsStudent = computed(() => isStudent.value || ((isTeacher.value || isAdmin.value) && !isOwnerReal.value))
 const canManage = computed(() => (canEdit() && isOwnerReal.value) || isAdmin.value)
 
 const isProfessorPage = computed(() => canManage.value)

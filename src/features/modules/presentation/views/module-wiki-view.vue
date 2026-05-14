@@ -30,12 +30,12 @@ const toast = useToast()
 const moduleId = computed(() => Number(route.params.id))
 
 const { data: module, isLoading: isLoadingModule } = useModule(moduleId.value)
-const { canEdit, isStudent } = useRoles()
+const { canEdit, isStudent, isAdmin } = useRoles()
 const authStore = useAuthStore()
 const { user } = storeToRefs(authStore)
 
 const isOwner = computed(() => module.value?.teacherId === user.value?.id)
-const canManage = computed(() => canEdit() && isOwner.value)
+const canManage = computed(() => (canEdit() && isOwner.value) || isAdmin.value)
 
 
 const isChatOpen = ref(false)
