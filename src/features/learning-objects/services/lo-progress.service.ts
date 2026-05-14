@@ -1,22 +1,7 @@
 import { httpClient } from '@/core/infraestructure/http'
 import type { IHttpHandler } from '@/core/interfaces/IHttpHandler'
 import { API_ROUTES } from '@/core/api/routes/api-routes'
-
-export interface MarkLoVisitedPayload {
-  learningObjectId: number
-  isCompleted?: boolean
-}
-
-export interface LoProgress {
-  id: number
-  learningObjectId: number
-  userId: number
-  isCompleted: boolean
-  completedAt?: string | null
-  lastVisitedAt: string
-  createdAt: string
-  updatedAt: string
-}
+import type { LoProgress, MarkLoVisitedPayload } from '../types'
 
 export class LoProgressDataSource {
   private httpClient: IHttpHandler

@@ -1,6 +1,7 @@
 export type {
     LearningObject,
     LoProgress,
+    MarkLoVisitedPayload,
     LearningObjectsQueryParams,
     UpdateLearningObjectPayload,
     CreateLearningObjectPayload,

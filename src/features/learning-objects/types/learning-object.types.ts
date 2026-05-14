@@ -14,6 +14,11 @@ export interface LoProgress {
   updatedAt: string
 }
 
+export interface MarkLoVisitedPayload {
+  learningObjectId: number
+  isCompleted?: boolean
+}
+
 export interface LearningObject {
   id: number
   moduleId: number
