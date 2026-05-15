@@ -10,8 +10,6 @@ interface Props {
 
 const props = defineProps<Props>()
 
-// Convertimos el Markdown de la IA a HTML para que Tiptap lo entienda
-// No necesitamos highlight.js acá porque Tiptap usa lowlight (la lógica de los LOs)
 const htmlContent = computed(() => {
   return marked.parse(props.content, {
     breaks: true,
@@ -33,13 +31,11 @@ const { editor } = useLearningObjectContentViewer(htmlContent)
   outline: none;
 }
 
-/* Ajustamos el tamaño de la tipografía para el chat */
 .chat-message-content :deep(.prose) {
   font-size: 0.9375rem;
   line-height: 1.6;
 }
 
-/* Estilos de encabezados consistentes */
 .chat-message-content :deep(h1),
 .chat-message-content :deep(h2),
 .chat-message-content :deep(h3) {
@@ -57,7 +53,6 @@ const { editor } = useLearningObjectContentViewer(htmlContent)
   margin-bottom: 0.75rem;
 }
 
-/* Reutilizamos los estilos de bloques de código de los LOs */
 .chat-message-content :deep(.code-block-wrapper) {
   position: relative;
   background-color: #f6f8fa;
