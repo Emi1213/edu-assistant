@@ -30,6 +30,9 @@ export const QUERY_KEYS = {
     CHAT_SESSIONS: (learningObjectId: number) => ['chat-sessions', learningObjectId],
     CHAT_MESSAGES: (sessionId: number) => ['chat-messages', sessionId],
 
+    // Progress
+    LO_PROGRESS: (learningObjectId: number) => ['lo-progress', learningObjectId],
+
     // Videos
     VIDEOS_BY_MODULE: (params: { moduleId: number; filters?: VideoFiltersDto }) =>
         params.filters ? ['videos', 'module', params.moduleId, params.filters] : ['videos', 'module', params.moduleId],

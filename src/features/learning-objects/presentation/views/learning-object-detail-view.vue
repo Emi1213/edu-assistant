@@ -11,9 +11,14 @@ import {
   MessageCircleQuestion,
   ClipboardList,
   Bot,
+  CheckCircle2,
+  Circle,
   Share2,
+  Loader2,
+  X,
 } from 'lucide-vue-next'
 import { useLearningObject } from '../../composables/queries/use-learning-object'
+import { useLoProgress } from '../../composables/use-lo-progress'
 import { useModule } from '@/features/modules/composables/queries/use-module'
 import { useRoles } from '@/features/auth/composables/use-roles'
 import { useAuthStore } from '@/features/auth/context/auth-store'
@@ -29,7 +34,6 @@ import { useToast } from '@/shared/composables/use-toast'
 import { Sheet, SheetContent } from '@/components/ui/sheet'
 import ChatPanel from '@/features/chat/presentation/components/chat-panel.vue'
 import { useCreateChatSession } from '@/features/chat/composables/mutations/use-create-chat-session'
-import { Loader2, X } from 'lucide-vue-next'
 
 import type { LearningObject } from '../../types'
 
@@ -49,6 +53,8 @@ const learningObjectId = computed(() => Number(route.params.learningObjectId))
 const moduleId = computed(() => Number(route.params.id))
 
 const { data: fetchedLearningObject, isLoading: isQueryLoading } = useLearningObject(learningObjectId)
+
+const { isVisited: visited, markAsVisited, isMarkingVisited } = useLoProgress(learningObjectId)
 
 const isLoading = computed(() => {
   if (props.isPreview) return false
@@ -210,7 +216,7 @@ const scrollToQuestions = () => {
           <span>Copiar enlace público</span>
         </button>
         <button
-          v-if="!isLoading && learningObject && canEdit()"
+          v-if="!isLoading && learningObject && canManage"
           @click="goToEditor"
           class="flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-lg font-medium transition-all duration-200 hover:bg-primary/90 hover:shadow-md w-full sm:w-auto"
         >
@@ -218,14 +224,6 @@ const scrollToQuestions = () => {
           <span>Editar con IA</span>
         </button>
       </div>
-      <button
-        v-if="!isLoading && learningObject && canManage"
-        @click="goToEditor"
-        class="flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-lg font-medium transition-all duration-200 hover:bg-primary/90 hover:shadow-md w-full sm:w-auto"
-      >
-        <Edit3 class="size-4" />
-        <span>Editar con IA</span>
-      </button>
     </div>
 
     <div
@@ -318,10 +316,23 @@ const scrollToQuestions = () => {
             <PageContentRenderer :learning-object="learningObject" />
           </div>
 
-          <div v-if="learningObject" class="mt-6 pt-6 border-t border-border">
+          <div v-if="learningObject" class="mt-6 pt-6 border-t border-border flex flex-wrap gap-3">
             <Button variant="outline" class="gap-2" @click="goToActivities">
               <ClipboardList class="size-4" />
               Ver actividades
+            </Button>
+
+            <Button
+              v-if="isActingAsStudent && !isPreview"
+              :variant="visited ? 'secondary' : 'default'"
+              :disabled="visited || isMarkingVisited"
+              class="gap-2 min-w-[180px]"
+              @click="markAsVisited"
+            >
+              <Loader2 v-if="isMarkingVisited" class="size-4 animate-spin" />
+              <CheckCircle2 v-else-if="visited" class="size-4" />
+              <Circle v-else class="size-4" />
+              <span>{{ isMarkingVisited ? 'Guardando...' : visited ? 'Visitado' : 'Marcar como visitado' }}</span>
             </Button>
           </div>
 

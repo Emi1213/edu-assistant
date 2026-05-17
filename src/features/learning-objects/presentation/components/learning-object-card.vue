@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { RouteLocationRaw } from 'vue-router'
 import type { LearningObject } from '../../types'
-import { FileText, Zap, Clock, Link2, Pencil, Bot } from 'lucide-vue-next'
+import { FileText, Zap, Clock, Link2, Pencil, Bot, CheckCircle2 } from 'lucide-vue-next'
 import { computed } from 'vue'
 
 const props = defineProps<{
@@ -20,6 +20,8 @@ const props = defineProps<{
 const isGeneratingRelations = computed(
   () => props.generatingRelationsLearningObjectId != null && props.generatingRelationsLearningObjectId === props.learningObject.id
 )
+
+const isVisited = computed(() => !!props.learningObject.progress)
 </script>
 
 <template>
@@ -30,8 +32,11 @@ const isGeneratingRelations = computed(
     @click="onClick?.(learningObject)"
   >
     <div class="flex items-start gap-4">
-      <div class="mt-1 flex-shrink-0 w-10 h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-colors duration-300">
+      <div class="mt-1 flex-shrink-0 w-10 h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-colors duration-300 relative">
         <FileText class="size-5" />
+        <div v-if="isVisited" class="absolute -top-1 -right-1 bg-background rounded-full p-0.5 shadow-sm border border-border">
+          <CheckCircle2 class="size-3.5 text-green-500 fill-green-500/10" />
+        </div>
       </div>
       
       <div class="flex-1 min-w-0">

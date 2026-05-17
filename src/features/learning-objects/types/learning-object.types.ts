@@ -3,6 +3,22 @@ import type { LOContentBlock } from "./learning-object-content.types"
 import type { LOFeedback } from "./learning-object-feedback.types"
 import type { Note } from "@/features/notes"
 
+export interface LoProgress {
+  id: number
+  learningObjectId: number
+  userId: number
+  isCompleted: boolean
+  completedAt?: string | null
+  lastVisitedAt: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface MarkLoVisitedPayload {
+  learningObjectId: number
+  isCompleted?: boolean
+}
+
 export interface LearningObject {
   id: number
   moduleId: number
@@ -22,6 +38,7 @@ export interface LearningObject {
   chatSessionId: number | null
   previousLoId: number | null
   nextLoId: number | null
+  progress?: LoProgress | null
 }
 
 export interface LearningObjectQueryParams {

@@ -78,6 +78,20 @@
               Eliminar
             </button>
           </div>
+
+          <div v-if="isStudent && !isLoading && video" class="flex flex-wrap items-center gap-2">
+            <Button
+              :variant="visited ? 'secondary' : 'default'"
+              :disabled="visited || isMarkingVisited"
+              class="gap-2 min-w-[180px] rounded-full h-9"
+              @click="markAsVisited"
+            >
+              <Loader2 v-if="isMarkingVisited" class="size-4 animate-spin" />
+              <CheckCircle2 v-else-if="visited" class="size-4" />
+              <Circle v-else class="size-4" />
+              <span>{{ isMarkingVisited ? 'Guardando...' : visited ? 'Visitado' : 'Marcar como visitado' }}</span>
+            </Button>
+          </div>
         </div>
       </header>
 
@@ -143,7 +157,7 @@
 <script setup lang="ts">
 import { computed, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ArrowLeft, CheckCircle2, EyeOff, RefreshCw, Trash2 } from 'lucide-vue-next'
+import { ArrowLeft, CheckCircle2, EyeOff, RefreshCw, Trash2, Circle, Loader2 } from 'lucide-vue-next'
 import VideoPlayer from '../components/video-player.vue'
 import VideoSourceBadge from '../components/video-source-badge.vue'
 import VideoProcessingScreen from '../components/video-processing-screen.vue'
@@ -159,6 +173,10 @@ import { useToggleVideoPublish } from '../../composables/use-toggle-video-publis
 import { useDeleteVideo } from '../../composables/use-delete-video'
 import { useVideoErrorState } from '../../composables/use-video-error-state'
 import { useRoles } from '@/features/auth/composables/use-roles'
+import { useModule } from '@/features/modules/composables/queries/use-module'
+import { useAuthStore } from '@/features/auth/context/auth-store'
+import { storeToRefs } from 'pinia'
+import { useLoProgress } from '@/features/learning-objects/composables/use-lo-progress'
 import { isProcessingStatus } from '../../constants/video-status.constants'
 import {
   POLLING_INTERVAL_MS,
@@ -170,18 +188,36 @@ import { MODULES_ROUTES_NAMES } from '@/features/modules/routes/modules-routes'
 import { LEARNING_OBJECTS_TAB_QUERY_KEY } from '@/features/learning-objects/constants/learning-objects-tabs.constants'
 import type { IngestionStatus } from '../../types/video.types'
 import type { VideoBlockContent, VideoBlockType } from '../../types/video-block.types'
+import { Button } from '@/components/ui/button'
 
 const route = useRoute()
 const router = useRouter()
 const moduleId = computed(() => Number(route.params.id))
 const learningObjectId = computed(() => Number(route.params.learningObjectId))
 
-const { canEdit } = useRoles()
-const canEditVideo = computed(() => canEdit())
+const { canEdit, isStudent: isRealStudent, isTeacher } = useRoles()
+const authStore = useAuthStore()
+const { user } = storeToRefs(authStore)
 
 const { video, isLoading, status, errorMessage } = useVideoDetail(learningObjectId)
-const retryMutation = useRetryVideo(learningObjectId, moduleId)
+
+const { isVisited: visited, markAsVisited, isMarkingVisited } = useLoProgress(learningObjectId)
+
+const { data: module } = useModule(moduleId)
+const isOwnerReal = computed(() => {
+  const m = module.value
+  const u = user.value
+  if (!m || !u) return false
+  return String(m.teacherId) === String(u.id)
+})
+
+const isActingAsStudent = computed(() => isRealStudent.value || (isTeacher.value && !isOwnerReal.value))
+const isStudent = computed(() => isActingAsStudent.value)
+
+const canEditVideo = computed(() => canEdit() && isOwnerReal.value)
+
 const updateMutation = useUpdateVideoContent(learningObjectId, moduleId)
+const retryMutation = useRetryVideo(learningObjectId, moduleId)
 const publishMutation = useToggleVideoPublish(moduleId)
 const deleteMutation = useDeleteVideo(moduleId)
 const deleteOpen = ref(false)
