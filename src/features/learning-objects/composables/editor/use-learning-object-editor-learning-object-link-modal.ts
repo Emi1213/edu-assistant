@@ -45,11 +45,12 @@ function replaceRangeWithLearningObjectLinkNode(
 }
 
 export function useLearningObjectEditorLinkModal(
-  editor: Ref<Editor | undefined>,   
+  editor: Ref<Editor | undefined>,
   _learningObjectId: Ref<number>,
   moduleId: Ref<number>
 ) {
   const showPageLinkModal = ref(false)
+  const searchQuery = ref('')
   const pageLinkForm = ref<{ targetLearningObjectId: number | null; mentionText: string }>({
     targetLearningObjectId: null,
     mentionText: '',
@@ -58,9 +59,11 @@ export function useLearningObjectEditorLinkModal(
 
   const params = computed<LearningObjectsQueryParams>(() => ({
     moduleId: moduleId.value,
+    search: searchQuery.value,
+    limit: 20
   }))
 
-  const { data: moduleLearningObjects } = useLearningObjects(params)
+  const { data: moduleLearningObjects, isFetching } = useLearningObjects(params)
 
   const isEditingLearningObjectLink = computed(() => editingLinkRange.value !== null)
 
@@ -91,6 +94,7 @@ export function useLearningObjectEditorLinkModal(
         mentionText: selectedText.trim(),
       }
     }
+    searchQuery.value = ''
     showPageLinkModal.value = true
   }
 
@@ -98,6 +102,7 @@ export function useLearningObjectEditorLinkModal(
     showPageLinkModal.value = false
     pageLinkForm.value = { targetLearningObjectId: null, mentionText: '' }
     editingLinkRange.value = null
+    searchQuery.value = ''
   }
 
   const submitPageLink = () => {
@@ -142,7 +147,9 @@ export function useLearningObjectEditorLinkModal(
 
   return {
     showPageLinkModal,
+    searchQuery,
     pageLinkForm,
+    isFetching,
     modulePages: computed(() => moduleLearningObjects.value?.records ?? []),
     isEditingLearningObjectLink,
     openPageLinkModal,

@@ -14,7 +14,6 @@ import {
 } from 'lucide-vue-next'
 import { useLearningObjectEditorView } from '../../composables/editor/use-learning-object-editor-view'
 import { useLearningObjectEditorConceptModal } from '../../composables/editor/use-learning-object-editor-concept-modal'
-import { useLearningObjectEditorLinkModal } from '../../composables/editor/use-learning-object-editor-learning-object-link-modal'
 import { useLearningObjectEditorExternalLinkModal } from '../../composables/editor/use-learning-object-editor-external-link-modal'
 import { useLearningObjectEditorImageModal } from '../../composables/editor/use-learning-object-editor-image-modal'
 import {
@@ -29,6 +28,7 @@ import ConceptDefinitionHoverLayer from '../components/concept-definition-hover-
 import RegenerateContentModal from '../components/RegenerateContentModal.vue'
 import EditorToolbar from '../components/editor-toolbar.vue'
 import Skeleton from '@/components/ui/skeleton/Skeleton.vue'
+import LearningObjectLinkModal from '../components/learning-object-link-modal.vue'
 
 import { Eye, EyeOff } from 'lucide-vue-next'
 import LearningObjectDetailView from './learning-object-detail-view.vue'
@@ -116,16 +116,7 @@ const currentAiActionLabel = computed(() => {
   return 'Herramientas'
 })
 
-const {
-  showPageLinkModal,
-  pageLinkForm,
-  modulePages,
-  isEditingLearningObjectLink,
-  openPageLinkModal,
-  closePageLinkModal,
-  submitPageLink,
-  removeLearningObjectLink,
-} = useLearningObjectEditorLinkModal(editor, learningObjectId, moduleId)
+const linkModal = ref<InstanceType<typeof LearningObjectLinkModal> | null>(null)
 
 const {
   showExternalLinkModal,
@@ -258,7 +249,7 @@ function handleEditorContentClick(event: MouseEvent) {
           <EditorToolbar
             :editor="editor"
             :on-insert-concept="openConceptModal"
-            :on-insert-page-link="openPageLinkModal"
+            :on-insert-page-link="() => linkModal?.open()"
             :on-insert-external-link="openExternalLinkModal"
             :on-insert-image="openImagePromptModal"
           />
@@ -435,50 +426,12 @@ function handleEditorContentClick(event: MouseEvent) {
         </div>
       </div>
 
-      <!-- Learning Object Link Modal (relaciones entre objetos) -->
-      <div v-if="showPageLinkModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-        <div class="bg-card rounded-xl shadow-2xl w-full max-w-lg mx-4 p-6 animate-scale-in">
-          <h3 class="text-xl font-bold mb-4">
-            {{ isEditingLearningObjectLink ? 'Editar relación' : 'Enlazar objeto de aprendizaje' }}
-          </h3>
-          <p v-if="isEditingLearningObjectLink" class="text-sm text-muted-foreground mb-4">
-            Cambia el texto visible o el objeto destino, o quita la relación para dejar solo el texto.
-          </p>
-          <div class="space-y-4 mb-6">
-            <div>
-              <label class="block text-sm font-medium mb-1">Texto a mostrar</label>
-              <input v-model="pageLinkForm.mentionText" class="w-full p-2 rounded border bg-background" />
-            </div>
-            <div>
-              <label class="block text-sm font-medium mb-1">Seleccionar objeto</label>
-              <select v-model="pageLinkForm.targetLearningObjectId" class="w-full p-2 rounded border bg-background">
-                <option :value="null">Seleccionar...</option>
-                <option v-for="p in modulePages" :key="p.id" :value="p.id">
-                  {{ p.title }}
-                </option>
-              </select>
-            </div>
-          </div>
-          <div class="flex flex-wrap justify-end gap-3">
-            <button
-              v-if="isEditingLearningObjectLink"
-              type="button"
-              @click="removeLearningObjectLink"
-              class="px-4 py-2 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded mr-auto"
-            >
-              Quitar relación
-            </button>
-            <button @click="closePageLinkModal" class="px-4 py-2 text-muted-foreground hover:bg-muted/50 rounded">Cancelar</button>
-            <button
-              @click="submitPageLink"
-              :disabled="!pageLinkForm.mentionText?.trim() || !pageLinkForm.targetLearningObjectId"
-              class="px-4 py-2 bg-primary text-primary-foreground rounded disabled:opacity-50"
-            >
-              {{ isEditingLearningObjectLink ? 'Guardar' : 'Enlazar' }}
-            </button>
-          </div>
-        </div>
-      </div>
+      <LearningObjectLinkModal
+        ref="linkModal"
+        :editor="editor"
+        :learning-object-id="learningObjectId"
+        :module-id="moduleId"
+      />
 
       <div v-if="showExternalLinkModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
         <div class="bg-card rounded-xl shadow-2xl w-full max-w-lg mx-4 p-6 animate-scale-in">
