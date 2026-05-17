@@ -21,11 +21,14 @@ const props = defineProps<{
   learningObjectTypes?: LearningObjectType[]
 }>()
 
-const { canEdit } = useRoles()
+const { canEdit, isAdmin } = useRoles()
 const authStore = useAuthStore()
 
-const isOwner = computed(() => authStore.user?.id === props.module.teacherId)
-const showActions = computed(() => canEdit() && isOwner.value)
+const isOwner = computed(() => {
+  if (!authStore.user?.id || !props.module.teacherId) return false
+  return Number(authStore.user.id) === Number(props.module.teacherId)
+})
+const showActions = computed(() => (canEdit() && isOwner.value) || isAdmin.value)
 const showEnrollActions = computed(() => (props.onEnroll != null || props.onUnenroll != null) && props.module.allowSelfEnroll && !isOwner.value)
 
 const handleEdit = () => {

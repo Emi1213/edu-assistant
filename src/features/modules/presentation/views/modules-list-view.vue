@@ -13,12 +13,20 @@ import { useLearningObjectTypes } from '@/features/learning-objects/composables/
 
 const props = defineProps<IModulesListViewProps>()
 
-const { canCreate, isTeacher } = useRoles()
+const { canCreate, isTeacher, isAdmin } = useRoles()
 const authStore = useAuthStore()
 const { user } = storeToRefs(authStore)
 
-const ownedModules = computed(() => props.modules.filter(m => m.teacherId === user.value?.id))
-const enrolledModules = computed(() => props.modules.filter(m => m.teacherId !== user.value?.id))
+const ownedModules = computed(() => props.modules.filter(m => {
+  if (!user.value?.id || !m.teacherId) return false
+  return Number(m.teacherId) === Number(user.value.id)
+}))
+const enrolledModules = computed(() => props.modules.filter(m => {
+  if (!user.value?.id || !m.teacherId) return true
+  return Number(m.teacherId) !== Number(user.value.id)
+}))
+
+const isTeacherOrAdmin = computed(() => isTeacher.value || isAdmin.value)
 
 const { data: learningObjectTypesData } = useLearningObjectTypes()
 const learningObjectTypes = computed(() => learningObjectTypesData.value ?? [])
@@ -99,7 +107,7 @@ onUnmounted(() => {
     </div>
 
     <template v-else>
-      <div v-if="isTeacher" class="space-y-10">
+      <div v-if="isTeacherOrAdmin" class="space-y-10">
         <div v-if="ownedModules.length > 0" class="space-y-4">
           <h2 class="text-xl font-semibold text-foreground flex items-center gap-2">
             Módulos que enseño
@@ -119,7 +127,7 @@ onUnmounted(() => {
 
         <div v-if="enrolledModules.length > 0" class="space-y-4">
           <h2 class="text-xl font-semibold text-foreground flex items-center gap-2">
-            Módulos donde estoy inscrito
+            {{ isAdmin ? 'Otros Módulos del Sistema' : 'Módulos donde estoy inscrito' }}
             <span class="text-sm font-normal text-muted-foreground">({{ enrolledModules.length }})</span>
           </h2>
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -127,7 +135,7 @@ onUnmounted(() => {
               v-for="module in enrolledModules"
               :key="module.id"
               :module="module"
-              :is-enrolled="true"
+              :is-enrolled="isAdmin ? undefined : true"
               :to="{ name: 'module-wiki', params: { id: module.id } }"
               :learning-object-types="learningObjectTypes"
               :on-edit="props.onEdit ? () => props.onEdit(module) : undefined"

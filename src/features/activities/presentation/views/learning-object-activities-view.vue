@@ -34,15 +34,15 @@ const moduleId = computed(() => Number(route.params.id))
 
 const { data: learningObject, isLoading: isLoadingLearningObject } = useLearningObject(learningObjectId)
 const { data: activitiesData, isLoading: isLoadingActivities, refetch: refetchActivities } = useActivities(learningObjectId.value)
-const { canEdit, isStudent, isTeacher } = useRoles()
+const { canEdit, isStudent, isTeacher, isAdmin } = useRoles()
 const authStore = useAuthStore()
 const { user } = storeToRefs(authStore)
 const toast = useToast()
 
 const { data: module } = useModule(moduleId.value)
 const isOwnerReal = computed(() => module.value?.teacherId === user.value?.id)
-const isActingAsStudent = computed(() => isStudent.value || (isTeacher.value && !isOwnerReal.value))
-const canManage = computed(() => canEdit() && isOwnerReal.value)
+const isActingAsStudent = computed(() => isStudent.value || ((isTeacher.value || isAdmin.value) && !isOwnerReal.value))
+const canManage = computed(() => (canEdit() && isOwnerReal.value) || isAdmin.value)
 
 const { mutate: updateActivity, isPending: isUpdating } = useUpdateActivity(learningObjectId.value)
 const { mutate: deleteActivity, isPending: isDeleting } = useDeleteActivity(learningObjectId.value)

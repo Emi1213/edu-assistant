@@ -12,10 +12,15 @@ import { useToast } from '@/shared/composables/use-toast'
 import type { Module } from '../../types/modules.types'
 import { useLearningObjectTypes } from '@/features/learning-objects/composables/queries/use-learning-object-types'
 import { computed } from 'vue'
+import { useAuthStore } from '@/features/auth/context/auth-store'
+import { storeToRefs } from 'pinia'
 
 const toast = useToast()
+const authStore = useAuthStore()
+const { user } = storeToRefs(authStore)
+
 const {
-  modules,
+  modules: rawModules,
   isLoading,
   isFetchingNextPage,
   hasNextPage,
@@ -24,6 +29,11 @@ const {
   clearFilters,
   loadMore,
 } = useAvailableModulesList()
+
+const modules = computed(() => {
+  if (!user.value?.id) return rawModules.value
+  return rawModules.value.filter(m => Number(m.teacherId) !== Number(user.value?.id))
+})
 
 const {
   drawerOpen,
