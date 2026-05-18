@@ -1,12 +1,10 @@
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import router from '@/router'
 import { AuthDataSource } from '../services/auth.service'
 import { useAuthStore } from '../context/auth-store'
 import { useToast } from '@/shared/composables/use-toast'
 
 export function useAuth() {
-  const router = useRouter()
-  const toast = useToast()
   const authStore = useAuthStore()
   const loading = ref(false)
   const error = ref<string | null>(null)
@@ -42,6 +40,7 @@ export function useAuth() {
   }
 
   async function handleCallback(tokenParam: string | null): Promise<void> {
+    const toast = useToast()
     if (!tokenParam) {
       toast.error('No se recibió token de autenticación')
       error.value = 'No se recibió token de autenticación'
