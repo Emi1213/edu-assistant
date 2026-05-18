@@ -1,4 +1,4 @@
-import { httpClient } from '@/core/infraestructure/http'
+import { httpClient, publicHttpClient } from '@/core/infraestructure/http'
 import type { IHttpHandler } from '@/core/interfaces/IHttpHandler'
 
 import type {
@@ -34,6 +34,11 @@ export class LearningObjectsDataSource {
 
   async getById(id: number): Promise<LearningObject | null> {
     const response = await this.httpClient.get<LearningObject>(API_ROUTES.LEARNING_OBJECTS.GET_BY_ID(id))
+    return response.data
+  }
+
+  async getByIdPublic(id: number): Promise<LearningObject | null> {
+    const response = await publicHttpClient.get<LearningObject>(API_ROUTES.LEARNING_OBJECTS.GET_BY_ID(id))
     return response.data
   }
 

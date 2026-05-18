@@ -51,7 +51,7 @@ export function useLearningObjectCreator(moduleId: number) {
         toast.success('Objeto de aprendizaje creado exitosamente')
         closeDialog()
       },
-      onError: (error: any) => {
+      onError: (error) => {
         toast.error(error.message || 'Error al crear el objeto de aprendizaje')
       },
     })

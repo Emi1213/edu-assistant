@@ -1,4 +1,5 @@
 import type { VideoBlock } from './video-block.types'
+import type { LoProgress } from '@/features/learning-objects/types'
 
 export type IngestionStatus = 'PENDING' | 'EXTRACTING' | 'GENERATING' | 'COMPLETED' | 'FAILED'
 export type SourceKind = 'YOUTUBE_URL' | 'VIDEO_FILE'
@@ -18,12 +19,14 @@ export interface VideoDto {
   errorMessage: string | null
   orderIndex: number
   createdAt: string
+  progress?: LoProgress | null
 }
 
 export interface FullVideoDto extends VideoDto {
   detectedLanguage: string | null
   metadata: Record<string, unknown> | null
   blocks: VideoBlock[]
+  progress?: LoProgress | null
 }
 
 export interface VideoStatusDto {

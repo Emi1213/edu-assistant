@@ -1,0 +1,7 @@
+export * from './types/student-ai-feedback.types'
+export * from './services/student-ai-feedback.service'
+export * from './composables/queries/use-student-feedbacks'
+export * from './composables/mutations/use-generate-student-feedback'
+export { default as StudentFeedbackItem } from './presentation/components/student-feedback-item.vue'
+export { default as StudentFeedbackDetail } from './presentation/components/student-feedback-detail.vue'
+export { default as ModuleStudentFeedbacksView } from './presentation/views/module-student-feedbacks-view.vue'

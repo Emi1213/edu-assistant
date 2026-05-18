@@ -14,7 +14,6 @@ import {
 } from 'lucide-vue-next'
 import { useLearningObjectEditorView } from '../../composables/editor/use-learning-object-editor-view'
 import { useLearningObjectEditorConceptModal } from '../../composables/editor/use-learning-object-editor-concept-modal'
-import { useLearningObjectEditorLinkModal } from '../../composables/editor/use-learning-object-editor-learning-object-link-modal'
 import { useLearningObjectEditorExternalLinkModal } from '../../composables/editor/use-learning-object-editor-external-link-modal'
 import { useLearningObjectEditorImageModal } from '../../composables/editor/use-learning-object-editor-image-modal'
 import {
@@ -29,6 +28,10 @@ import ConceptDefinitionHoverLayer from '../components/concept-definition-hover-
 import RegenerateContentModal from '../components/RegenerateContentModal.vue'
 import EditorToolbar from '../components/editor-toolbar.vue'
 import Skeleton from '@/components/ui/skeleton/Skeleton.vue'
+import LearningObjectLinkModal from '../components/learning-object-link-modal.vue'
+
+import { Eye, EyeOff } from 'lucide-vue-next'
+import LearningObjectDetailView from './learning-object-detail-view.vue'
 
 const {
   learningObjectId,
@@ -58,6 +61,33 @@ const {
   isExtractingRelations,
 } = useLearningObjectEditorView()
 
+const isPreviewMode = ref(false)
+
+const previewData = computed(() => {
+  const base = learningObject.value || {
+    id: learningObjectId.value,
+    moduleId: moduleId.value,
+    title: '',
+    keywords: [],
+    content: '',
+    blocks: [],
+    previousLoId: null,
+    nextLoId: null,
+    chatSessionId: null,
+    isPublished: false,
+    orderIndex: 0,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  }
+
+  return {
+    ...base,
+    title: learningObjectTitle.value,
+    keywords: [...learningObjectKeywords.value],
+    content: editor.value?.getJSON() || '',
+    blocks: [], 
+  }
+})
 const {
   showConceptModal,
   conceptForm,
@@ -83,17 +113,10 @@ const currentAiActionLabel = computed(() => {
   if (isExtractingConcepts.value) return 'Generando conceptos...'
   if (isExtractingRelations.value) return 'Procesando relaciones...'
   if (isGeneratingConceptDefinition.value) return 'Generando definición...'
-  return 'Selección De Herramienta'
+  return 'Herramientas'
 })
 
-const {
-  showPageLinkModal,
-  pageLinkForm,
-  modulePages,
-  openPageLinkModal,
-  closePageLinkModal,
-  submitPageLink,
-} = useLearningObjectEditorLinkModal(editor, learningObjectId, moduleId)
+const linkModal = ref<InstanceType<typeof LearningObjectLinkModal> | null>(null)
 
 const {
   showExternalLinkModal,
@@ -174,6 +197,15 @@ function handleEditorContentClick(event: MouseEvent) {
           </DropdownMenu>
 
           <button
+            @click="isPreviewMode = !isPreviewMode"
+            class="flex items-center gap-2 px-4 py-2.5 bg-muted text-foreground rounded-lg font-medium transition-all duration-200 hover:bg-muted/80 hover:shadow-sm"
+          >
+            <component :is="isPreviewMode ? EyeOff : Eye" class="size-4" />
+            <span class="hidden sm:inline">{{ isPreviewMode ? 'Volver al editor' : 'Vista previa' }}</span>
+          </button>
+
+          <button
+            v-if="!isPreviewMode"
             @click="saveContent"
             :disabled="isSaving"
             class="flex items-center gap-2 px-4 py-2.5 bg-muted text-foreground rounded-lg font-medium transition-all duration-200 hover:bg-muted/80 hover:shadow-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none"
@@ -195,6 +227,21 @@ function handleEditorContentClick(event: MouseEvent) {
       </div>
     </div>
 
+    <div v-if="isPreviewMode" class="flex-1 overflow-y-auto overflow-x-hidden min-w-0 bg-background">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+        <div class="bg-primary/5 border border-primary/10 rounded-lg p-3 mt-6 mb-2 flex items-center gap-3">
+          <div class="size-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+            <Eye class="size-5" />
+          </div>
+          <div>
+            <p class="text-xl font-bold text-primary">Modo Vista Estudiante</p>
+            <p class="text-base text-muted-foreground">Así es como los alumnos verán este contenido una vez publicado.</p>
+          </div>
+        </div>
+        <LearningObjectDetailView :preview-data="previewData" is-preview />
+      </div>
+    </div>
+
     <div v-else class="flex-1 overflow-y-auto overflow-x-hidden min-w-0">
       <TooltipProvider>
         <div class="editor-page-wrapper min-w-0">
@@ -202,7 +249,7 @@ function handleEditorContentClick(event: MouseEvent) {
           <EditorToolbar
             :editor="editor"
             :on-insert-concept="openConceptModal"
-            :on-insert-page-link="openPageLinkModal"
+            :on-insert-page-link="() => linkModal?.open()"
             :on-insert-external-link="openExternalLinkModal"
             :on-insert-image="openImagePromptModal"
           />
@@ -336,9 +383,7 @@ function handleEditorContentClick(event: MouseEvent) {
       </div>
     </Teleport>
 
-    <!-- Modals -->
     <Teleport to="body">
-      <!-- Concept Modal -->
       <div v-if="showConceptModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
         <div class="bg-card rounded-xl shadow-2xl w-full max-w-lg mx-4 p-6 animate-scale-in">
           <h3 class="text-xl font-bold mb-4">{{ isEditingConcept ? 'Editar Concepto' : 'Añadir Concepto' }}</h3>
@@ -381,39 +426,13 @@ function handleEditorContentClick(event: MouseEvent) {
         </div>
       </div>
 
-      <!-- Learning Object Link Modal -->
-      <div v-if="showPageLinkModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-        <div class="bg-card rounded-xl shadow-2xl w-full max-w-lg mx-4 p-6 animate-scale-in">
-          <h3 class="text-xl font-bold mb-4">Enlazar Objeto de Aprendizaje</h3>
-          <div class="space-y-4 mb-6">
-            <div>
-              <label class="block text-sm font-medium mb-1">Texto a mostrar</label>
-              <input v-model="pageLinkForm.mentionText" class="w-full p-2 rounded border bg-background" />
-            </div>
-            <div>
-              <label class="block text-sm font-medium mb-1">Seleccionar objeto</label>
-              <select v-model="pageLinkForm.targetLearningObjectId" class="w-full p-2 rounded border bg-background">
-                <option :value="null">Seleccionar...</option>
-                <option v-for="p in modulePages" :key="p.id" :value="p.id">
-                  {{ p.title }}
-                </option>
-              </select>
-            </div>
-          </div>
-          <div class="flex justify-end gap-3">
-            <button @click="closePageLinkModal" class="px-4 py-2 text-muted-foreground hover:bg-muted/50 rounded">Cancelar</button>
-            <button
-              @click="submitPageLink"
-              :disabled="!pageLinkForm.mentionText || !pageLinkForm.targetLearningObjectId"
-              class="px-4 py-2 bg-primary text-primary-foreground rounded disabled:opacity-50"
-            >
-              Enlazar
-            </button>
-          </div>
-        </div>
-      </div>
+      <LearningObjectLinkModal
+        ref="linkModal"
+        :editor="editor"
+        :learning-object-id="learningObjectId"
+        :module-id="moduleId"
+      />
 
-      <!-- Enlace externo (web / YouTube / etc.) -->
       <div v-if="showExternalLinkModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
         <div class="bg-card rounded-xl shadow-2xl w-full max-w-lg mx-4 p-6 animate-scale-in">
           <h3 class="text-xl font-bold mb-4">Enlace externo</h3>
@@ -463,7 +482,6 @@ function handleEditorContentClick(event: MouseEvent) {
         </div>
       </div>
 
-      <!-- Image Generation Modal -->
       <div v-if="showImagePromptModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
         <div class="bg-card rounded-xl shadow-2xl w-full max-w-2xl mx-4 p-6 animate-scale-in">
           <div class="flex items-start gap-4 mb-6">
@@ -508,7 +526,6 @@ function handleEditorContentClick(event: MouseEvent) {
 </template>
 
 <style scoped>
-/* Alineado con la vista de lectura (wiki-page / page-header / page-content) */
 .editor-page-wrapper {
   max-width: 100%;
   margin: 0 auto;

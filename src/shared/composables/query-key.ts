@@ -12,6 +12,7 @@ export const QUERY_KEYS = {
     // Learning Objects (formerly Pages)
     LEARNING_OBJECTS: (params?: LearningObjectsQueryParams) => params ? ['learning-objects', params] : ['learning-objects'],
     LEARNING_OBJECT: (id: number) => ['learning-object', id],
+    LEARNING_OBJECT_PUBLIC: (id: number) => ['learning-object', 'public', id],
     LEARNING_OBJECT_TYPES: () => ['learning-object-types'],
 
 
@@ -28,6 +29,9 @@ export const QUERY_KEYS = {
 
     CHAT_SESSIONS: (learningObjectId: number) => ['chat-sessions', learningObjectId],
     CHAT_MESSAGES: (sessionId: number) => ['chat-messages', sessionId],
+
+    // Progress
+    LO_PROGRESS: (learningObjectId: number) => ['lo-progress', learningObjectId],
 
     // Videos
     VIDEOS_BY_MODULE: (params: { moduleId: number; filters?: VideoFiltersDto }) =>

@@ -29,6 +29,7 @@
       :items="draft.whatYouLearn"
       @add="draft.whatYouLearn.push('')"
       @remove="(idx: number) => draft.whatYouLearn.splice(idx, 1)"
+      @change="(idx, val) => draft.whatYouLearn[idx] = val"
     />
 
     <EditableStringList
@@ -36,6 +37,7 @@
       :items="draft.keyConcepts"
       @add="draft.keyConcepts.push('')"
       @remove="(idx: number) => draft.keyConcepts.splice(idx, 1)"
+      @change="(idx, val) => draft.keyConcepts[idx] = val"
     />
 
     <EditableStringList
@@ -43,6 +45,7 @@
       :items="draft.examples"
       @add="draft.examples.push('')"
       @remove="(idx: number) => draft.examples.splice(idx, 1)"
+      @change="(idx, val) => draft.examples[idx] = val"
     />
   </div>
 </template>

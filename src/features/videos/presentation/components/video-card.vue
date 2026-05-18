@@ -6,11 +6,16 @@
       :class="cardStateClass"
     >
       <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 p-3 sm:p-4 w-full">
-        <VideoThumbnail
-          :source-kind="item.sourceKind"
-          :source-url="item.sourceUrl"
-          :title="item.title"
-        />
+        <div class="relative shrink-0">
+          <VideoThumbnail
+            :source-kind="item.sourceKind"
+            :source-url="item.sourceUrl"
+            :title="item.title"
+          />
+          <div v-if="isVisited" class="absolute -top-1 -right-1 bg-background rounded-full p-0.5 shadow-sm border border-border z-10">
+            <CheckCircle2 class="size-3.5 text-green-500 fill-green-500/10" />
+          </div>
+        </div>
 
         <div class="flex-1 min-w-0 flex flex-col py-0.5">
           <div>
@@ -154,6 +159,8 @@ const detailRoute = computed(() => ({
   name: MODULES_ROUTES_NAMES.VIDEO_DETAIL,
   params: { id: props.moduleId, learningObjectId: props.item.id },
 }))
+
+const isVisited = computed(() => !!props.item.progress)
 
 const isProcessing = computed(() => isProcessingStatus(props.item.status))
 const duration = computed(() => formatDuration(props.item.durationSeconds))

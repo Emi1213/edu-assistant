@@ -1,6 +1,6 @@
 export interface TipTapDocument {
   type: string
-  content?: any[]
+  content?: unknown[]
 }
 
 export interface ImageBlockContent {

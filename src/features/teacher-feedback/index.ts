@@ -1,0 +1,7 @@
+export * from './types/teacher-feedback.types'
+export * from './services/teacher-feedback.service'
+export * from './composables/queries/use-teacher-feedbacks'
+export * from './composables/mutations/use-generate-teacher-feedback'
+export { default as TeacherFeedbackItem } from './presentation/components/teacher-feedback-item.vue'
+export { default as TeacherFeedbackDetail } from './presentation/components/teacher-feedback-detail.vue'
+export { default as ModuleTeacherFeedbacksView } from './presentation/views/module-teacher-feedbacks-view.vue'

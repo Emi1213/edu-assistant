@@ -13,6 +13,9 @@ const AR_KEYS = {
     LEARNING_OBJECT_FEEDBACKS: '/learning-object-feedbacks',
     CHAT: '/sessions',
     VIDEOS: '/videos',
+    LO_PROGRESS: '/lo-progress',
+    TEACHER_FEEDBACK: '/teacher-feedback',
+    STUDENT_FEEDBACK: '/student-feedback',
 }
 
 export const API_ROUTES = {
@@ -20,6 +23,10 @@ export const API_ROUTES = {
         MICROSOFT_LOGIN: `${AR_KEYS.AUTH}/microsoft`,
         ME: `${AR_KEYS.AUTH}/profile`,
         TEACHERS_EMAILS: `${AR_KEYS.AUTH}/config/teachers/emails`,
+    },
+    LO_PROGRESS: {
+        MARK_VISITED: `${AR_KEYS.LO_PROGRESS}/visit`,
+        GET_BY_LO_ID: (loId: number) => `${AR_KEYS.LO_PROGRESS}/${loId}`,
     },
     AI_CONFIG: {
         GET: AR_KEYS.AI_CONFIG,
@@ -116,5 +123,15 @@ export const API_ROUTES = {
         RETRY: (id: number) => `${AR_KEYS.VIDEOS}/${id}/retry`,
         UPDATE_CONTENT: (id: number) => `${AR_KEYS.VIDEOS}/${id}/content`,
         DELETE: (id: number) => `${AR_KEYS.VIDEOS}/${id}`,
+    },
+    TEACHER_FEEDBACK: {
+        LIST: (moduleId: number) => `${AR_KEYS.MODULES}/${moduleId}${AR_KEYS.TEACHER_FEEDBACK}`,
+        GET_BY_ID: (moduleId: number, id: number) => `${AR_KEYS.MODULES}/${moduleId}${AR_KEYS.TEACHER_FEEDBACK}/${id}`,
+        GENERATE: (moduleId: number) => `${AR_KEYS.MODULES}/${moduleId}${AR_KEYS.TEACHER_FEEDBACK}/generate`,
+    },
+    STUDENT_FEEDBACK: {
+        LIST: (moduleId: number) => `${AR_KEYS.MODULES}/${moduleId}${AR_KEYS.STUDENT_FEEDBACK}`,
+        GET_BY_ID: (moduleId: number, id: number) => `${AR_KEYS.MODULES}/${moduleId}${AR_KEYS.STUDENT_FEEDBACK}/${id}`,
+        GENERATE: (moduleId: number) => `${AR_KEYS.MODULES}/${moduleId}${AR_KEYS.STUDENT_FEEDBACK}/generate`,
     },
 }

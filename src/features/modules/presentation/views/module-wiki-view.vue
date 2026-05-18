@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useRoute, useRouter } from 'vue-router'
-import { ArrowLeft, BookOpen, Users } from 'lucide-vue-next'
+import { ArrowLeft, BookOpen, Users, Sparkles } from 'lucide-vue-next'
 import { useModule } from '../../composables/queries/use-module'
 import { useLearningObjectsList } from '@/features/learning-objects/composables/use-learning-objects-list'
 import { useLearningObjectTypes } from '@/features/learning-objects/composables/queries/use-learning-object-types'
@@ -16,6 +17,7 @@ import UpdateLearningObjectDialog from '@/features/learning-objects/presentation
 import Skeleton from '@/components/ui/skeleton/Skeleton.vue'
 import type { LearningObject } from '@/features/learning-objects/types'
 import { useUpdateLearningObject } from '@/features/learning-objects/composables/mutations/use-update-learning-object'
+import { useAuthStore } from '@/features/auth/context/auth-store'
 import { Sheet, SheetContent } from '@/components/ui/sheet'
 import ChatPanel from '@/features/chat/presentation/components/chat-panel.vue'
 import { useCreateChatSession } from '@/features/chat/composables/mutations/use-create-chat-session'
@@ -28,7 +30,13 @@ const toast = useToast()
 const moduleId = computed(() => Number(route.params.id))
 
 const { data: module, isLoading: isLoadingModule } = useModule(moduleId.value)
-const { canEdit, isStudent } = useRoles()
+const { canEdit, isStudent, isAdmin } = useRoles()
+const authStore = useAuthStore()
+const { user } = storeToRefs(authStore)
+
+const isOwner = computed(() => module.value?.teacherId === user.value?.id)
+const canManage = computed(() => (canEdit() && isOwner.value) || isAdmin.value)
+
 
 const isChatOpen = ref(false)
 const selectedLearningObjectId = ref<number | null>(null)
@@ -177,13 +185,31 @@ const handleGenerateRelations = (learningObject: LearningObject) => {
           <p v-if="module.description" class="text-sm sm:text-base text-muted-foreground mb-4 break-words">
             {{ module.description }}
           </p>
-          <div v-if="canEdit()" class="flex flex-wrap items-center gap-3">
+          <div v-if="canManage" class="flex flex-wrap items-center gap-3">
             <router-link
               :to="{ name: 'module-students', params: { id: module.id } }"
               class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
             >
               <Users class="size-4" />
               Inscribir estudiantes
+            </router-link>
+            
+            <router-link
+              :to="{ name: 'module-teacher-feedback', params: { id: module.id } }"
+              class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors shadow-sm"
+            >
+              <Sparkles class="size-4" />
+              Feedbacks Pedagógicos
+            </router-link>
+          </div>
+
+          <div v-else-if="isStudent" class="flex flex-wrap items-center gap-3">
+            <router-link
+              :to="{ name: 'module-student-feedback', params: { id: module.id } }"
+              class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors shadow-sm"
+            >
+              <Sparkles class="size-4" />
+              Mi Feedback IA
             </router-link>
           </div>
         </div>
@@ -208,7 +234,7 @@ const handleGenerateRelations = (learningObject: LearningObject) => {
         v-else-if="types.length > 0"
         :types="types"
         :module-id="moduleId"
-        :can-edit="canEdit()"
+        :can-edit="canManage"
         :generating-relations-learning-object-id="generatingRelationsLearningObjectId"
         :publishing-learning-object-id="publishingLoId"
         :on-update-learning-object="openUpdateLearningObject"
