@@ -9,6 +9,8 @@ export const MODULES_ROUTES_NAMES = {
   VIDEO_DETAIL: 'video-detail',
   LEARNING_OBJECT_ACTIVITIES: 'learning-object-activities',
   LEARNING_OBJECT_EDIT: 'learning-object-edit',
+  MODULE_TEACHER_FEEDBACK: 'module-teacher-feedback',
+  MODULE_STUDENT_FEEDBACK: 'module-student-feedback',
   ALL_MODULES: 'all-modules',
 } as const;
 
@@ -35,6 +37,26 @@ export const modulesRoutes: RouteRecordRaw[] = [
           layout: 'dashboard',
           requiresAuth: true,
           roles: ['TEACHER', 'STUDENT'],
+        },
+      },
+      {
+        path: ':id/teacher-feedback',
+        name: MODULES_ROUTES_NAMES.MODULE_TEACHER_FEEDBACK,
+        component: () => import('@/features/teacher-feedback/presentation/views/module-teacher-feedbacks-view.vue'),
+        meta: {
+          layout: 'dashboard',
+          requiresAuth: true,
+          roles: ['TEACHER'],
+        },
+      },
+      {
+        path: ':id/feedback',
+        name: MODULES_ROUTES_NAMES.MODULE_STUDENT_FEEDBACK,
+        component: () => import('@/features/student-ai-feedback/presentation/views/module-student-feedbacks-view.vue'),
+        meta: {
+          layout: 'dashboard',
+          requiresAuth: true,
+          roles: ['STUDENT'],
         },
       },
       {

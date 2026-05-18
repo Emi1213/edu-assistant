@@ -2,7 +2,7 @@
 import { ref, computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRoute, useRouter } from 'vue-router'
-import { ArrowLeft, BookOpen, Users } from 'lucide-vue-next'
+import { ArrowLeft, BookOpen, Users, Sparkles } from 'lucide-vue-next'
 import { useModule } from '../../composables/queries/use-module'
 import { useLearningObjectsList } from '@/features/learning-objects/composables/use-learning-objects-list'
 import { useLearningObjectTypes } from '@/features/learning-objects/composables/queries/use-learning-object-types'
@@ -192,6 +192,24 @@ const handleGenerateRelations = (learningObject: LearningObject) => {
             >
               <Users class="size-4" />
               Inscribir estudiantes
+            </router-link>
+            
+            <router-link
+              :to="{ name: 'module-teacher-feedback', params: { id: module.id } }"
+              class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors shadow-sm"
+            >
+              <Sparkles class="size-4" />
+              Feedbacks Pedagógicos
+            </router-link>
+          </div>
+
+          <div v-else-if="isStudent" class="flex flex-wrap items-center gap-3">
+            <router-link
+              :to="{ name: 'module-student-feedback', params: { id: module.id } }"
+              class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors shadow-sm"
+            >
+              <Sparkles class="size-4" />
+              Mi Feedback IA
             </router-link>
           </div>
         </div>

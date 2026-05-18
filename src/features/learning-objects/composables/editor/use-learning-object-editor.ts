@@ -33,6 +33,7 @@ export function useLearningObjectEditor(learningObjectId: MaybeRefOrGetter<numbe
     extensions: [
       StarterKit.configure({
         codeBlock: false,
+        link: false,
       }),
       CodeBlockLowlight.configure({
         lowlight,

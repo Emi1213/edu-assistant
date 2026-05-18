@@ -81,7 +81,7 @@ const handleUpdate = () => {
         toast.success('Cambios guardados con éxito')
         emit('close')
       },
-      onError: (error: any) => {
+      onError: (error) => {
         toast.error(error.message || 'Error al actualizar el objeto de aprendizaje')
       },
     }

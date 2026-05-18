@@ -22,6 +22,7 @@ export function useLearningObjectContentViewer(content: Ref<unknown>) {
     extensions: [
       StarterKit.configure({
         codeBlock: false,
+        link: false,
       }),
       CodeBlockLowlight.configure({
         lowlight,
