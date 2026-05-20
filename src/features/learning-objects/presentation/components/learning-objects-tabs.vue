@@ -18,6 +18,9 @@ import { useVideosListReorder } from '@/features/videos/composables/use-videos-l
 import { sortVideosByOrderIndex } from '@/features/videos/utils/videos-reorder.utils'
 import VideosTabContent from '@/features/videos/presentation/components/videos-tab-content.vue'
 import type { VideoDto } from '@/features/videos/types/video.types'
+import { LearningObjectsDataSource } from '../../services/learning-objects.service'
+
+const learningObjectsDataSource = new LearningObjectsDataSource()
 
 const props = defineProps<{
   types: LearningObjectType[]
@@ -115,7 +118,9 @@ watch(activeTypeId, () => {
   totalItems.value = 0
 })
 
-const videosParams = computed(() => ({ moduleId: props.moduleId }))
+const videosParams = computed(() => ({ 
+  moduleId: props.moduleId,
+}))
 const {
   videos,
   isLoading: isLoadingVideos,
@@ -123,6 +128,7 @@ const {
   hasNextPage: hasNextPageVideo,
   isFetchingNextPage: isFetchingNextPageVideo,
   loadMore: loadMoreVideo,
+  refreshAll: refreshAllVideos,
 } = useVideosList(videosParams, isVideoTab)
 
 const learningObjects = computed(() => loadedLearningObjects.value)
@@ -149,7 +155,22 @@ const activeItemsCount = computed(() =>
 const { reorderByDrag, isReorderingLearningObjects } = useLearningObjectsListReorder(props.moduleId)
 
 function handleReorderDrag(movedLo: LearningObject, targetLo: LearningObject) {
-  reorderByDrag(movedLo, targetLo)
+  reorderByDrag(movedLo, targetLo, {
+    onSuccess: async () => {
+      const totalToFetch = loadedLearningObjects.value.length || pageSize.value
+      const response = await learningObjectsDataSource.getByModuleId(props.moduleId, {
+        page: 1,
+        limit: totalToFetch,
+        typeId: activeTypeId.value,
+      })
+
+      if (response) {
+        loadedLearningObjects.value = [...response.records]
+        totalItems.value = response.total
+        totalPages.value = response.pages
+      }
+    },
+  })
 }
 
 const sortedVideos = computed(() => sortVideosByOrderIndex(videos.value))
@@ -157,7 +178,11 @@ const sortedVideos = computed(() => sortVideosByOrderIndex(videos.value))
 const { reorderByDrag: reorderVideoByDrag, isReorderingVideos } = useVideosListReorder(props.moduleId)
 
 function handleVideoReorderDrag(movedVideo: VideoDto, targetVideo: VideoDto) {
-  reorderVideoByDrag(movedVideo, targetVideo)
+  reorderVideoByDrag(movedVideo, targetVideo, {
+    onSuccess: () => {
+      refreshAllVideos()
+    },
+  })
 }
 
 const resolveLabel = (type: LearningObjectType) =>
