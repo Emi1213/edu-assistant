@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/vue-query'
 import { teacherFeedbackService } from '../../services/teacher-feedback.service'
 import { useToast } from '@/shared/composables/use-toast'
+import type { TeacherFeedbackScope } from '../../types/teacher-feedback.types'
 import axios from 'axios'
 
 export function useGenerateTeacherFeedback(moduleId: number) {
@@ -8,7 +9,7 @@ export function useGenerateTeacherFeedback(moduleId: number) {
   const toast = useToast()
 
   return useMutation({
-    mutationFn: () => teacherFeedbackService.generate(moduleId),
+    mutationFn: (scope?: TeacherFeedbackScope) => teacherFeedbackService.generate(moduleId, scope),
     onSuccess: (data) => {
       toast.success(data?.message || 'La generación de feedback ha comenzado. Te avisaremos cuando esté listo.')
       queryClient.invalidateQueries({ queryKey: ['teacher-feedbacks', moduleId] })

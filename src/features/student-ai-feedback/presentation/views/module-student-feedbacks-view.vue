@@ -154,7 +154,7 @@ const goBack = () => {
       <Info class="size-5 text-indigo-600 shrink-0 mt-0.5" />
       <div class="text-sm text-indigo-800">
         <p class="font-semibold mb-0.5">Sobre tu feedback personal</p>
-        <p>Estos reportes son privados y solo vos podés verlos. Se basan en tu actividad real dentro de la plataforma para ayudarte a estudiar mejor.</p>
+        <p>Estos reportes son privados y solo vos podés verlos. Se basan en tu actividad real, y aunque se generan semanalmente, podés solicitar un nuevo análisis manual en cualquier momento.</p>
       </div>
     </div>
 

@@ -36,6 +36,7 @@ const { user } = storeToRefs(authStore)
 
 const isOwner = computed(() => module.value?.teacherId === user.value?.id)
 const canManage = computed(() => (canEdit() && isOwner.value) || isAdmin.value)
+const isActingAsStudent = computed(() => isStudent.value || (!isOwner.value && !isAdmin.value))
 
 
 const isChatOpen = ref(false)
@@ -203,7 +204,7 @@ const handleGenerateRelations = (learningObject: LearningObject) => {
             </router-link>
           </div>
 
-          <div v-else-if="isStudent" class="flex flex-wrap items-center gap-3">
+          <div v-else-if="isActingAsStudent" class="flex flex-wrap items-center gap-3">
             <router-link
               :to="{ name: 'module-student-feedback', params: { id: module.id } }"
               class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors shadow-sm"
@@ -240,7 +241,7 @@ const handleGenerateRelations = (learningObject: LearningObject) => {
         :on-update-learning-object="openUpdateLearningObject"
         :on-generate-relations="handleGenerateRelations"
         :on-publish-now="handlePublishNow"
-        :on-chat="isStudent ? handleChat : undefined"
+        :on-chat="isActingAsStudent ? handleChat : undefined"
         @create="openCreateDialog"
       />
 

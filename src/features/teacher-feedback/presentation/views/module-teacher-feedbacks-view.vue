@@ -40,6 +40,11 @@ const queryParams = computed(() => {
 const { data: feedbacks, isLoading, isError } = useTeacherFeedbacks(moduleId, queryParams)
 const { mutate: generateFeedback, isPending: isGenerating } = useGenerateTeacherFeedback(moduleId.value)
 
+const handleGenerateFeedback = () => {
+  const scope = activeScope.value === 'ALL' ? undefined : activeScope.value as TeacherFeedbackScope
+  generateFeedback(scope)
+}
+
 // Fetch LOs to get titles
 const { data: learningObjects } = useLearningObjects(computed(() => ({ moduleId: moduleId.value })))
 
@@ -101,7 +106,7 @@ const goBack = () => {
 
       <Button 
         variant="default" 
-        @click="generateFeedback()" 
+        @click="handleGenerateFeedback()" 
         :disabled="isGenerating"
         class="bg-gradient-to-r from-primary to-primary/80 hover:shadow-lg transition-all duration-300"
       >
@@ -194,7 +199,7 @@ const goBack = () => {
       <p class="text-muted-foreground max-w-xs mx-auto mb-6">
         Aún no se ha generado feedback para este módulo o con los filtros seleccionados.
       </p>
-      <Button variant="outline" @click="generateFeedback()" :disabled="isGenerating">
+      <Button variant="outline" @click="handleGenerateFeedback()" :disabled="isGenerating">
         Solicitar primera generación
       </Button>
     </div>

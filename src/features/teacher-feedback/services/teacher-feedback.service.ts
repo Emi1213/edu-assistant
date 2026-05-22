@@ -3,7 +3,8 @@ import { API_ROUTES } from '@/core/api/routes/api-routes'
 import type { IHttpPaginatedResponse } from '@/shared/types/http-response.types'
 import type { 
   TeacherFeedback, 
-  ListTeacherFeedbackParams 
+  ListTeacherFeedbackParams,
+  TeacherFeedbackScope
 } from '../types/teacher-feedback.types'
 
 class TeacherFeedbackService {
@@ -22,10 +23,10 @@ class TeacherFeedbackService {
     return response?.data ?? null
   }
 
-  async generate(moduleId: number): Promise<{ message: string }> {
+  async generate(moduleId: number, scope?: TeacherFeedbackScope): Promise<{ message: string }> {
     const response = await httpClient.post<{ message: string }>(
       API_ROUTES.TEACHER_FEEDBACK.GENERATE(moduleId),
-      {}
+      { scope }
     )
     // httpClient.post retorna la IHttpResponse completa según su implementación
     return response?.data ?? { message: 'Generación de feedback iniciada' }
