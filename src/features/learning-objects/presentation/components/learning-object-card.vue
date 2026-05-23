@@ -19,12 +19,8 @@ const props = defineProps<{
 }>()
 
 const { isStudent, isAdmin } = useRoles()
-
-// A user should see progress if they are a student OR if they are a teacher/admin BUT NOT the owner
-// In this context, if onChat is provided but NOT edit actions, they are likely in student mode
 const showProgress = computed(() => {
   if (isStudent.value) return true
-  // If it's a teacher/admin, only show progress if they are NOT in a position to edit (meaning they are likely enrolled)
   return !props.onUpdateLearningObject && !props.onGenerateRelations && !isAdmin.value
 })
 
