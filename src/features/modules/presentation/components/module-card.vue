@@ -3,9 +3,10 @@ import type { RouteLocationRaw } from 'vue-router'
 import type { Module } from '../../types/modules.types'
 import type { LearningObjectType } from '@/features/learning-objects/types'
 import { toFullAssetUrl } from '@/shared/utils/image.utils'
-import { Globe, Lock, BookOpen, UserPlus, UserMinus } from 'lucide-vue-next'
+import { Globe, Lock, BookOpen, UserPlus, UserMinus, CheckCircle2, Clock } from 'lucide-vue-next'
 import { useRoles } from '@/features/auth/composables/use-roles'
 import { useAuthStore } from '@/features/auth/context/auth-store'
+import { useModuleProgress } from '@/features/modules/composables/use-module-progress'
 import { computed } from 'vue'
 import ModulesActionsMenu from './modules-actions-menu.vue'
 import ModuleLoShortcuts from './module-lo-shortcuts.vue'
@@ -28,6 +29,9 @@ const isOwner = computed(() => {
   if (!authStore.user?.id || !props.module.teacherId) return false
   return Number(authStore.user.id) === Number(props.module.teacherId)
 })
+
+const { showProgress, isCompleted, isStarted } = useModuleProgress(computed(() => props.module.id), isOwner)
+
 const showActions = computed(() => (canEdit() && isOwner.value) || isAdmin.value)
 const showEnrollActions = computed(() => (props.onEnroll != null || props.onUnenroll != null) && props.module.allowSelfEnroll && !isOwner.value)
 
@@ -60,7 +64,7 @@ const handleUnenroll = (e: Event) => {
       <div class="absolute left-0 top-0 bottom-0 w-1 bg-primary"></div>
       <div class="p-5 pb-0">
       <div class="flex items-start gap-3 mb-3">
-        <div class="flex-shrink-0 w-10 h-10 rounded-md bg-primary flex items-center justify-center overflow-hidden transition-all duration-200 group-hover:scale-105">
+        <div class="flex-shrink-0 w-10 h-10 rounded-md bg-primary flex items-center justify-center overflow-hidden transition-all duration-200 group-hover:scale-105 relative">
           <img
             v-if="module.logoUrl"
             :src="toFullAssetUrl(module.logoUrl)"
@@ -68,6 +72,12 @@ const handleUnenroll = (e: Event) => {
             class="w-full h-full object-cover transition-transform duration-200 group-hover:rotate-3"
           />
           <BookOpen v-else class="size-5 text-primary-foreground transition-transform duration-200 group-hover:rotate-3" />
+
+          <!-- Progress Indicator -->
+          <div v-if="showProgress && (isCompleted || isStarted)" class="absolute -top-1 -right-1 bg-background rounded-full p-0.5 shadow-sm border border-border z-10">
+            <CheckCircle2 v-if="isCompleted" class="size-3.5 text-green-500 fill-green-500/10" />
+            <Clock v-else-if="isStarted" class="size-3.5 text-orange-500 fill-orange-500/10" />
+          </div>
         </div>
         <div class="flex-1 min-w-0">
           <div class="flex items-start justify-between gap-2">

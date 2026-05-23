@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import type { RouteLocationRaw } from 'vue-router'
 import type { LearningObject } from '../../types'
-import { FileText, Zap, Clock, Link2, Pencil, Bot, CheckCircle2 } from 'lucide-vue-next'
+import { FileText, Zap, Clock, Link2, Pencil, Bot, CheckCircle2, Circle } from 'lucide-vue-next'
 import { computed } from 'vue'
+import { useRoles } from '@/features/auth/composables/use-roles'
+import { useLoProgress } from '../../composables/use-lo-progress'
 
 const props = defineProps<{
   learningObject: LearningObject
@@ -16,13 +18,25 @@ const props = defineProps<{
   onChat?: (learningObject: LearningObject) => void
 }>()
 
+const { isStudent, isAdmin } = useRoles()
+
+// A user should see progress if they are a student OR if they are a teacher/admin BUT NOT the owner
+// In this context, if onChat is provided but NOT edit actions, they are likely in student mode
+const showProgress = computed(() => {
+  if (isStudent.value) return true
+  // If it's a teacher/admin, only show progress if they are NOT in a position to edit (meaning they are likely enrolled)
+  return !props.onUpdateLearningObject && !props.onGenerateRelations && !isAdmin.value
+})
+
+const { isVisited: isVisitedFromQuery, isLoading: isLoadingProgress } = useLoProgress(computed(() => props.learningObject.id))
 
 const isGeneratingRelations = computed(
   () => props.generatingRelationsLearningObjectId != null && props.generatingRelationsLearningObjectId === props.learningObject.id
 )
 
-const isVisited = computed(() => !!props.learningObject.progress)
+const isVisited = computed(() => isVisitedFromQuery.value)
 </script>
+
 
 <template>
   <component
@@ -34,7 +48,7 @@ const isVisited = computed(() => !!props.learningObject.progress)
     <div class="flex items-start gap-4">
       <div class="mt-1 flex-shrink-0 w-10 h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-colors duration-300 relative">
         <FileText class="size-5" />
-        <div v-if="isVisited" class="absolute -top-1 -right-1 bg-background rounded-full p-0.5 shadow-sm border border-border">
+        <div v-if="showProgress && isVisited" class="absolute -top-1 -right-1 bg-background rounded-full p-0.5 shadow-sm border border-border">
           <CheckCircle2 class="size-3.5 text-green-500 fill-green-500/10" />
         </div>
       </div>
@@ -77,6 +91,20 @@ const isVisited = computed(() => !!props.learningObject.progress)
     </div>
 
     <div v-if="onGenerateRelations || onUpdateLearningObject || onPublishNow || onChat" class="flex items-center justify-end gap-2 mt-4 pt-4 border-t border-border/50">
+      <div v-if="showProgress" class="flex items-center gap-2">
+        <div v-if="isLoadingProgress" class="w-20 h-6 bg-muted animate-pulse rounded-md"></div>
+        <template v-else>
+          <span v-if="isVisited" class="flex items-center gap-1.5 px-2 py-1 text-[10px] font-bold bg-green-500/10 text-green-600 rounded-md border border-green-500/20">
+            <CheckCircle2 class="size-3" />
+            VISITADO
+          </span>
+          <span v-else class="flex items-center gap-1.5 px-2 py-1 text-[10px] font-bold bg-orange-500/10 text-orange-600 rounded-md border border-orange-500/20">
+            <Circle class="size-3" />
+            POR VISITAR
+          </span>
+        </template>
+      </div>
+
       <button
         v-if="onChat"
         @click.prevent.stop="onChat(learningObject)"
