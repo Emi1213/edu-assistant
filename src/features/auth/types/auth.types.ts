@@ -7,11 +7,10 @@ export interface User {
   name: string
   lastName: string
   isActive: boolean
-  microsoftId: string
+  microsoftId: string | null
   displayName: string
   profilePicture: string | null
   lastLoginAt: Date | null
   createdAt: Date
   updatedAt: Date
 }
-

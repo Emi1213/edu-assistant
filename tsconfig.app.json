@@ -19,6 +19,6 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
     "moduleResolution": "bundler",
-    "types": ["vite/client"]
+    "types": ["vite/client", "vitest/globals"]
   }
 }
