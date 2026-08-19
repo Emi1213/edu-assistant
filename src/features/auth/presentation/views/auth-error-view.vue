@@ -1,16 +1,25 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { AuthDataSource } from '../../services/auth.service'
-import { messageForGoogleOAuthFailure } from '../../utils/google-auth'
+import { useAuth } from '../../composables/use-auth'
+import { resolveAuthErrorViewState } from '../../utils/oauth-callback-errors'
 
 const route = useRoute()
 const router = useRouter()
-const authDataSource = new AuthDataSource()
-const message = computed(() => messageForGoogleOAuthFailure(route.query.reason))
+const { login, loginWithGoogle } = useAuth()
+const errorState = computed(() =>
+  resolveAuthErrorViewState(route.query.reason, route.query.suggested_provider),
+)
+const providerLabel = computed(() =>
+  errorState.value.suggestedProvider === 'microsoft' ? 'Microsoft' : 'Google',
+)
 
-function startGoogleLogin(): void {
-  window.location.href = authDataSource.getGoogleLoginUrl()
+function startSuggestedLogin(): void {
+  if (errorState.value.suggestedProvider === 'microsoft') {
+    login()
+    return
+  }
+  loginWithGoogle()
 }
 </script>
 
@@ -20,13 +29,14 @@ function startGoogleLogin(): void {
       class="w-full max-w-md rounded-2xl bg-white dark:bg-gray-800 p-8 text-center shadow-xl border border-slate-200 dark:border-gray-700"
     >
       <h1 class="text-xl font-bold text-gray-900 dark:text-white">No pudimos iniciar sesión</h1>
-      <p class="mt-3 text-sm text-gray-600 dark:text-gray-300">{{ message }}</p>
+      <p class="mt-3 text-sm text-gray-600 dark:text-gray-300">{{ errorState.message }}</p>
       <button
         type="button"
+        data-testid="suggested-provider-action"
         class="mt-6 w-full rounded-lg bg-[#4285f4] px-4 py-3 font-semibold text-white hover:bg-[#3367d6]"
-        @click="startGoogleLogin"
+        @click="startSuggestedLogin"
       >
-        Intentar de nuevo con Google
+        Continuar con {{ providerLabel }}
       </button>
       <button
         type="button"
