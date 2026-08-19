@@ -40,6 +40,7 @@ __screenshots__/
 # Lockfiles
 package-lock.json
 
-# Docs files
+# Developer-local tool directories
 .superpowers
 .claude
+.atl/
