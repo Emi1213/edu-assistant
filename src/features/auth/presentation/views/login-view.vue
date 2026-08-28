@@ -21,12 +21,8 @@
               class="w-32 h-32 mx-auto rounded-full object-cover"
             />
             <div class="space-y-4 text-center">
-              <h2 class="text-4xl font-extrabold leading-tight">
-                Nous AI
-              </h2>
-              <p class="text-gray-200 text-xl font-light"> 
-                Sistema Educativo
-              </p>
+              <h2 class="text-4xl font-extrabold leading-tight">Nous AI</h2>
+              <p class="text-gray-200 text-xl font-light">Sistema Educativo</p>
             </div>
           </div>
         </div>
@@ -35,9 +31,7 @@
           <div class="w-full">
             <div class="text-center mb-8">
               <h2 class="text-3xl font-bold text-gray-800 dark:text-white">Bienvenido</h2>
-              <p class="text-gray-500 dark:text-gray-400">
-                Ingresa con tu cuenta institucional
-              </p>
+              <p class="text-gray-500 dark:text-gray-400">Ingresa con tu cuenta institucional</p>
             </div>
 
             <button
@@ -84,7 +78,39 @@
               </div>
             </button>
 
-        
+            <button
+              @click="handleGoogleLogin"
+              :disabled="loading"
+              class="mt-4 w-full flex items-center justify-center gap-3 px-4 py-4 bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 rounded-lg hover:border-[#4285f4] dark:hover:border-[#4285f4] hover:bg-[#4285f4]/10 dark:hover:bg-gray-600 transition-all duration-300 disabled:opacity-60 disabled:cursor-wait shadow-md hover:shadow-lg group"
+            >
+              <svg class="h-7 w-7" viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  fill="#4285F4"
+                  d="M21.6 12.23c0-.71-.06-1.4-.18-2.07H12v3.92h5.38a4.6 4.6 0 0 1-2 3.02v2.55h3.24c1.9-1.75 2.98-4.33 2.98-7.42Z"
+                />
+                <path
+                  fill="#34A853"
+                  d="M12 22c2.7 0 4.98-.9 6.63-2.35l-3.24-2.55c-.9.6-2.05.96-3.39.96-2.61 0-4.82-1.76-5.61-4.13H3.04v2.63A10 10 0 0 0 12 22Z"
+                />
+                <path
+                  fill="#FBBC05"
+                  d="M6.39 13.93A6.02 6.02 0 0 1 6.07 12c0-.67.12-1.32.32-1.93V7.44H3.04A10 10 0 0 0 2 12c0 1.63.39 3.17 1.04 4.56l3.35-2.63Z"
+                />
+                <path
+                  fill="#EA4335"
+                  d="M12 5.94c1.47 0 2.79.5 3.83 1.5l2.87-2.88A9.64 9.64 0 0 0 12 2a10 10 0 0 0-8.96 5.44l3.35 2.63C7.18 7.7 9.39 5.94 12 5.94Z"
+                />
+              </svg>
+              <div class="text-left">
+                <span
+                  class="font-semibold text-gray-700 dark:text-gray-200 group-hover:text-[#2367d1] dark:group-hover:text-white transition-colors duration-300"
+                >
+                  Ingresar con Google
+                </span>
+                <p class="text-xs text-gray-500 dark:text-gray-400">Cuenta de Google</p>
+              </div>
+            </button>
+
             <div
               class="mt-8 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600"
             >
@@ -130,10 +156,14 @@ import { messageForOAuthCallbackQuery } from '../../utils/oauth-callback-errors'
 const route = useRoute()
 const router = useRouter()
 const toast = useToast()
-const { login, loading } = useAuth()
+const { login, loginWithGoogle, loading } = useAuth()
 
 function handleMicrosoftLogin() {
   login()
+}
+
+function handleGoogleLogin() {
+  loginWithGoogle()
 }
 
 function consumeOAuthErrorFromQuery() {
@@ -147,7 +177,7 @@ function consumeOAuthErrorFromQuery() {
   delete nextQuery.error
   delete nextQuery.error_description
   const cleaned = Object.fromEntries(
-    Object.entries(nextQuery).filter(([, v]) => v !== undefined && v !== '')
+    Object.entries(nextQuery).filter(([, v]) => v !== undefined && v !== ''),
   ) as Record<string, string | string[]>
   router.replace({ name: 'login', query: cleaned })
 }
@@ -155,7 +185,7 @@ function consumeOAuthErrorFromQuery() {
 watch(
   () => [route.query.error, route.query.error_description],
   () => consumeOAuthErrorFromQuery(),
-  { immediate: true }
+  { immediate: true },
 )
 </script>
 
@@ -172,4 +202,3 @@ watch(
   background-position: center;
 }
 </style>
-
