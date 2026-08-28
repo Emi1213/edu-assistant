@@ -10,7 +10,7 @@ export const QUERY_KEYS = {
     AVAILABLE_MODULES: (params?: ModuleQueryParams) => params ? ['available-modules', params] : ['available-modules'],
 
     // Learning Objects (formerly Pages)
-    LEARNING_OBJECTS: (params?: LearningObjectsQueryParams) => params ? ['learning-objects', params] : ['learning-objects'],
+    LEARNING_OBJECTS: (params?: LearningObjectsQueryParams) => params ? ['learning-objects', params.moduleId, params] : ['learning-objects'],
     LEARNING_OBJECT: (id: number) => ['learning-object', id],
     LEARNING_OBJECT_PUBLIC: (id: number) => ['learning-object', 'public', id],
     LEARNING_OBJECT_TYPES: () => ['learning-object-types'],

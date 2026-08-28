@@ -71,6 +71,27 @@ export function useVideosList(params: Ref<UseVideosListParams>, enabled?: Ref<bo
     }
   }
 
+  const reset = () => {
+    currentPage.value = 1
+    loadedVideos.value = []
+    totalItems.value = 0
+  }
+
+  const refreshAll = async () => {
+    const totalToFetch = loadedVideos.value.length || pageSize.value
+    const response = await videosDataSource.findAllByModule(params.value.moduleId, {
+      ...params.value.filters,
+      page: 1,
+      limit: totalToFetch,
+    })
+
+    if (response) {
+      loadedVideos.value = [...response.records]
+      totalItems.value = response.total
+      totalPages.value = response.pages
+    }
+  }
+
   return {
     videos: computed(() => loadedVideos.value),
     total: totalItems,
@@ -81,5 +102,7 @@ export function useVideosList(params: Ref<UseVideosListParams>, enabled?: Ref<bo
     isError: query.isError,
     error: query.error,
     refetch: query.refetch,
+    reset,
+    refreshAll,
   }
 }

@@ -5,11 +5,18 @@ export function useLearningObjectsListReorder(moduleId: number) {
   const { mutate: reorderLearningObjects, isPending: isReorderingLearningObjects } =
     useReorderLearningObjects(moduleId)
 
-  function reorderByDrag(movedLo: LearningObject, targetLo: LearningObject) {
-    reorderLearningObjects({
-      id: movedLo.id,
-      orderIndex: targetLo.orderIndex,
-    })
+  function reorderByDrag(
+    movedLo: LearningObject,
+    targetLo: LearningObject,
+    options?: { onSuccess?: () => void; onError?: (error: unknown) => void },
+  ) {
+    reorderLearningObjects(
+      {
+        id: movedLo.id,
+        orderIndex: targetLo.orderIndex,
+      },
+      options,
+    )
   }
 
   return { reorderByDrag, isReorderingLearningObjects }
