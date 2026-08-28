@@ -2,11 +2,12 @@
 import { ref, computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRoute, useRouter } from 'vue-router'
-import { ArrowLeft, BookOpen, Users, Sparkles } from 'lucide-vue-next'
+import { ArrowLeft, BookOpen, Users, Sparkles, CheckCircle2, Clock, Loader2, X } from 'lucide-vue-next'
 import { useModule } from '../../composables/queries/use-module'
 import { useLearningObjectsList } from '@/features/learning-objects/composables/use-learning-objects-list'
 import { useLearningObjectTypes } from '@/features/learning-objects/composables/queries/use-learning-object-types'
 import { useRoles } from '@/features/auth/composables/use-roles'
+import { useModuleProgress } from '@/features/modules/composables/use-module-progress'
 import { useExtractRelations } from '@/features/content-generation/composables/mutations/use-extract-relations'
 import { useToast } from '@/shared/composables/use-toast'
 import { toFullAssetUrl } from '@/shared/utils/image.utils'
@@ -21,7 +22,6 @@ import { useAuthStore } from '@/features/auth/context/auth-store'
 import { Sheet, SheetContent } from '@/components/ui/sheet'
 import ChatPanel from '@/features/chat/presentation/components/chat-panel.vue'
 import { useCreateChatSession } from '@/features/chat/composables/mutations/use-create-chat-session'
-import { Loader2, X } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 
 const route = useRoute()
@@ -36,6 +36,8 @@ const { user } = storeToRefs(authStore)
 
 const isOwner = computed(() => module.value?.teacherId === user.value?.id)
 const canManage = computed(() => (canEdit() && isOwner.value) || isAdmin.value)
+
+const { showProgress, isCompleted, isStarted } = useModuleProgress(moduleId, isOwner)
 
 
 const isChatOpen = ref(false)
@@ -169,7 +171,7 @@ const handleGenerateRelations = (learningObject: LearningObject) => {
 
     <div v-else-if="module" class="rounded-lg border border-border bg-card p-4 sm:p-6">
       <div class="flex flex-col sm:flex-row sm:items-start gap-4">
-        <div class="flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-lg bg-primary flex items-center justify-center overflow-hidden">
+        <div class="flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-lg bg-primary flex items-center justify-center overflow-hidden relative">
           <img
             v-if="module.logoUrl"
             :src="toFullAssetUrl(module.logoUrl)"
@@ -177,6 +179,12 @@ const handleGenerateRelations = (learningObject: LearningObject) => {
             class="w-full h-full object-cover"
           />
           <BookOpen v-else class="size-8 sm:size-10 text-primary-foreground" />
+
+          <!-- Progress Indicator -->
+          <div v-if="showProgress && (isCompleted || isStarted)" class="absolute -top-1 -right-1 bg-background rounded-full p-1 shadow-md border border-border z-10">
+            <CheckCircle2 v-if="isCompleted" class="size-5 text-green-500 fill-green-500/10" />
+            <Clock v-else-if="isStarted" class="size-5 text-orange-500 fill-orange-500/10" />
+          </div>
         </div>
         <div class="flex-1 min-w-0">
           <h1 class="text-xl sm:text-2xl font-bold text-card-foreground mb-2 break-words">
@@ -240,7 +248,7 @@ const handleGenerateRelations = (learningObject: LearningObject) => {
         :on-update-learning-object="openUpdateLearningObject"
         :on-generate-relations="handleGenerateRelations"
         :on-publish-now="handlePublishNow"
-        :on-chat="isStudent ? handleChat : undefined"
+        :on-chat="isStudent || !isOwner ? handleChat : undefined"
         @create="openCreateDialog"
       />
 

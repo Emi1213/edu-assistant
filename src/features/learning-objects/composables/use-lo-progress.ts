@@ -19,6 +19,7 @@ export function useLoProgress(learningObjectId: MaybeRefOrGetter<number>) {
     onSuccess: (data) => {
       queryClient.setQueryData(QUERY_KEYS.LO_PROGRESS(loId.value), data)
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.LEARNING_OBJECT(loId.value) })
+      queryClient.invalidateQueries({ queryKey: ['learning-objects'] }) 
       queryClient.invalidateQueries({ queryKey: ['videos', 'detail', loId.value] })
     },
   })
