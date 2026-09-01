@@ -39,6 +39,10 @@ export function useAuth() {
     window.location.href = loginUrl
   }
 
+  function loginWithGoogle(): void {
+    window.location.href = authDataSource.getGoogleLoginUrl()
+  }
+
   async function handleCallback(tokenParam: string | null): Promise<void> {
     const toast = useToast()
     if (!tokenParam) {
@@ -52,15 +56,15 @@ export function useAuth() {
       error.value = null
 
       authStore.setToken(tokenParam)
-      
+
       const userProfile = await authDataSource.getMe()
-      
+
       if (!userProfile) {
         throw new Error('No se pudo obtener el perfil del usuario')
       }
 
       authStore.login(userProfile, tokenParam)
-      
+
       toast.success(`Bienvenido a Nous AI, ${userProfile.displayName || 'usuario'}`)
       const redirect = router.currentRoute.value.query.redirect as string | undefined
       const defaultRoute =
@@ -72,7 +76,7 @@ export function useAuth() {
       toast.error(errorMsg)
       await logout()
     } finally {
-      loading.value = false 
+      loading.value = false
     }
   }
 
@@ -84,6 +88,7 @@ export function useAuth() {
 
   return {
     login,
+    loginWithGoogle,
     handleCallback,
     logout,
     initialize,
