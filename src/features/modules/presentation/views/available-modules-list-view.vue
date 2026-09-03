@@ -1,8 +1,11 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref, watch, nextTick } from 'vue'
+import { computed } from 'vue'
+import { storeToRefs } from 'pinia'
 import ModulesFilters from '../components/modules-filters.vue'
 import ModuleCard from '../components/module-card.vue'
 import Skeleton from '@/components/ui/skeleton/Skeleton.vue'
+import { Button } from '@/components/ui/button'
+import { ChevronLeft, ChevronRight } from 'lucide-vue-next'
 import { useAvailableModulesList } from '../../composables/use-available-modules-list'
 import { useModulesList } from '../../composables/use-modules-list'
 import FormOverlay from '@/shared/components/form-overlay.vue'
@@ -11,9 +14,7 @@ import { useSelfEnrollMutation } from '@/features/enrollments/composables/mutati
 import { useToast } from '@/shared/composables/use-toast'
 import type { Module } from '../../types/modules.types'
 import { useLearningObjectTypes } from '@/features/learning-objects/composables/queries/use-learning-object-types'
-import { computed } from 'vue'
 import { useAuthStore } from '@/features/auth/context/auth-store'
-import { storeToRefs } from 'pinia'
 
 const toast = useToast()
 const authStore = useAuthStore()
@@ -22,17 +23,37 @@ const { user } = storeToRefs(authStore)
 const {
   modules: rawModules,
   isLoading,
-  isFetchingNextPage,
-  hasNextPage,
+  isFetching,
   searchQuery,
   updateSearch,
   clearFilters,
-  loadMore,
+  currentPage,
+  totalPages,
+  totalItems,
+  goToPage,
+  nextPage,
+  prevPage,
 } = useAvailableModulesList()
 
 const modules = computed(() => {
   if (!user.value?.id) return rawModules.value
   return rawModules.value.filter(m => Number(m.teacherId) !== Number(user.value?.id))
+})
+
+const visiblePages = computed(() => {
+  const pages: number[] = []
+  const maxVisible = 5
+  let start = Math.max(1, currentPage.value - Math.floor(maxVisible / 2))
+  const end = Math.min(totalPages.value, start + maxVisible - 1)
+
+  if (end - start + 1 < maxVisible) {
+    start = Math.max(1, end - maxVisible + 1)
+  }
+
+  for (let i = start; i <= end; i++) {
+    pages.push(i)
+  }
+  return pages
 })
 
 const {
@@ -58,50 +79,7 @@ function handleEnroll(module: Module) {
   )
 }
 
-const emptyMessage = 'No modules found'
-const loadMoreRef = ref<HTMLElement | null>(null)
-
-let observer: IntersectionObserver | null = null
-
-const setupObserver = () => {
-  if (observer) {
-    observer.disconnect()
-  }
-
-  if (!loadMoreRef.value) return
-
-  observer = new IntersectionObserver(
-    (entries) => {
-      const entry = entries[0]
-      if (entry && entry.isIntersecting && hasNextPage.value && !isFetchingNextPage.value) {
-        loadMore()
-      }
-    },
-    {
-      rootMargin: '100px',
-    }
-  )
-
-  observer.observe(loadMoreRef.value)
-}
-
-onMounted(() => {
-  nextTick(() => {
-    setupObserver()
-  })
-})
-
-watch([loadMoreRef, hasNextPage], () => {
-  nextTick(() => {
-    setupObserver()
-  })
-})
-
-onUnmounted(() => {
-  if (observer) {
-    observer.disconnect()
-  }
-})
+const emptyMessage = 'No hay módulos disponibles'
 </script>
 
 <template>
@@ -133,7 +111,10 @@ onUnmounted(() => {
     </div>
 
     <div v-else class="space-y-6">
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div
+        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 transition-opacity"
+        :class="{ 'opacity-60 pointer-events-none': isFetching }"
+      >
         <ModuleCard
           v-for="module in modules"
           :key="module.id"
@@ -145,16 +126,50 @@ onUnmounted(() => {
         />
       </div>
 
+      <!-- Pagination Controls -->
       <div
-        ref="loadMoreRef"
-        class="flex items-center justify-center py-8"
+        v-if="totalPages > 1"
+        class="flex flex-col sm:flex-row items-center justify-between gap-4 py-4 border-t border-border mt-8"
       >
-        <div v-if="isFetchingNextPage" class="flex items-center gap-2 text-muted-foreground">
-          <div class="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
-          <span class="text-sm">Cargando más módulos...</span>
-        </div>
-        <div v-else-if="!hasNextPage && modules.length > 0" class="text-sm text-muted-foreground">
-          No hay más módulos para mostrar
+        <p class="text-sm text-muted-foreground">
+          Página <span class="font-medium text-foreground">{{ currentPage }}</span> de <span class="font-medium text-foreground">{{ totalPages }}</span>
+          <span v-if="totalItems"> ({{ totalItems }} módulos en total)</span>
+        </p>
+
+        <div class="flex items-center space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            :disabled="currentPage <= 1 || isFetching"
+            @click="prevPage"
+          >
+            <ChevronLeft class="h-4 w-4 mr-1" />
+            Anterior
+          </Button>
+
+          <div class="flex items-center space-x-1">
+            <Button
+              v-for="page in visiblePages"
+              :key="page"
+              :variant="page === currentPage ? 'default' : 'outline'"
+              size="sm"
+              class="w-9 h-9 p-0"
+              :disabled="isFetching"
+              @click="goToPage(page)"
+            >
+              {{ page }}
+            </Button>
+          </div>
+
+          <Button
+            variant="outline"
+            size="sm"
+            :disabled="currentPage >= totalPages || isFetching"
+            @click="nextPage"
+          >
+            Siguiente
+            <ChevronRight class="h-4 w-4 ml-1" />
+          </Button>
         </div>
       </div>
     </div>
